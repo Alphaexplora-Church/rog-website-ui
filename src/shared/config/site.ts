@@ -1,0 +1,108 @@
+/**
+ * Site-wide constants. Everything here is a single edit point.
+ *
+ * WHY THIS FILE EXISTS: these five values get referenced from the navbar, the
+ * hero, the footer and every SEO tag. When ROG hands over their real logo or
+ * changes a service time, it should be one line, not a grep.
+ *
+ * Later these move behind the Strapi `global` single type (Doc 2 §4.9) and
+ * this file becomes the fallback when the CMS is unreachable. The shape below
+ * is deliberately already the shape that single type will return.
+ */
+
+/** Mirrors Doc 2's `shared.service-time` component field-for-field. */
+export type ServiceLanguage = 'Taglish' | 'English' | 'Tagalog' | 'Other'
+
+/**
+ * One entry in `site.services`. `label` is genuinely optional (only the
+ * Wednesday Prayer & Fasting entry uses it) — asserted explicitly on the
+ * array below with `as ServiceTime[]` rather than left to infer through the
+ * file's outer `as const`, because `as const` would otherwise narrow each
+ * object literal to its own exact shape (three variants with no `label` key
+ * at all, one with it) and produce a union that makes `t.label` a compile
+ * error everywhere except the Wednesday branch.
+ */
+export interface ServiceTime {
+  day: string
+  time: string
+  language: ServiceLanguage
+  label?: string
+}
+
+export const site = {
+  name: 'River of God',
+  shortName: 'ROG',
+
+  /**
+   * LOGO — one file, both plates.
+   *
+   * What we have is a JPEG: white lockup on a solid black square, no alpha.
+   * Normally that means two exports (white-on-transparent and
+   * black-on-transparent) or it shows its own black box on every white
+   * section. We do not need them. `.mark` in index.css blends the black away
+   * on dark plates and inverts + blends the white away on light ones, so this
+   * single file renders correctly on both.
+   *
+   * STILL WORTH ASKING ROG FOR AN SVG. The blend trick is exact, but a raster
+   * mark softens on retina at hero size and the JPEG is 85 KB where the vector
+   * would be about 4 KB. Drop an SVG at the same path and change the extension
+   * here — nothing else has to change.
+   */
+  logo: {
+    src: '/assets/logo_tbg.png',
+    /** The mark reads "River of God Ortigas", so the alt text says so. */
+    alt: 'River of God Ortigas',
+
+    /**
+     * NAVBAR MARK — the wave alone, no text lockup.
+     *
+     * The full lockup above (`src`) reads as a tall stacked square — flagged
+     * early on as the wrong shape for a navbar. This wide, short wave is the
+     * actual icon-only mark and fits the bar the way the full lockup can't.
+     * Cropped tight to its own alpha bounds (the source file had a lot of
+     * dead transparent canvas above and below it) so it renders at a real
+     * size instead of a thin sliver inside a square box.
+     *
+     * One black-on-transparent file, both tones: real alpha this time (not
+     * the old JPEG's baked-in black square), so the navbar's own
+     * `[data-tone]` CSS just inverts it to white over a dark plate — see
+     * `.nav-mark__img` in index.css. No mix-blend-mode trick needed here.
+     */
+    mark: '/assets/logo2.png',
+  },
+
+  /** The line under the logo in the hero. Their own, not ours. */
+  motto: 'We come alive in the River.',
+
+  /**
+   * CONFIRMED 2026-09-16 — three different service schedules were published
+   * across riverofgod.ph, their Facebook page and their printed material
+   * (see CONTENT_CONFLICTS); Jude picked this one, the Doc 8 §3 schedule,
+   * when asked directly rather than have it guessed from a stale source.
+   * This replaces the old footer-sourced "8:00 / 10:30 / 4:00, no language"
+   * placeholder that used to sit here unverified.
+   *
+   * One flat, ordered list — not grouped by day — because it's the same
+   * shape as Doc 2's `shared.service-time` component (`dayOfWeek`, `time`,
+   * `language`, `label`, `note`). This array is what seeds that Strapi
+   * repeatable field once the CMS is wired up, so campus and the church
+   * directory both read from one source instead of duplicating it.
+   * ServiceTimesSection renders this array directly, one tile per entry, in
+   * this exact order; the hero badge groups it by day for a terser summary
+   * instead — see both call sites, not duplicated data here.
+   */
+  services: [
+    { day: 'Sunday', time: '10:00 AM', language: 'Taglish' },
+    { day: 'Sunday', time: '1:00 PM', language: 'Taglish' },
+    { day: 'Sunday', time: '4:00 PM', language: 'English' },
+    { day: 'Wednesday', time: '6:00 PM', language: 'Other', label: 'Prayer & Fasting' },
+  ] as ServiceTime[],
+
+  location: {
+    venue: 'River of God Center',
+    area: 'Ortigas, Pasig City',
+  },
+
+  /** Drives the pulsing dot on the Watch Live button. */
+  liveStreamUrl: 'https://www.facebook.com/riverofgodph',
+} as const

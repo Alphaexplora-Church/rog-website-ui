@@ -2,9 +2,36 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>react-ts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Tab icon: the white wave mark on a solid dark rounded-square backing
+         (public/favicon.png, generated from assets/logo1.png). A bare
+         white-on-transparent PNG (the first attempt) was invisible on a
+         light-theme tab bar and got fitted into a square slot despite being
+         a wide 4:1 shape — this bakes in its own contrast and is already
+         square, so neither problem can recur. 16/32px sizes are pre-resized
+         rather than left to the browser to downscale, so it stays crisp at
+         actual tab size; favicon-180 is the iOS home-screen icon. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon-180.png" />
+
+    <!--
+      PROXIMA NOVA — ROG's real typeface, confirmed from computed styles on the
+      live site. It is Adobe Fonts–licensed and CANNOT be self-hosted.
+
+      To switch from the Figtree stand-in to the real face:
+        1. Add this site's domain to ROG's Adobe Fonts kit hqk1yln
+        2. Uncomment the line below
+        3. Delete the Figtree @import at the top of src/index.css
+
+      The font stack in index.css already names proxima-nova first, so nothing
+      else has to change.
+    -->
+    <!-- <link rel="stylesheet" href="https://use.typekit.net/hqk1yln.css" /> -->
+
+    <meta name="theme-color" content="#000000" />
+    <title>River of God</title>
   </head>
   <body>
     <div id="root"></div>
