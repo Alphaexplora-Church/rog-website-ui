@@ -34,6 +34,8 @@ export interface ButtonProps {
   to?: string
   /** External URL. Renders an <a> with rel/target set. */
   href?: string
+  /** With `href`, downloads the file in place instead of opening a new tab. */
+  download?: boolean
   onClick?: () => void
   variant?: Variant
   size?: Size
@@ -88,6 +90,7 @@ export function Button({
   children,
   to,
   href,
+  download = false,
   onClick,
   variant = 'solid',
   size = 'sm',
@@ -115,6 +118,14 @@ export function Button({
       )}
     </>
   )
+
+  if (href && download) {
+    return (
+      <a href={href} download className={cls} {...rest}>
+        {inner}
+      </a>
+    )
+  }
 
   if (href) {
     return (

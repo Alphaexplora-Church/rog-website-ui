@@ -3,10 +3,12 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Navbar } from './shared/components/Navbar'
 import { Footer } from './shared/components/Footer'
 import { ScrollToTop } from './shared/components/ScrollToTop'
+import { PageTransition } from './shared/components/PageTransition'
 import Home from './features/home/views/Home'
 import { fontFamily, textH1 } from './shared/styles/tokens'
 
 const About = lazy(() => import('./features/about/views/About'))
+const HimPhilippines = lazy(() => import('./features/about/views/HimPhilippines'))
 const Ministries = lazy(() => import('./features/ministries/views/Ministries'))
 const Media = lazy(() => import('./features/media/views/Media'))
 const SeriesDetail = lazy(() => import('./features/media/views/SeriesDetail'))
@@ -98,13 +100,18 @@ const Give = lazy(() => import('./features/give/views/Give'))
  *
  * GIVE ROUTE, 2026-09-23. `navigation.ts` has shipped a `/give` pill in the
  * top-right since the nav was built; until now it fell through to the Stub
- * below. Built from a reference component Jude sent, re-paletted to this
- * site's teal — see features/give/views/Give.tsx.
- */
+* below. Built from a reference component Jude sent, re-paletted to this
+* site's teal — see features/give/views/Give.tsx.
+ *
+ * PAGE TRANSITIONS, 2026-09-24. `<PageTransition>` fades each new page in
+ * over the root's black background instead of hard-cutting between routes;
+ * see the component's own comment. The root is `bg-black` so that fade never
+ * flashes the browser's white page background.
+*/
 export default function App() {
   return (
     <div
-      className="selection:bg-black selection:text-white"
+      className="bg-black selection:bg-black selection:text-white"
       style={{ fontFamily, lineHeight: 1.6, letterSpacing: '-0.015em' }}
     >
       <BrowserRouter>
@@ -120,21 +127,24 @@ export default function App() {
 
         <main id="main">
           <Suspense fallback={null}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about/who-we-are" element={<About />} />
-              <Route path="/ministries" element={<Ministries />} />
-              <Route path="/ministries/body-of-christ" element={<Ministries />} />
-              <Route path="/media" element={<Media />} />
-              <Route path="/media/series/:slug" element={<SeriesDetail />} />
-              <Route path="/media/browse/:type/:slug" element={<BrowseDetail />} />
-              <Route path="/media/watch/:slug" element={<SermonDetail />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/plan-a-visit" element={<PlanAVisit />} />
-              <Route path="/watch-live" element={<WatchLive />} />
-              <Route path="/give" element={<Give />} />
-              <Route path="*" element={<Stub />} />
-            </Routes>
+            <PageTransition>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about/who-we-are" element={<About />} />
+                <Route path="/about/him-ph" element={<HimPhilippines />} />
+                <Route path="/ministries" element={<Ministries />} />
+                <Route path="/ministries/body-of-christ" element={<Ministries />} />
+                <Route path="/media" element={<Media />} />
+                <Route path="/media/series/:slug" element={<SeriesDetail />} />
+                <Route path="/media/browse/:type/:slug" element={<BrowseDetail />} />
+                <Route path="/media/watch/:slug" element={<SermonDetail />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/plan-a-visit" element={<PlanAVisit />} />
+                <Route path="/watch-live" element={<WatchLive />} />
+                <Route path="/give" element={<Give />} />
+                <Route path="*" element={<Stub />} />
+              </Routes>
+            </PageTransition>
           </Suspense>
         </main>
 

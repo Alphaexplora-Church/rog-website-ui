@@ -49,7 +49,7 @@ export const site = {
    * here — nothing else has to change.
    */
   logo: {
-    src: '/assets/logo_tbg.png',
+    src: '/assets/logo_tbg.webp',
     /** The mark reads "River of God Ortigas", so the alt text says so. */
     alt: 'River of God Ortigas',
 
@@ -68,7 +68,7 @@ export const site = {
      * `[data-tone]` CSS just inverts it to white over a dark plate — see
      * `.nav-mark__img` in index.css. No mix-blend-mode trick needed here.
      */
-    mark: '/assets/logo2.png',
+    mark: '/assets/logo2.webp',
   },
 
   /** The line under the logo in the hero. Their own, not ours. */
