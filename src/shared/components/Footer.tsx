@@ -53,6 +53,12 @@ import { site } from '../config/site'
  * disappeared with index.css; this footer is always dark, so they're
  * replaced with their literal dark-plate values directly (see
  * shared/styles/tokens.ts for where those hex values come from).
+ *
+ * UPDATED 2026-09-22 with confirmed real content from riverofgod.ph: a
+ * phone number (new `site.phone` field), and Privacy/Terms now point at
+ * the real live pages on riverofgod.ph (external links) instead of this
+ * site's own `/privacy` and `/terms` stub routes — those stubs still exist
+ * in App.tsx for now but nothing links to them from here anymore.
  */
 export function Footer() {
   const year = new Date().getFullYear()
@@ -79,6 +85,13 @@ export function Footer() {
               <br />
               {site.location.area}
             </p>
+
+            <a
+              href={`tel:${site.phone.replace(/[^\d+]/g, '')}`}
+              className="mt-3 inline-block text-sm text-[#737373] transition-colors duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white"
+            >
+              {site.phone}
+            </a>
 
             <a
               href={site.liveStreamUrl}
@@ -135,8 +148,22 @@ export function Footer() {
             © {year} {site.name}. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <FooterLink to="/privacy">Privacy Policy</FooterLink>
-            <FooterLink to="/terms">Terms of Use</FooterLink>
+            <a
+              href="https://www.riverofgod.ph/rogprivacycctvnotice"
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-[#a6a6a6] transition-colors duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="https://www.riverofgod.ph/rogtermsfordigitalcontent"
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-[#a6a6a6] transition-colors duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white"
+            >
+              Terms of Use
+            </a>
           </div>
         </div>
       </div>

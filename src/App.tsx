@@ -2,10 +2,20 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Navbar } from './shared/components/Navbar'
 import { Footer } from './shared/components/Footer'
+import { ScrollToTop } from './shared/components/ScrollToTop'
 import Home from './features/home/views/Home'
 import { fontFamily, textH1 } from './shared/styles/tokens'
 
 const About = lazy(() => import('./features/about/views/About'))
+const Ministries = lazy(() => import('./features/ministries/views/Ministries'))
+const Media = lazy(() => import('./features/media/views/Media'))
+const SeriesDetail = lazy(() => import('./features/media/views/SeriesDetail'))
+const BrowseDetail = lazy(() => import('./features/media/views/BrowseDetail'))
+const SermonDetail = lazy(() => import('./features/media/views/SermonDetail'))
+const Events = lazy(() => import('./features/events/views/Events'))
+const PlanAVisit = lazy(() => import('./features/plan-a-visit/views/PlanAVisit'))
+const WatchLive = lazy(() => import('./features/watch-live/views/WatchLive'))
+const Give = lazy(() => import('./features/give/views/Give'))
 
 /**
  * Minimal shell for the restart — Navbar plus the home route.
@@ -28,17 +38,13 @@ const About = lazy(() => import('./features/about/views/About'))
  * played on every load. Pulled per Jude's call: it read as a glitch/flash
  * rather than a polish, and re-showing a full-screen curtain on every single
  * page load (not just a first visit) fought the actual entrance animations
- * already carried by HeroSection itself. `shared/components/IntroCurtain.tsx`
- * and the "INTRO CURTAIN" block in index.css are now dead code — I can't
- * delete files from here, so please delete both by hand when you get a
- * chance.
- *
- * There WAS a `ScrollRiver` mounted here too — a fixed, scroll-linked wave
- * line along the left edge (Jude's "morphing scroll effect" request,
- * 2026-09-16). Pulled per his follow-up call: he didn't want the line on
- * the left side. `shared/components/ScrollRiver.tsx` is now dead code the
- * same way IntroCurtain is — I can't delete files from here, so please
- * delete it by hand when you get a chance.
+ * already carried by HeroSection itself. There WAS also a `ScrollRiver`
+ * mounted here — a fixed, scroll-linked wave line along the left edge
+ * (Jude's "morphing scroll effect" request, 2026-09-16), pulled per his
+ * follow-up call. Both were confirmed dead (unimported, and each referenced
+ * CSS custom properties/classes that no longer exist post-tailwind-migration)
+ * and deleted outright, 2026-09-18 — `shared/components/IntroCurtain.tsx` and
+ * `shared/components/ScrollRiver.tsx` no longer exist.
  *
  * `/about/who-we-are` (2026-09-16) is the first real second page on the
  * site — the route navigation.ts already ships under "About." It's the
@@ -66,6 +72,34 @@ const About = lazy(() => import('./features/about/views/About'))
  *     way to keep them; confirmed acceptable with Jude, browser defaults
  *     take over for both. `.skip-link` converts cleanly (it was a real
  *     element, just off-screen until focused).
+ *
+ * MEDIA + EVENTS ROUTES, 2026-09-22. `/media` is the filterable Media
+ * Library (Series/Topics/Speakers/Scripture) with three drill-down detail
+ * routes; `/events` is a fully separate page — they only share a slot in
+ * the Navbar's "Media & Events" dropdown (navigation.ts), per Jude's
+ * explicit instruction that the two are different pages, not tabs of one
+ * page. See features/media/views/Media.tsx and
+ * features/events/views/Events.tsx for what's on each and why.
+ *
+ * PLAN A VISIT + WATCH LIVE ROUTES, 2026-09-22. `navActions` in
+ * navigation.ts already pointed the top-right pills at `/plan-a-visit` and
+ * `/watch-live` — these are the pages those pills were waiting on.
+ * `/plan-a-visit` is Jude's own form spec (see
+ * features/plan-a-visit/views/PlanAVisit.tsx); `/watch-live` ports the
+ * countdown logic from a reference component Jude shared, re-skinned to
+ * this site's design system (see
+ * features/watch-live/viewModels/useWatchLiveViewModel.ts).
+ *
+ * SCROLL RESTORATION, 2026-09-23. `<ScrollToTop />` sits directly inside
+ * BrowserRouter so every route change starts at the top — a client-side
+ * route swap does not move the scrollbar on its own, so navigating from
+ * halfway down one page used to land you halfway down the next. It leaves
+ * back/forward alone on purpose; see the component's own comment.
+ *
+ * GIVE ROUTE, 2026-09-23. `navigation.ts` has shipped a `/give` pill in the
+ * top-right since the nav was built; until now it fell through to the Stub
+ * below. Built from a reference component Jude sent, re-paletted to this
+ * site's teal — see features/give/views/Give.tsx.
  */
 export default function App() {
   return (
@@ -74,6 +108,7 @@ export default function App() {
       style={{ fontFamily, lineHeight: 1.6, letterSpacing: '-0.015em' }}
     >
       <BrowserRouter>
+        <ScrollToTop />
         <a
           href="#main"
           className="absolute top-0 -left-[9999px] z-[100] bg-black px-4 py-3 text-white focus:left-0"
@@ -88,6 +123,16 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about/who-we-are" element={<About />} />
+              <Route path="/ministries" element={<Ministries />} />
+              <Route path="/ministries/body-of-christ" element={<Ministries />} />
+              <Route path="/media" element={<Media />} />
+              <Route path="/media/series/:slug" element={<SeriesDetail />} />
+              <Route path="/media/browse/:type/:slug" element={<BrowseDetail />} />
+              <Route path="/media/watch/:slug" element={<SermonDetail />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/plan-a-visit" element={<PlanAVisit />} />
+              <Route path="/watch-live" element={<WatchLive />} />
+              <Route path="/give" element={<Give />} />
               <Route path="*" element={<Stub />} />
             </Routes>
           </Suspense>

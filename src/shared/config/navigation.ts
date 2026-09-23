@@ -97,7 +97,6 @@ export const primaryNav: NavItem[] = [
     ],
   },
 
-  { label: 'Reach Us', to: '/reach-us' },
 ]
 
 /** The three right-hand actions, in ascending order of commitment. */

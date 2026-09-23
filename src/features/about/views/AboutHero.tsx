@@ -1,142 +1,63 @@
-import { useEffect, useRef, useState } from 'react'
 import { useInView } from '../../../shared/hooks/useInView'
-import {
-  maskLineBase,
-  maskLineHidden,
-  maskLineShown,
-  revealBase,
-  revealDelay1,
-  revealHidden,
-  revealShown,
-  textH1,
-} from '../../../shared/styles/tokens'
+import { maskLineBase, maskLineHidden, maskLineShown } from '../../../shared/styles/tokens'
 
 /**
- * About, section 1 — page header.
+ * About / Who We Are — mini hero. REBUILT 2026-09-22 from the Figma design
+ * (artifact 3680dbd7-…, board "02 — Who We Are") to replace the old
+ * count-up hero. Much shorter than Home's hero on purpose — this is a
+ * secondary page, so the design gives it one headline over a real photo,
+ * not a full 100svh stage.
  *
- * REDESIGNED 2026-09-17 (impeccable/ui-ux-pro-max/emil-design-eng pass).
- * The original was a centered text blob under an "About" eyebrow — exactly
- * the generic pattern these skills flag: a kicker sitting above a heading
- * (a hard ban in the craft floor — "the heading carries its own weight;
- * delete the label and let the heading speak"), everything centered with
- * no spatial asymmetry. Replaced with an editorial Swiss-grid split: the
- * headline and lede own the wide column, a compact fact list (unequal
- * width, right-aligned on desktop) carries the two numbers that actually
- * matter — when this started and how far it reached. No card, no border,
- * no icon; just type doing the work.
- *
- * THE ONE AUTHORED MOTION MOMENT for this page lives here: "477" counts up
- * from 0 the first time it scrolls into view, once, using the site's own
- * `useInView` (same failsafe-guarded observer every other section already
- * uses — nothing new to trust). This isn't decoration; a number this size
- * ("477 churches") is the single fact about ROG most worth landing with
- * weight, and a count-up is a legitimate "feedback/emphasis" animation per
- * Emil Kowalski's framework — it earns its purpose instead of being a
- * fade-up copied onto one more element. `prefers-reduced-motion` skips
- * straight to 477; nothing about the fact itself depends on the motion.
- * `data-numeric` reuses the site's existing tabular-numeral rule (index.css)
- * instead of introducing a new one.
+ * The old count-up ("477" churches) doc-comment logic is gone with it —
+ * the Figma design doesn't carry that fact on this page at all. It still
+ * lives as a milestone card in FoundersStorySection's timeline below
+ * ("TODAY / 477 churches & affiliates"), just not as hero-level emphasis.
  */
-function useCountUp(target: number, shouldRun: boolean) {
-  const [value, setValue] = useState(0)
-  const started = useRef(false)
-
-  useEffect(() => {
-    if (!shouldRun || started.current) return
-    started.current = true
-
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reduceMotion) {
-      setValue(target)
-      return
-    }
-
-    const durationMs = 1100
-    const start = performance.now()
-    // Strong ease-out (same curve family as index.css's --ease-fluid) so the
-    // count lands with a decisive final beat instead of trailing off limply.
-    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
-
-    let frame: number
-    const tick = (now: number) => {
-      const t = Math.min((now - start) / durationMs, 1)
-      setValue(Math.round(easeOut(t) * target))
-      if (t < 1) frame = requestAnimationFrame(tick)
-    }
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [shouldRun, target])
-
-  return value
-}
-
 export function AboutHero() {
   const { ref, shown } = useInView<HTMLElement>()
-  const churchCount = useCountUp(477, shown)
 
   return (
     <section
       ref={ref}
       data-plate="dark"
       aria-labelledby="about-hero-heading"
-      className="relative overflow-hidden bg-[#05070a] text-white"
+      className="relative overflow-hidden bg-[#161616] text-white"
     >
-      <div
+      <img
+        src="https://images.unsplash.com/photo-1760367121593-97b9a02bbd65?auto=format&fit=crop&w=1600&q=80"
+        alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10
-          [background-image:linear-gradient(160deg,#020617_0%,#0a2a52_45%,#0d3b4a_75%,#020617_100%)]"
+        className="absolute inset-0 h-full w-full object-cover object-[center_35%]"
       />
-      <div
+      <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10
-          [background-image:radial-gradient(ellipse_60%_50%_at_20%_15%,rgb(56_189_248/0.14),transparent_60%)]"
+        className="absolute inset-0 bg-[linear-gradient(120deg,rgba(10,10,10,0.85)_0%,rgba(22,22,22,0.68)_60%,rgba(35,35,35,0.5)_100%)]"
       />
 
-      <div className="relative z-10 mx-auto max-w-[86rem] px-6 py-24 sm:py-32">
-        <div className="grid gap-14 lg:grid-cols-[1.7fr_1fr] lg:items-end">
-          <div>
-            <h1
-              id="about-hero-heading"
-              className="text-balance font-heading leading-[1.05] font-bold"
-              style={{ fontSize: textH1, letterSpacing: '-0.045em' }}
-            >
-              <span className="block overflow-hidden pb-[0.1em]">
-                <span className={`${maskLineBase} ${shown ? maskLineShown : maskLineHidden}`}>
-                  Who We Are.
-                </span>
-              </span>
-            </h1>
-
-            <p
-              className={`mt-8 max-w-[62ch] text-lg text-[#a6a6a6] ${revealBase} ${shown ? revealShown : revealHidden}`}
-            >
-              A church that started with a handful of children and grew into a family
-              scattered across hundreds of cities — still building the same way it began.
-            </p>
-          </div>
-
-          <dl
-            className={`grid grid-cols-2 gap-8 border-t border-[#262626] pt-8
-              lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10 ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-          >
-            <div>
-              <dt className="text-sm text-[#737373]">Founded</dt>
-              <dd className="mt-2 font-heading text-4xl font-bold text-white tabular-nums sm:text-5xl">
-                1998
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-[#737373]">Churches today</dt>
-              <dd
-                aria-label="477 churches"
-                className="mt-2 font-heading text-4xl font-bold text-white tabular-nums sm:text-5xl"
-              >
-                {churchCount}
-              </dd>
-            </div>
-          </dl>
-        </div>
+      <div className="relative mx-auto max-w-[86rem] px-6 pt-40 pb-24 sm:pt-48 sm:pb-32">
+        <h1
+          id="about-hero-heading"
+          className="max-w-[32ch] text-balance font-heading text-4xl leading-[1.08] font-extrabold sm:text-5xl"
+        >
+          <span className="block overflow-hidden pb-[0.1em]">
+            <span className={`${maskLineBase} ${shown ? maskLineShown : maskLineHidden}`}>
+              A family that started with one children&rsquo;s home.
+            </span>
+          </span>
+        </h1>
       </div>
+
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 1440 130"
+        preserveAspectRatio="none"
+        className="absolute bottom-0 left-0 h-[80px] w-full sm:h-[110px]"
+      >
+        <path
+          d="M0,60 C360,130 720,0 1080,65 C1260,98 1350,84 1440,65 L1440,130 L0,130 Z"
+          fill="#161616"
+        />
+      </svg>
     </section>
   )
 }

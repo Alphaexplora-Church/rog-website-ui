@@ -72,7 +72,7 @@ export function OurStorySection() {
       ref={ref}
       data-plate="light"
       aria-labelledby="our-story-heading"
-      className="bg-[#f8fafc] text-black"
+      className="bg-white text-black"
     >
       <div className="mx-auto max-w-[64rem] px-6 py-24 sm:py-32">
         <h2

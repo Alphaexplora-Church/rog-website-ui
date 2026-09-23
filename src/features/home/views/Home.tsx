@@ -1,9 +1,8 @@
 import { HeroSection } from './HeroSection'
-import { ServiceTimesSection } from './ServiceTimesSection'
-import { LatestSermonSection } from './LatestSermonSection'
-import { MinistriesGrid } from './MinistriesGrid'
-import { EventsStrip } from './EventsStrip'
-import { NextStepsSection } from './NextStepsSection'
+import { UpcomingEventsSection } from './UpcomingEventsSection'
+import { WatchOrListenSection } from './WatchOrListenSection'
+import { LiveServicesSection } from './LiveServicesSection'
+import { ServicesMainCenterSection } from './ServicesMainCenterSection'
 
 /**
  * Home — View layer only.
@@ -12,43 +11,33 @@ import { NextStepsSection } from './NextStepsSection'
  * it will call `useHomeViewModel()` from ../viewModels/ and pass plain
  * props down; nothing below this file will ever import the API client.
  *
- * REVISED 2026-09-18, replacing Doc 8 §3's original 9-section plan. 
- * Jude's call: Hero + Service Times stay, then Latest Message / Ministries / 
- * Events / Next Steps in that order — 6 sections total, not 9. 
- * Concretely, against the original plan:
+ * REVISED 2026-09-22, following Jude's Figma handoff (artifact
+ * 3680dbd7-…, board "01 — Home"). Explicit instruction: keep the navbar and
+ * HeroSection exactly as they are — only the body below the hero changes.
+ * The four sections below replace ServiceTimesSection, LatestSermonSection,
+ * MinistriesGrid, EventsStrip and NextStepsSection wholesale, matching the
+ * approved design 1:1 in content and order:
  *
- *   - KEPT (renamed/reshaped): Latest Messages → LatestSermonSection 
- *     (one teaser, not a 3-card feed); Ministries by life stage → 
- *     MinistriesGrid (4 curated tiles, not 6).
- *   - DROPPED: WelcomeBanner (dropped to improve pacing directly into media),
- *     What to Expect as its own section (folded into NextStepsSection instead), 
- *     The 5Es, Find a Church Near You, and Story & Scale. None of these are 
- *     built anywhere else on the site yet — this content has nowhere to live 
- *     until someone decides where.
- *   - ADDED, not in the original plan: EventsStrip (Doc 8/Doc 1 explicitly
- *     held this in reserve "until ROG actually has event data" — it wasn't
- *     forgotten, it's a deliberate reversal, and its content is still
- *     flagged placeholder — see that file) and the Giving half of
- *     NextStepsSection (Doc 8 explicitly made Give nav-only, not a
- *     section — also a deliberate reversal, see that file's own note).
+ *   Hero (unchanged) → Upcoming Events → Watch or Listen →
+ *   Watch Our Live Services → Our Services & Main Center → Footer (App.tsx)
  *
- * Doc 8 itself has not been edited to match — it still describes the old
- * 9-section plan. Someone should reconcile the two before this reaches
- * ROG, particularly the dropped church-finder: Doc 8 built the whole
- * homepage structure around ROG's two audiences (a Sunday-visitor funnel
- * *and* someone elsewhere in the 477-church network looking for their own
- * campus), and nothing in this revised flow routes that second audience
- * anywhere. Worth raising, not silently dropping.
+ * MinistriesGrid's "Find Your Place" tiles and NextStepsSection's Life
+ * Group / Give panel have no equivalent in this design — they're not
+ * deleted from disk (still in this folder, just unused), in case a later
+ * page needs them. The five now-orphaned files (ServiceTimesSection,
+ * LatestSermonSection, MinistriesGrid, EventsStrip, NextStepsSection) are
+ * left in place for the same reason: nothing currently imports them, but
+ * they're real, working components if a future page wants to reuse the
+ * pattern.
  */
 export default function Home() {
   return (
     <>
       <HeroSection />
-      <ServiceTimesSection />
-      <LatestSermonSection />
-      <MinistriesGrid />
-      <EventsStrip />
-      <NextStepsSection />
+      <UpcomingEventsSection />
+      <WatchOrListenSection />
+      <LiveServicesSection />
+      <ServicesMainCenterSection />
     </>
   )
 }

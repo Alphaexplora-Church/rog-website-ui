@@ -98,10 +98,19 @@ export const site = {
     { day: 'Wednesday', time: '6:00 PM', language: 'Other', label: 'Prayer & Fasting' },
   ] as ServiceTime[],
 
+  /**
+   * CONFIRMED 2026-09-22 from riverofgod.ph directly, replacing the earlier
+   * "Ortigas, Pasig City" placeholder this file used to carry (flagged
+   * unverified since it was set) — Jude pasted the live site's own footer
+   * address and phone number. `phone` is a new field; anything reading
+   * `site.location` (ServicesMainCenterSection's Main Center card, Footer)
+   * picks up the corrected address automatically.
+   */
   location: {
-    venue: 'River of God Center',
-    area: 'Ortigas, Pasig City',
+    venue: 'River of God Center — Lower Ground, Main Wing, Shangri-La Plaza',
+    area: 'EDSA corner Shaw Blvd., Wack-Wack Greenhills East, Mandaluyong City, Metro Manila 1550',
   },
+  phone: '(02) 8712 7006',
 
   /** Drives the pulsing dot on the Watch Live button. */
   liveStreamUrl: 'https://www.facebook.com/riverofgodph',

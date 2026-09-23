@@ -1,58 +1,47 @@
 import { AboutHero } from './AboutHero'
-import { OurStorySection } from './OurStorySection'
-import { MissionVisionSection } from './MissionVisionSection'
-import { BeliefsSection } from './BeliefsSection'
-import { FoundersSection } from './FoundersSection'
+import { AboutSubNav } from './AboutSubNav'
+import { FoundersStorySection } from './FoundersStorySection'
+import { LeadershipBiosSection } from './LeadershipBiosSection'
+import { ApostolicTeamSection } from './ApostolicTeamSection'
+import { OrtigasPastorsSection } from './OrtigasPastorsSection'
+import { ServingMinistryHeadsSection } from './ServingMinistryHeadsSection'
+import { LifeStageCoordinatorsSection } from './LifeStageCoordinatorsSection'
+import { StatementOfFaithSection } from './StatementOfFaithSection'
 
 /**
  * About — View layer only, page container for `/about/who-we-are`.
  *
- * First real second page on the site (see App.tsx's own doc comment on why
- * it's the one that finally triggers `lazy()` there). Route and label come
- * from navigation.ts, not Doc 2's IA: the nav already ships a single
- * `/about/who-we-are` link ("Our story and why we exist"), not Doc 2's
- * five-page `/about` hub (`/about/our-story`, `/about/beliefs`,
- * `/about/mission-vision`, `/about/leadership`, `/about/apostolic-team`).
- * That's the same unresolved Doc 8 reconciliation gap Home.tsx already
- * flags for its own section list — building ONE page that covers story +
- * mission/vision + beliefs + founders keeps it shippable now without
- * betting on which IA wins. If the five-page hub is later confirmed as the
- * real direction, this page's sections are already the right split points
- * to break out into their own routes.
+ * REBUILT 2026-09-22 from the Figma "Who We Are" design (artifact
+ * 3680dbd7-…, board WhoWeAre.dc.html), same handoff and same tab-by-tab
+ * workflow as the Home page rebuild earlier in this project. Replaces
+ * the previous 5-section placeholder page (AboutHero w/ count-up,
+ * OurStorySection, MissionVisionSection, BeliefsSection, FoundersSection)
+ * wholesale, mirroring the "Replace them" decision made for Home's old
+ * sections — those files are left orphaned, unused, on disk.
  *
- * Five sections, in the order a first-time visitor would actually ask
- * these questions: who are you (hero) → how did you start (story) → what
- * are you here to do (mission/vision) → what do you believe (doctrine) →
- * who's leading it (founders).
+ * Section order matches the Figma board exactly: mini-hero → sticky
+ * sub-nav (4 pills, in-page anchors) → Founders' Story timeline → Leadership
+ * bios (Chito + Rachel) → Apostolic Team → River of God Ortigas Pastors →
+ * Serving Ministry Heads → Life Stage Coordinators carousel → Statement of
+ * Faith accordion (10 articles). Footer.tsx (bg-black) closes the page, same
+ * as every other route.
  *
- * PACING, 2026-09-17 (REVERTED same day): tried bumping every section's
- * vertical padding from the site-wide `py-24 sm:py-32` to `py-28 sm:py-40`
- * for a slower editorial rhythm than Home's denser funnel. Reverted almost
- * immediately — Jude's dev server was already running when these files
- * were written, and `py-28`/`py-36`/`py-40` had never been used anywhere
- * else in the codebase before this page, so Tailwind's already-compiled
- * CSS on his machine had no rule for them. They silently resolved to 0px
- * padding rather than erroring, which put the Hero's h1 flush against the
- * very top of its section with no clearance from the fixed floating
- * navbar (`Navbar.tsx`'s `header` is `fixed inset-x-0 top-0 z-50`) — the
- * heading rendered completely hidden behind it. Confirmed live via the
- * browser: `getComputedStyle` showed `padding-top: 0px` on the affected
- * elements, and a direct stylesheet scan found `.py-24`/`.py-32` compiled
- * in but no `.py-28`/`.py-36`/`.py-40` rule anywhere. Back to `py-24
- * sm:py-32` everywhere on this page — a value already proven safe rather
- * than one that depends on a dev-server restart to even render. If a
- * slower About-specific rhythm is wanted later, reach for spacing values
- * already used elsewhere in the codebase (or trigger a full dev-server
- * restart deliberately, not as a silent prerequisite).
+ * Wave-divider SVGs chain background colors between sections, same motif
+ * added to Home per Jude's "the background is too static" request —
+ * applied here from the start rather than retrofitted.
  */
 export default function About() {
   return (
     <>
       <AboutHero />
-      <OurStorySection />
-      <MissionVisionSection />
-      <BeliefsSection />
-      <FoundersSection />
+      <AboutSubNav />
+      <FoundersStorySection />
+      <LeadershipBiosSection />
+      <ApostolicTeamSection />
+      <OrtigasPastorsSection />
+      <ServingMinistryHeadsSection />
+      <LifeStageCoordinatorsSection />
+      <StatementOfFaithSection />
     </>
   )
 }

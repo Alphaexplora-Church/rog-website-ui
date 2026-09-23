@@ -147,3 +147,24 @@ export const heroMarkFadeShown = 'opacity-100 scale-100 blur-none'
 export const riverGlow =
   'pointer-events-none absolute -inset-[20%] z-0 blur-[50px] ' +
   '[background-image:radial-gradient(ellipse_50%_40%_at_18%_15%,rgb(45_212_191/0.12),transparent_65%),radial-gradient(ellipse_45%_40%_at_88%_85%,rgb(56_189_248/0.1),transparent_65%)]'
+
+/* ============================================================
+   ACCENT — cyan/teal, the ONE hue the brand allows past black and white
+   (2026-09-18, brand-palette correction pass). Black/white is the base
+   everywhere; this exists so every section that wants a single deliberate
+   highlight — a live indicator, an in-view badge, one hero word, one glow —
+   reaches for the SAME hue instead of each section inventing its own
+   (earlier passes had cyan-400, sky-400, teal-300, teal-500 and Tailwind
+   `blue-500` all live at once across five files, which is what made the
+   site read as navy/cyan-led instead of black/white-led). `riverGlow` above
+   is this same hue, already baked into an ambient-blob shape — reach for
+   that when the accent is a background glow, reach for `accent.*` below
+   when it needs to sit on text, a ring, or a badge. Never a background
+   fill on its own; a colour this saturated as a fill reads as "the section
+   is cyan," not "cyan is highlighting one thing in the section." */
+export const accent = {
+  text: 'text-cyan-300',
+  ring: 'ring-cyan-400/30',
+  border: 'border-cyan-400/30',
+  bg: 'bg-cyan-400/10',
+} as const
