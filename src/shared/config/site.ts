@@ -112,6 +112,34 @@ export const site = {
   },
   phone: '(02) 8712 7006',
 
-  /** Drives the pulsing dot on the Watch Live button. */
+  /**
+   * SOCIAL CHANNELS — one definition, every call site.
+   *
+   * MOVED HERE 2026-09-23. These three URLs were hardcoded inside
+   * `LiveServicesSection`'s `platforms` array, which meant the only place
+   * the church's own YouTube / Facebook / Instagram addresses existed was
+   * the middle of one home-page section. They are site-wide facts (the
+   * footer wants them, a contact page would want them, Strapi's `global`
+   * single type will carry them), so they live here now and that section
+   * reads them.
+   *
+   * ⚠ TWO DIFFERENT FACEBOOK PAGES ARE IN PLAY AND ONE OF THEM MAY BE
+   * WRONG. `facebook` below is the Ortigas page that the home page has
+   * always linked; `liveStreamUrl` further down points at
+   * facebook.com/riverofgodph, the network-wide page, and has since this
+   * file was created. Both have been left exactly as they were rather than
+   * silently reconciled — but this site is the Ortigas site (the logo alt
+   * text says so), so the Watch Live button probably wants the Ortigas
+   * page too. Jude to confirm which page the stream actually runs on, then
+   * point `liveStreamUrl` at `site.social.facebook` and delete the
+   * standalone URL.
+   */
+  social: {
+    youtube: 'https://www.youtube.com/@riverofgodortigas',
+    facebook: 'https://www.facebook.com/riverofgodortigas/',
+    instagram: 'https://www.instagram.com/riverofgod.ph/',
+  },
+
+  /** Drives the pulsing dot on the Watch Live button. See the ⚠ above. */
   liveStreamUrl: 'https://www.facebook.com/riverofgodph',
 } as const

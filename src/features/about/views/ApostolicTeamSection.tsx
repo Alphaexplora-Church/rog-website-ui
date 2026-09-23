@@ -1,51 +1,25 @@
-import { TeamRosterRow, type RosterPerson } from './TeamRosterRow'
+import { peopleBySlugs } from '../../../shared/data/people'
+import { TeamRosterRow } from './TeamRosterRow'
 
 /**
- * About, section 4 — Apostolic Team. UPDATED 2026-09-22 with the real
- * roster and role titles Jude pasted from riverofgod.ph (previously a
- * single generic role per person from the Figma placeholder copy) — now
- * 5 people, each with their full set of titles.
+ * About, section 4 — Apostolic Team. Five people, each with their full set
+ * of titles from riverofgod.ph (confirmed 2026-09-22, replacing the single
+ * generic role per person the Figma placeholder copy carried).
+ *
+ * SINGLE-SOURCED 2026-09-23. The names and titles used to be typed out
+ * here; two of these five — Bishop Chito and Pastor Rachel — were also
+ * typed out in FoundersSection and again in LeadershipBiosSection, three
+ * records for two people with three different titles between them. All of
+ * it now comes from `shared/data/people.ts`. This file decides only WHO
+ * appears in this roster and in what order.
  */
-const apostolicTeam: RosterPerson[] = [
-  {
-    name: 'Bishop Augusto "Chito" Sanchez Jr.',
-    roles: [
-      'Overseer of River of God Churches and Affiliates',
-      'Commission Head, PCEC Transformation & Revival Commission',
-      'Convenor, Philippine Council of Evangelical Bishops',
-      'National Director, Harvest International Ministry – Philippines',
-    ],
-  },
-  {
-    name: 'Pastor Rachel Sanchez',
-    roles: [
-      'Senior Pastor of River of God Ortigas',
-      'Founder, Jesus Loves the Little Children Foundation',
-      'Directress, Riversprings School',
-      'Overseer, ROG Supernatural Institute',
-    ],
-  },
-  {
-    name: 'Pastor Greeko Villanueva',
-    roles: [
-      'Discipleship and Connect Pastor',
-      'ROG Daughter Churches & Affiliates Coordinator',
-      'River Families and Seasoned Overseer',
-    ],
-  },
-  {
-    name: 'Pastor Roselyn Arcelo',
-    roles: ['Administration Pastor', 'Pastoral Care & Counseling', 'River Women Overseer'],
-  },
-  {
-    name: 'Pastor Mark Libunao',
-    roles: [
-      'Personal Assistant to Bp. Chito Sanchez',
-      'Creative Arts & River Men Overseer',
-      'Dean, River Biblical Supernatural Institute',
-    ],
-  },
-]
+const apostolicTeam = peopleBySlugs([
+  'chito-sanchez',
+  'rachel-sanchez',
+  'greeko-villanueva',
+  'roselyn-arcelo',
+  'mark-libunao',
+])
 
 export function ApostolicTeamSection() {
   return (

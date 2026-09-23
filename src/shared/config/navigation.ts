@@ -99,9 +99,24 @@ export const primaryNav: NavItem[] = [
 
 ]
 
-/** The three right-hand actions, in ascending order of commitment. */
+/**
+ * The three right-hand actions, in ascending order of commitment.
+ *
+ * RENAMED 2026-09-23 on Jude's call: the first action reads "Commune
+ * Together" rather than "Plan a Visit". Changing it here changes the navbar
+ * (desktop and mobile), the footer and the home hero at once — every one of
+ * those reads `label` rather than spelling the words out.
+ *
+ * THE ROUTE, THE KEY AND THE FOLDER ARE DELIBERATELY UNCHANGED. `to` stays
+ * `/plan-a-visit`, this key stays `planAVisit`, and the feature folder keeps
+ * its name. Two reasons: any link already shared keeps working, and Doc 2
+ * §4.8 models this form's submissions with a `formType: 'plan-a-visit'`
+ * discriminator that the CMS will key on. The visible name is a label; the
+ * route is an identifier. Say the word and the URL can move too, with a
+ * redirect from the old one.
+ */
 export const navActions = {
-  planAVisit: { to: '/plan-a-visit', label: 'Plan a Visit' },
+  planAVisit: { to: '/plan-a-visit', label: 'Commune Together' },
   watchLive: { to: '/watch-live', label: 'Watch Live' },
   give: { to: '/give', label: 'Give' },
 } as const

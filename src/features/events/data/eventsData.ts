@@ -94,3 +94,50 @@ export const events: EventItem[] = [
       'https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=700&q=80',
   },
 ]
+
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
+
+export interface EventDateParts {
+  /** Three-letter month, e.g. "OCT". Empty when `date` names no month. */
+  month: string
+  /** Day or day range, e.g. "4" or "14–15". */
+  day: string
+}
+
+/**
+ * Split a `date` string into the month/day badge the calendar-tile layouts
+ * want, WITHOUT storing the pieces separately.
+ *
+ * ADDED 2026-09-23. `EventsStrip` used to carry its own `sampleEvents`
+ * array with hand-split `month: 'OCT', day: '04'` fields and three invented
+ * events ("Baptism Sunday" and friends, with loremflickr photos). It reads
+ * this array now like every other events surface, so there is nothing left
+ * to drift — but it still wants a two-line badge, and deriving that here is
+ * how it gets one without a second copy of each date.
+ *
+ * Returns empty parts rather than guessing if `date` is not in the
+ * "<Month> <day>" shape these placeholders use; a caller should fall back
+ * to printing `date` whole.
+ */
+export function eventDateParts(event: EventItem): EventDateParts {
+  const match = /^([A-Za-z]+)\s+(.+)$/.exec(event.date.trim())
+  if (!match) return { month: '', day: '' }
+
+  const monthIndex = MONTHS.findIndex((m) => m.toLowerCase() === match[1].toLowerCase())
+  if (monthIndex === -1) return { month: '', day: '' }
+
+  return { month: MONTHS[monthIndex].slice(0, 3).toUpperCase(), day: match[2] }
+}

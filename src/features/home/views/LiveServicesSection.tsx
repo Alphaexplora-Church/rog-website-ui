@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { site } from '../../../shared/config/site'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
 
@@ -25,6 +26,18 @@ import { revealBase, revealHidden, revealShown } from '../../../shared/styles/to
  *   4. THE FACEBOOK CARD'S PHOTO NEVER LOADED. `photo-1760367121593…`
  *      returns nothing — the same dead URL that was on the Main Center card
  *      and the Christmas Eve event. Swapped for one confirmed to load.
+ *
+ * ── SINGLE-SOURCED 2026-09-23 ────────────────────────────────────────────
+ * Jude: "make sure that the data placeholders are all the same… para pag
+ * inimplement tsaka inintegrate natin yung cms, we wont encounter any
+ * issue."
+ *
+ * The three account URLs used to be typed out in the `platforms` array
+ * below, which made this section the only place on the site that knew the
+ * church's own social addresses. They are now `site.social` — same file as
+ * the service times, the address and the phone number, and the same shape
+ * Strapi's `global` single type will return. Everything else about this
+ * array (photo, overlay, icon) is presentation and rightly stays here.
  *
  * Figma's asymmetric corners went the way they did everywhere else.
  */
@@ -55,7 +68,7 @@ const InstagramIcon = (
 const platforms: Platform[] = [
   {
     name: 'ROG YouTube',
-    href: 'https://www.youtube.com/@riverofgodortigas',
+    href: site.social.youtube,
     photo:
       'https://images.unsplash.com/photo-1622598453695-4fbaf151aadc?auto=format&fit=crop&w=600&q=80',
     overlay:
@@ -65,7 +78,7 @@ const platforms: Platform[] = [
   {
     name: 'ROG Facebook',
     // Was photo-1760367121593-97b9a02bbd65 — that URL returns nothing.
-    href: 'https://www.facebook.com/riverofgodortigas/',
+    href: site.social.facebook,
     photo:
       'https://images.unsplash.com/photo-1609234656388-0ff363383899?auto=format&fit=crop&w=600&q=80',
     overlay:
@@ -74,7 +87,7 @@ const platforms: Platform[] = [
   },
   {
     name: 'ROG Instagram',
-    href: 'https://www.instagram.com/riverofgod.ph/',
+    href: site.social.instagram,
     photo:
       'https://images.unsplash.com/photo-1561524891-8e08ab8569f3?auto=format&fit=crop&w=600&q=80',
     overlay:

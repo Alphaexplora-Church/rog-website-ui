@@ -1,30 +1,38 @@
 import { useState } from 'react'
+import { lifeStages } from '../../../shared/data/lifeStages'
+import { person } from '../../../shared/data/people'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealDelay1, revealHidden, revealShown } from '../../../shared/styles/tokens'
 
 /**
  * About, section 7 — Life Stage Coordinators. Carousel shape matches the
- * Figma WhoWeAre.dc.html board; real names UPDATED 2026-09-22 from
- * riverofgod.ph, replacing the earlier "Coordinator Name" placeholder.
+ * Figma WhoWeAre.dc.html board; the names are the real roster from
+ * riverofgod.ph.
  *
- * ⚠ Allan Santiago / Bojie Ignacio ↔ Seasoned / River Men pairing is a
- * BEST GUESS. The pasted source listed both names together, then both age
- * ranges together, in that order — this assumes first-listed pairs with
- * first-listed, but the scrape doesn't guarantee that. Every other pairing
- * here is unambiguous. Flag to Jude to confirm before this ships.
+ * ── SINGLE-SOURCED 2026-09-23 ────────────────────────────────────────────
+ * Jude: "make sure that the data placeholders are all the same… para pag
+ * inimplement tsaka inintegrate natin yung cms, we wont encounter any
+ * issue."
+ *
+ * ⚠ THIS SECTION AND THE MINISTRIES TAB DESCRIBED THE SAME MINISTRIES
+ * DIFFERENTLY. The seven stages were typed out here with their age ranges,
+ * and the Ministries tab's "Life Seasons" carousel typed out six of its own
+ * with different bands — River Kids 3–12 here against 4–12 there, Young
+ * Adults 20–35 against 20–30, and Men and Women as two rows here against
+ * one 31–50 card there. Both now read `shared/data/lifeStages.ts`, where
+ * riverofgod.ph's numbers won and the Men/Women card grouping is recorded
+ * explicitly. The full conflict table is in that file.
+ *
+ * The age line now reads "Ages 3–12" rather than "3–12 years old" — one
+ * short form is stored and both pages render it, instead of each page
+ * carrying its own phrasing of the same number.
+ *
+ * ⚠ The Allan Santiago ↔ Seasoned / Bojie Ignacio ↔ River Men pairing is
+ * still a best guess; that flag moved to `lifeStages.ts` with the data.
  */
 const VISIBLE = 3
 const STEP = 300
 
-const lifeStages = [
-  { name: 'River Kids', range: '3–12 years old', coordinator: 'Aprile Liwanag' },
-  { name: 'River Youth', range: '13–19 years old', coordinator: 'Nhea Tagalog' },
-  { name: 'Young Adults', range: '20–35 years old', coordinator: 'Mikee Chester' },
-  { name: 'Seasoned', range: '51 years old and above', coordinator: 'Allan Santiago' },
-  { name: 'River Men', range: '36–50 years old', coordinator: 'Bojie Ignacio' },
-  { name: 'River Women', range: '36–50 years old', coordinator: 'Rosalin Co' },
-  { name: 'River Families', range: undefined, coordinator: 'Nestor and Sol Mendoza' },
-]
 
 export function LifeStageCoordinatorsSection() {
   const { ref, shown } = useInView<HTMLElement>()
@@ -51,7 +59,20 @@ export function LifeStageCoordinatorsSection() {
               aria-label="Previous"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 disabled:opacity-30"
             >
-              ‹
+              {/* Was the literal character "‹" — Doc 9 bans unicode glyphs
+                  as icons; they inherit the font's metrics and sit off-centre. */}
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M15 5l-7 7 7 7" />
+              </svg>
             </button>
             <button
               type="button"
@@ -60,7 +81,18 @@ export function LifeStageCoordinatorsSection() {
               aria-label="Next"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 disabled:opacity-30"
             >
-              ›
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
         </div>
@@ -74,15 +106,15 @@ export function LifeStageCoordinatorsSection() {
           >
             {lifeStages.map((stage) => (
               <div
-                key={stage.name}
+                key={stage.slug}
                 className="w-64 shrink-0 rounded-2xl border border-white/10 bg-[#232323] p-7"
               >
                 <p className="text-xs font-bold tracking-[0.14em] text-[#1b7a70] uppercase">
                   {stage.name}
-                  {stage.range ? ` · ${stage.range}` : ''}
+                  {stage.ageRange ? ` · Ages ${stage.ageRange}` : ''}
                 </p>
                 <p className="mt-4 font-heading text-lg font-bold text-white">
-                  {stage.coordinator}
+                  {person(stage.coordinator).name}
                 </p>
                 <p className="mt-1 text-sm text-[#a6a6a6]">Life Stage Coordinator</p>
               </div>

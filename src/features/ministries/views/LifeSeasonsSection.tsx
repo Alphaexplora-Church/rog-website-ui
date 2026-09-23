@@ -1,87 +1,44 @@
 import { useState } from 'react'
+import { cardAgeLabel, lifeStageCards } from '../../../shared/data/lifeStages'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealDelay1, revealHidden, revealShown } from '../../../shared/styles/tokens'
 
 /**
  * Ministries, section 2 — "Life Seasons" carousel. From the Figma
- * Ministries.dc.html board: 6 age-stage cards, alternating card themes
+ * Ministries.dc.html board: age-stage cards with alternating themes
  * (white / navy #0E2A3F / teal #1B7A70), same carousel pattern as the
  * other pages on this site (page/maxPage/STEP state).
  *
- * `card` is a literal, complete Tailwind class string per item — never
- * assembled at runtime — same JIT constraint documented throughout this
- * codebase.
+ * ── SINGLE-SOURCED 2026-09-23 ────────────────────────────────────────────
+ * Jude: "make sure that the data placeholders are all the same… para pag
+ * inimplement tsaka inintegrate natin yung cms, we wont encounter any
+ * issue."
+ *
+ * ⚠ THESE CARDS AND ABOUT'S LIFE STAGE COORDINATORS DESCRIBED THE SAME
+ * MINISTRIES WITH DIFFERENT AGE BANDS. This file's Figma-sourced numbers
+ * said River Kids 4–12, Young Adults 20–30 and River Men & Women 31–50;
+ * About's riverofgod.ph-sourced roster said 3–12, 20–35 and 36–50. The
+ * official site won, per Jude's standing instruction on this project, so
+ * THE AGE LABELS ON THESE CARDS HAVE CHANGED. The cards themselves,
+ * their copy, their photos and their themes are untouched.
+ *
+ * Card data now lives in `shared/data/lifeStages.ts` — the seven canonical
+ * stages that About lists, plus the six-card grouping this carousel shows
+ * (River Men and River Women share one card; that decision is written down
+ * exactly once, there). `cardAgeLabel` derives a card's age line from the
+ * stages it covers, so no age is stored twice.
+ *
+ * `card` / `ageColor` / `bodyColor` are literal, complete Tailwind class
+ * strings in that file — never assembled at runtime, same JIT constraint
+ * documented throughout this codebase.
  */
 const VISIBLE = 4
 const STEP = 272
 
-const lifeSeasons = [
-  {
-    age: 'AGES 4–12',
-    title: 'River Kids',
-    body: 'An entry-level experience for kids — games, Bible stories, interactive learning, and lots of fun.',
-    photo:
-      'https://images.unsplash.com/photo-1588075592405-d3d4f0846961?auto=format&fit=crop&w=500&q=80',
-    card: 'bg-white text-[#0B0F14]',
-    ageColor: 'text-[#1b7a70]',
-    bodyColor: 'text-black/62',
-  },
-  {
-    age: 'AGES 13–19',
-    title: 'River Youth',
-    body: 'Helps young believers "cross over" to adulthood by elevating faith, character, and maturity.',
-    photo:
-      'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=500&q=80',
-    card: 'bg-[#0E2A3F] text-white',
-    ageColor: 'text-[#8FD4C9]',
-    bodyColor: 'text-white/70',
-  },
-  {
-    age: 'AGES 20–30',
-    title: 'Young Adults',
-    body: 'Builds fellowship around career, finances, personal growth, and relationships.',
-    photo:
-      'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=500&q=80',
-    card: 'bg-white text-[#0B0F14]',
-    ageColor: 'text-[#1b7a70]',
-    bodyColor: 'text-black/62',
-  },
-  {
-    age: 'AGES 31–50',
-    title: 'River Men & Women',
-    body: 'Helps men and women mature further in their walk with Christ.',
-    photo:
-      'https://images.unsplash.com/photo-1609234656388-0ff363383899?auto=format&fit=crop&w=500&q=80',
-    card: 'bg-[#1b7a70] text-white',
-    ageColor: 'text-white',
-    bodyColor: 'text-white/82',
-  },
-  {
-    age: 'AGES 51+',
-    title: 'Seasoned',
-    body: 'The same maturity focus, for our seasoned believers.',
-    photo:
-      'https://images.unsplash.com/photo-1504004030892-d06adf9ffbcf?auto=format&fit=crop&w=500&q=80',
-    card: 'bg-white text-[#0B0F14]',
-    ageColor: 'text-[#1b7a70]',
-    bodyColor: 'text-black/62',
-  },
-  {
-    age: 'MARRIED COUPLES',
-    title: 'Family Ministry',
-    body: 'Helps married couples foster families consecrated to the Lord.',
-    photo:
-      'https://images.unsplash.com/photo-1561524891-8e08ab8569f3?auto=format&fit=crop&w=500&q=80',
-    card: 'bg-white text-[#0B0F14]',
-    ageColor: 'text-[#1b7a70]',
-    bodyColor: 'text-black/62',
-  },
-]
-
 export function LifeSeasonsSection() {
   const { ref, shown } = useInView<HTMLElement>()
   const [page, setPage] = useState(0)
-  const maxPage = Math.max(0, lifeSeasons.length - VISIBLE)
+  const maxPage = Math.max(0, lifeStageCards.length - VISIBLE)
 
   return (
     <section
@@ -106,9 +63,9 @@ export function LifeSeasonsSection() {
               className="flex gap-5 transition-transform duration-500 ease-out"
               style={{ transform: `translateX(-${page * STEP}px)` }}
             >
-              {lifeSeasons.map((stage) => (
+              {lifeStageCards.map((stage) => (
                 <div
-                  key={stage.title}
+                  key={stage.slug}
                   className={`w-64 shrink-0 overflow-hidden rounded-[26px_8px_26px_8px] ${stage.card}`}
                 >
                   <img
@@ -120,7 +77,7 @@ export function LifeSeasonsSection() {
                   />
                   <div className="flex flex-col gap-2.5 p-5">
                     <p className={`text-xs font-bold tracking-[0.06em] ${stage.ageColor}`}>
-                      {stage.age}
+                      {cardAgeLabel(stage)}
                     </p>
                     <p className="font-heading text-lg font-semibold">{stage.title}</p>
                     <p className={`text-sm leading-relaxed ${stage.bodyColor}`}>{stage.body}</p>
@@ -135,18 +92,43 @@ export function LifeSeasonsSection() {
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
             aria-label="Previous life seasons"
-            className="absolute top-1/2 left-[-22px] hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-lg text-[#0B0F14] shadow-lg disabled:opacity-30 sm:flex"
+            className="absolute top-1/2 left-[-22px] hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#0B0F14] shadow-lg disabled:opacity-30 sm:flex"
           >
-            ‹
+            {/* Was the literal character "‹". Doc 9 bans unicode glyphs as
+                icons — they inherit the font's own metrics, so they sit
+                off-centre and change shape between platforms. */}
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
           </button>
           <button
             type="button"
             onClick={() => setPage((p) => Math.min(maxPage, p + 1))}
             disabled={page === maxPage}
             aria-label="Next life seasons"
-            className="absolute top-1/2 right-[-22px] hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-lg text-[#0B0F14] shadow-lg disabled:opacity-30 sm:flex"
+            className="absolute top-1/2 right-[-22px] hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#0B0F14] shadow-lg disabled:opacity-30 sm:flex"
           >
-            ›
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
 
@@ -165,6 +147,12 @@ export function LifeSeasonsSection() {
         </div>
       </div>
 
+      {/* Wave divider into whatever section follows — its fill has to MATCH
+          that section's plate, or the wave paints a differently-coloured band
+          across the top of it. It was #161616 because Body of Christ used to
+          come next; the page order changed to put Service Ministries (#0d0d0d)
+          there instead, which left a visible lighter strip. Change this fill
+          whenever the section below it changes. */}
       <svg
         aria-hidden="true"
         viewBox="0 0 1440 140"
@@ -173,7 +161,7 @@ export function LifeSeasonsSection() {
       >
         <path
           d="M0,60 C360,130 720,0 1080,65 C1260,100 1350,85 1440,65 L1440,140 L0,140 Z"
-          fill="#161616"
+          fill="#0d0d0d"
         />
       </svg>
     </section>

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { ministries, type Ministry } from '../../../shared/data/ministries'
+import { person } from '../../../shared/data/people'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
 
@@ -10,12 +12,25 @@ import { revealBase, revealHidden, revealShown } from '../../../shared/styles/to
  * cross-church programs; this one is internal serving teams recruiting
  * volunteers, each with a named contact and phone number).
  *
- * All contact names, phone numbers, descriptions, taglines and hashtags
- * below are UNCHANGED from the authoritative version — including the two
- * reconciliations against the official cards ("Carissa Traigo", one r; and
- * "Nica Moreno" rather than "Veronica Moreno", flagged then as an inference
- * since Nica is a common nickname for Veronica). About's Serving Ministry
- * Heads roster mirrors these.
+ * ── SINGLE-SOURCED 2026-09-23 ────────────────────────────────────────────
+ * Jude: "make sure that the data placeholders are all the same… para pag
+ * inimplement tsaka inintegrate natin yung cms, we wont encounter any
+ * issue."
+ *
+ * The eight ministries used to be an array in this file, and About's
+ * "Serving Ministry Heads" roster carried its own second copy of six of the
+ * same people — with two role labels spelled differently there ("Media &
+ * Production", "Discipleship & Connect"). They now both read
+ * `shared/data/ministries.ts`, and the contact person is a slug into
+ * `shared/data/people.ts` rather than a name and a phone number typed out
+ * beside each ministry. Nothing on this page changed to look at; About's
+ * two mismatched labels did.
+ *
+ * All descriptions, taglines, hashtags, contacts and numbers moved across
+ * byte-for-byte — including the two reconciliations against the official
+ * cards ("Carissa Traigo", one r; and "Nica Moreno" rather than "Veronica
+ * Moreno", flagged then as an inference since Nica is a common nickname for
+ * Veronica).
  *
  * ── REVAMPED 2026-09-23 ──────────────────────────────────────────────────
  * Jude: "masyado siyang makalat, too much wording, not enough color, it's
@@ -66,138 +81,6 @@ import { revealBase, revealHidden, revealShown } from '../../../shared/styles/to
  * way a mouse does.
  */
 
-const PHOTO_CONGREGATION =
-  'https://images.unsplash.com/photo-1609234656388-0ff363383899?auto=format&fit=crop&q=80&w=900'
-const PHOTO_HEADPHONES =
-  'https://images.unsplash.com/photo-1511806754518-53bada35f930?auto=format&fit=crop&q=80&w=900'
-const PHOTO_STAGE_LIGHTS =
-  'https://images.unsplash.com/photo-1622598453695-4fbaf151aadc?auto=format&fit=crop&q=80&w=900'
-const PHOTO_WORSHIP_WARM =
-  'https://images.unsplash.com/photo-1740650511388-f693ce80016c?auto=format&fit=crop&q=80&w=900'
-const PHOTO_SEASONED =
-  'https://images.unsplash.com/photo-1504004030892-d06adf9ffbcf?auto=format&fit=crop&q=80&w=900'
-const PHOTO_EMBRACE =
-  'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=900'
-const PHOTO_HORIZON =
-  'https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&q=80&w=900'
-
-interface Ministry {
-  title: string
-  /** One line for the card face, compressed from this ministry's own description. */
-  blurb: string
-  description: string
-  tagline: string
-  contact: string
-  phone: string
-  hashtag: string
-  image: string
-  /** Deep and light ends of this ministry's hue. */
-  tint: [string, string]
-}
-
-const ministries: Ministry[] = [
-  {
-    title: 'Ushering',
-    blurb: 'Order, security and a warm welcome at every service.',
-    description:
-      'The Ushering Ministry is driven by their vision "to love God and serve His people". Their mission to keep and maintain order and security in the church is one way they do to serve the purpose. Differences in the strength of each member keeps the ministry balanced. The increasing passion in the hearts of people across all ages to serve through this ministry has been one of their core strength.',
-    tagline:
-      "If you love God and it's your desire to serve His people, this may be an open door for you to serve Jesus.",
-    contact: 'Erika Garcia',
-    phone: '09338112473',
-    hashtag: '#Ushering',
-    image: PHOTO_CONGREGATION,
-    tint: ['#B45309', '#FCD34D'],
-  },
-  {
-    title: 'Media and Production',
-    blurb: 'Graphics, photography, videography and live broadcast.',
-    description:
-      "We support ministries in communicating their message through quality presentations, graphic design, photography, videography, and live broadcast, while social media is our primary method for making noise. Our purpose is to relay God's message in today's high-tech society, in this creative and innovative generation. The team is also responsible for communicating updates, information, and changes to the ROG Community through the creation of online collaterals and other related documents.",
-    tagline:
-      "If you're praying for God to use your creative talents, this may be an open door for you to serve Jesus.",
-    contact: 'Joy Mallari',
-    phone: '09972249914',
-    hashtag: '#MediaProduction #RMP #MediaforJesus',
-    image: PHOTO_HEADPHONES,
-    tint: ['#0E7490', '#67E8F9'],
-  },
-  {
-    title: 'Creative Arts',
-    blurb: 'Dance and banner, prophetic painting, performing arts.',
-    description:
-      'The Creative Arts Ministry of River of God has three divisions namely FIRESTARTERS (dance and banner), VISIONCASTERS (prophetic painting), and TRAILBLAZERS (performing arts). To love God and disciple His people through arts is the main thrust of this ministry. Our mission is to evangelize the lost through arts and establish them in the Christian faith, to usher God’s people in worship, and equip them to enhance their artistic skills and empower them to equip others.',
-    tagline: "ROG's serving ministries are in need of committed and available volunteers!",
-    contact: 'Jieyan Antonio',
-    phone: '09947498070',
-    hashtag: '#CreativeArts',
-    image: PHOTO_STAGE_LIGHTS,
-    tint: ['#A21CAF', '#F0ABFC'],
-  },
-  {
-    title: 'Worship Team',
-    blurb: 'Ushering people into spirit-led, prophetic worship.',
-    description:
-      'More than just a team, the River Worship is a family dedicated to honor and serve God using our skills and talents through music. Our aim is to usher people to spirit-led worship and minister to their thirst for God’s presence through prophetic worship. Our mission is to awaken and equip the hearts of worshippers, for we long to see the Body of Christ worshipping the Father in Spirit and in Truth.',
-    tagline: 'Praying to serve in the Worship Team?',
-    contact: 'Olga Lomuntad',
-    phone: '0928487771',
-    hashtag: '#RiverWorship',
-    image: PHOTO_WORSHIP_WARM,
-    tint: ['#6D28D9', '#C4B5FD'],
-  },
-  {
-    title: 'River Kids Teachers',
-    blurb: 'Where fun meets faith — from playtime to purpose.',
-    description:
-      'River Kids Ministry is a place where fun meets faith. We believe that every moment — from games and laughter to lessons and prayer — can lead a child closer to Jesus. Our heart is to guide children from simple playtime to discovering their God-given purpose. Through Bible-based teaching, creative activities, worship, and meaningful relationships, we help kids grow in character, confidence, and Christ.',
-    tagline:
-      'From playtime to purpose, walk with River Kids as they learn to follow Jesus wholeheartedly.',
-    contact: 'Aprile Liwanag',
-    phone: '09178320417',
-    hashtag: '#RiverKidsTeachers',
-    image: PHOTO_CONGREGATION,
-    tint: ['#C2410C', '#FDBA74'],
-  },
-  {
-    title: 'River Families',
-    blurb: 'Five life stages, one connected family.',
-    description:
-      'River Families Ministry is a vibrant community that embraces every stage of family life. At its core are five life stages — River Kids, River Youth, Young Adults, Adults, and Seasoned — each representing a unique season of growth and discipleship. Together, these layers form a loving and connected ministry where every person and every family can belong, be supported, and thrive in faith within the community.',
-    tagline:
-      'If you have a heart to walk alongside families, mentor the next generation, or help create spaces where every life stage can grow in Christ, this may be your opportunity to serve.',
-    contact: 'Nestor and Sol Mendoza',
-    phone: '09176510919',
-    hashtag: '#RiverFamilies',
-    image: PHOTO_SEASONED,
-    tint: ['#047857', '#6EE7B7'],
-  },
-  {
-    title: 'Discipleship',
-    blurb: 'Connecting people into the ROG spiritual family.',
-    description:
-      'Loving God and making disciples are essential to the vision of the Discipleship Team. We aim to equip and empower people to do the great commission. Our mission is to help VIPs and ROG members to grow in their relationship with God by connecting them to the River of God Spiritual Family, and eventually getting them into discipleship. Our aim is to encourage leaders to raise more leaders who are in love with God and are passionate in making disciples.',
-    tagline:
-      'If you love God and you have a heart to make disciples, then this may be an open door for you to serve Jesus.',
-    contact: 'Carissa Traigo',
-    phone: '09171163975',
-    hashtag: '#Discipleship',
-    image: PHOTO_EMBRACE,
-    tint: ['#1D4ED8', '#93C5FD'],
-  },
-  {
-    title: 'Cross Cultural',
-    blurb: 'Completing the Great Commission, locally and globally.',
-    description:
-      "River Cross-Cultural Ministry is God's voice, bringing God's people back to God's agenda. We exist to take part in completing the remaining task of the Great Commission through equipping, edifying and mobilizing churches, both locally and globally.",
-    tagline: 'Do you have the heart of Jesus for the lost? Do you feel called to missions?',
-    contact: 'Nica Moreno',
-    phone: '09616058244',
-    hashtag: '#CrossCultural #ROGMissions #GreatCommission',
-    image: PHOTO_HORIZON,
-    tint: ['#1b7a70', '#8FD4C9'],
-  },
-]
 
 export function ServiceMinistriesSection() {
   const { ref, shown } = useInView<HTMLElement>()
@@ -434,9 +317,11 @@ function MinistryDialog({ ministry, onClose }: { ministry: Ministry; onClose: ()
               <p className="text-[10px] font-bold tracking-[0.18em] text-[#a6a6a6] uppercase">
                 To join, contact
               </p>
-              <p className="mt-1 font-heading text-base font-bold text-white">{ministry.contact}</p>
+              <p className="mt-1 font-heading text-base font-bold text-white">
+                {person(ministry.contact).name}
+              </p>
               <a
-                href={`tel:${ministry.phone}`}
+                href={`tel:${person(ministry.contact).phone ?? ''}`}
                 className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline-offset-4 transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:underline"
                 style={{ color: light }}
               >
@@ -451,7 +336,7 @@ function MinistryDialog({ ministry, onClose }: { ministry: Ministry; onClose: ()
                 >
                   <path d="M3 5c0 8.284 6.716 15 15 15a2 2 0 002-2v-2a1 1 0 00-.76-.97l-3.6-.9a1 1 0 00-1 .27l-1.1 1.1a12 12 0 01-5.44-5.44l1.1-1.1a1 1 0 00.27-1l-.9-3.6A1 1 0 007.6 3H5.6A2 2 0 003 5z" />
                 </svg>
-                {ministry.phone}
+                {person(ministry.contact).phone}
               </a>
             </div>
 

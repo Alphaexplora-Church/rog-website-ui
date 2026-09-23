@@ -1,31 +1,55 @@
+import { ministriesBySlugs } from '../../../shared/data/ministries'
+import { person } from '../../../shared/data/people'
 import { TeamRosterRow, type RosterPerson } from './TeamRosterRow'
 
 /**
- * About, section 6 — Serving Ministry Heads. UPDATED 2026-09-22 (three
- * passes now): first pass confirmed this roster as 6 separate people
- * (Carissa Traigo and Nica Moreno are two people with two distinct roles,
- * not one combined card). Second pass corrected two names against the
- * Service Ministries volunteer-recruitment page on riverofgod.ph, which
- * Jude confirmed as authoritative for these two ("follow the details ng
- * service ministries sa official website"): Creative Arts contact is
- * Jieyan Antonio (was Angelyn Antonio), Worship Team contact is Olga
- * Lomuntad (was Olga Fortuno). Third pass, after Jude shared the
- * Discipleship and Cross Cultural #SAVEDTOSERVE cards: corrected spelling
- * "Carrissa" → "Carissa" Traigo (one r, per the official card), and
- * "Veronica Moreno" → "Nica Moreno" for Cross Cultural (the official card
- * names the contact "Nica Moreno" — almost certainly the same person,
- * Nica being a common nickname for Veronica, but the card's own spelling
- * is what's used here per Jude's standing instruction to follow the
- * official site).
+ * About, section 6 — Serving Ministry Heads.
+ *
+ * ── SINGLE-SOURCED 2026-09-23 ────────────────────────────────────────────
+ * Jude: "make sure that the data placeholders are all the same… para pag
+ * inimplement tsaka inintegrate natin yung cms, we wont encounter any
+ * issue."
+ *
+ * ⚠ THIS ROSTER AND THE MINISTRIES TAB DISAGREED. The same six people were
+ * listed here with hand-typed role labels and again on the Ministries tab
+ * as `contact` strings on their ministry's card, and two of the six were
+ * spelled differently in each place:
+ *
+ *     About (was)               Ministries tab
+ *     Media & Production        Media and Production
+ *     Discipleship & Connect    Discipleship
+ *
+ * The Ministries tab's spelling is the one on the #SAVEDTOSERVE cards on
+ * riverofgod.ph, which Jude confirmed as authoritative for these ("follow
+ * the details ng service ministries sa official website"), so that is what
+ * this roster now shows — a visible change to two rows on this page, and
+ * the correct one.
+ *
+ * A person's role here IS the ministry they run, so it is read from
+ * `ministries.ts` rather than stored again. Their name comes from
+ * `people.ts`. Neither can drift from the Ministries tab now, because
+ * there is nothing left in this file for them to drift from.
+ *
+ * WHY SIX AND NOT EIGHT: `ministries.ts` carries eight, including River
+ * Kids Teachers (Aprile Liwanag) and River Families (Nestor and Sol
+ * Mendoza). Both of those two are already on this page as life stage
+ * coordinators in the section below, so listing them again here would show
+ * the same name twice on one page. The six below are exactly the six this
+ * section has always shown. Add a slug to the array to change that.
  */
-const ministryHeads: RosterPerson[] = [
-  { name: 'Joy Mallari', roles: ['Media & Production'] },
-  { name: 'Jieyan Antonio', roles: ['Creative Arts'] },
-  { name: 'Erika Garcia', roles: ['Ushering'] },
-  { name: 'Olga Lomuntad', roles: ['Worship Team'] },
-  { name: 'Carissa Traigo', roles: ['Discipleship & Connect'] },
-  { name: 'Nica Moreno', roles: ['Cross Cultural'] },
+const HEAD_MINISTRIES = [
+  'media-and-production',
+  'creative-arts',
+  'ushering',
+  'worship-team',
+  'discipleship',
+  'cross-cultural',
 ]
+
+const ministryHeads: RosterPerson[] = ministriesBySlugs(HEAD_MINISTRIES).map((m) => ({
+  name: person(m.contact).name,
+  roles: [m.title],
+}))
 
 export function ServingMinistryHeadsSection() {
   return (

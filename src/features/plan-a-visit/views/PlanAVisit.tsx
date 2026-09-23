@@ -19,10 +19,19 @@ const inputCls =
 const labelCls = 'text-xs font-bold tracking-[0.15em] text-white/60 uppercase'
 
 /**
- * Plan a Visit (`/plan-a-visit`) — single-step "save a seat" form. Field set
- * and copy are Jude's own reference screenshot, 2026-09-22 ("eto yung laman
- * nung forms"); styled to this site's existing dark/teal system rather than
- * the reference's light/orange one (Jude's call, via AskUserQuestion).
+ * Commune Together (`/plan-a-visit`) — single-step "save a seat" form. Field
+ * set and copy are Jude's own reference screenshot, 2026-09-22 ("eto yung
+ * laman nung forms"); styled to this site's existing dark/teal system rather
+ * than the reference's light/orange one (Jude's call, via AskUserQuestion).
+ *
+ * RENAMED 2026-09-23 — the nav action reads "Commune Together" now. The
+ * route, the folder and the `planAVisit` key are unchanged on purpose; see
+ * `shared/config/navigation.ts` for why.
+ *
+ * The page's own headline ("We'll save a seat.") never used the old name, so
+ * it needs no change. The reset button did say "Plan another visit"; it now
+ * says "Save another seat", which echoes that headline and stays correct
+ * whatever the nav action is called.
  *
  * No page-level hero image/banner — the form itself is the whole page, same
  * "the content is the page" treatment the reference used, just re-skinned.
@@ -56,7 +65,7 @@ export default function PlanAVisit() {
               onClick={reset}
               className="mt-8 text-xs font-bold tracking-[0.15em] text-white/60 uppercase underline underline-offset-4 transition hover:text-white"
             >
-              Plan another visit
+              Save another seat
             </button>
           </div>
         ) : (

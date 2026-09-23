@@ -194,8 +194,12 @@ export function HeroSection() {
         <div
           className={`mt-10 flex flex-wrap items-center justify-center gap-4 ${heroRevealBase} ${heroRevealDelay1} ${entered ? heroRevealShown : heroRevealHidden}`}
         >
+          {/* Reads the label rather than repeating it — this button used to
+              spell out "Plan a Visit" while the navbar and footer read
+              `navActions.planAVisit.label`, so a rename changed three of the
+              four places and left the biggest one saying the old thing. */}
           <Button to={navActions.planAVisit.to} variant="solid" tone="dark" size="md">
-            Plan a Visit
+            {navActions.planAVisit.label}
           </Button>
 
           <Button

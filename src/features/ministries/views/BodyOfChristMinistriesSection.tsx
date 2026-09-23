@@ -10,9 +10,11 @@ import { revealBase, revealHidden, revealShown } from '../../../shared/styles/to
  * pulled verbatim from the Figma source and unchanged since.
  *
  * Not to be confused with the "Serving Ministry Heads" roster on the About
- * page, or the volunteer-recruitment "Service Ministries" section below this
- * one — that's internal serving teams recruiting volunteers, a different
- * concept from these cross-church programmes.
+ * page, or the volunteer-recruitment "Service Ministries" section — that's
+ * internal serving teams recruiting volunteers, a different concept from these
+ * cross-church programmes. It sits directly ABOVE this one on the page; Jude
+ * reordered Ministries.tsx to put it there, which is why this section is now
+ * the last band before the footer and carries the closing wave.
  *
  * `navigation.ts` lists `/ministries/body-of-christ` as its own nav child;
  * rather than a second route duplicating this section, the `id` below lets
@@ -44,6 +46,10 @@ import { revealBase, revealHidden, revealShown } from '../../../shared/styles/to
  *      pill, `bg-white/5` cards with no edge, Figma's asymmetric corners, a
  *      112px-tall image strip, and no stagger on entrance. All brought in
  *      line with the sections revised this week.
+ *
+ * PLATE: #161616, between Service Ministries' #0d0d0d above and the footer's
+ * black below, so it reads as its own band against both. The closing wave is
+ * the same one the Events page uses to hand off to the footer.
  */
 interface Ministry {
   title: string
@@ -108,9 +114,9 @@ export function BodyOfChristMinistriesSection() {
       ref={ref}
       data-plate="dark"
       aria-labelledby="bocm-heading"
-      className="bg-[#161616] text-white"
+      className="relative overflow-hidden bg-[#161616] text-white"
     >
-      <div className="mx-auto max-w-[86rem] px-6 py-24 sm:py-28">
+      <div className="relative z-10 mx-auto max-w-[86rem] px-6 pt-24 pb-36 sm:pt-28 sm:pb-44">
         <div className={reveal} style={{ transitionDelay: '0ms' }}>
           <span
             className="inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase"
@@ -146,6 +152,21 @@ export function BodyOfChristMinistriesSection() {
           ))}
         </ul>
       </div>
+
+      {/* Wave divider into the footer (bg-black — see Footer.tsx). This is now
+          the last content band on /ministries, so it closes the page the same
+          way Home and Events close theirs. */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 1440 140"
+        preserveAspectRatio="none"
+        className="absolute bottom-0 left-0 h-[90px] w-full sm:h-[120px]"
+      >
+        <path
+          d="M0,70 C240,10 480,130 720,60 C960,10 1200,120 1440,55 L1440,140 L0,140 Z"
+          fill="#000000"
+        />
+      </svg>
     </section>
   )
 }

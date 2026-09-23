@@ -1,26 +1,29 @@
-import { TeamRosterRow, type RosterPerson } from './TeamRosterRow'
+import { peopleBySlugs } from '../../../shared/data/people'
+import { TeamRosterRow } from './TeamRosterRow'
 
 /**
- * About, section 5 — River of God Ortigas Pastors. UPDATED 2026-09-22:
- * riverofgod.ph's own roster for this section is Tin Corpus, Abigail
- * Sanchez-Flores, Rodel Buban, Khristine Lacsina and Jethro Mendoza (Mark
- * Libunao belongs to the Apostolic Team section instead — he's now listed
- * there with his real titles).
+ * About, section 5 — River of God Ortigas Pastors. riverofgod.ph's own
+ * roster for this section is Tin Corpus, Abigail Sanchez-Flores, Rodel
+ * Buban, Khristine Lacsina and Jethro Mendoza (Mark Libunao belongs to the
+ * Apostolic Team section instead, and is listed there with his real titles).
  *
- * ⚠ ROLE TITLES STILL PLACEHOLDER. The pasted source text for this
- * specific roster came through with names and role lines separated (a
- * scrape artifact), and the role-to-person pairing isn't reliably
- * recoverable from it — attributing the wrong ministry title to a named
- * pastor is worse than leaving this generic, so all five stay labeled
- * "River of God Ortigas" pending Jude confirming the exact mapping.
+ * SINGLE-SOURCED 2026-09-23 — names now come from
+ * `shared/data/people.ts`; this file only decides who is in this roster.
+ *
+ * ⚠ ROLE TITLES STILL PLACEHOLDER. All five read "River of God Ortigas"
+ * because the pasted source came through with names and role lines
+ * separated and the pairing is not reliably recoverable — attributing the
+ * wrong ministry to a named pastor is worse than staying generic. The flag
+ * now lives on the records themselves in `people.ts`, next to the values it
+ * applies to.
  */
-const ortigasPastors: RosterPerson[] = [
-  { name: 'Pastor Tin Corpus', roles: ['River of God Ortigas'] },
-  { name: 'Pastor Abigail Sanchez-Flores', roles: ['River of God Ortigas'] },
-  { name: 'Pastor Rodel Buban', roles: ['River of God Ortigas'] },
-  { name: 'Pastor Khristine Lacsina', roles: ['River of God Ortigas'] },
-  { name: 'Pastor Jethro Mendoza', roles: ['River of God Ortigas'] },
-]
+const ortigasPastors = peopleBySlugs([
+  'tin-corpus',
+  'abigail-sanchez-flores',
+  'rodel-buban',
+  'khristine-lacsina',
+  'jethro-mendoza',
+])
 
 export function OrtigasPastorsSection() {
   return (
