@@ -1,108 +1,69 @@
-# River of God (ROG) Website Design
+# River of God (ROG) Website Design — "Textured Editorial"
 
-This document records the visual language already present in this project and gives a consistent starting point for new pages and components. It is based on the shared tokens, current page components, and a local browser inspection of the Home, About, Events, Media, and Plan a Visit pages.
+**Revamped 2026-09-25.** Source of truth for the direction: ROG 11 — Design Plan (Textured Editorial) in the CMS project. This file is the working summary for anyone editing `src/`.
 
-## Brand and experience
+> Concept in one line: **the website is a poster wall that flows.** ROG's own graphics are loud, grainy, high-contrast — closer to a movement than a heritage institution. The site carries that energy: grain everywhere, two typographic voices, deep-water grounds, one ember accent, and motion that drifts like water.
 
-The site represents River of God Ortigas. Its visual tone is welcoming, faith-centered, calm, and confident. It combines cinematic worship imagery with clear, practical information for people deciding whether to visit, looking for a service, or finding a message or ministry.
+## Principles
 
-Use a human, invitational voice. Keep labels short and often uppercase; keep explanatory copy plain and warm. Calls to action should tell visitors what happens next, such as **Commune Together**, **Watch Live**, and **Give**.
+1. **The photo is the poster.** Frame images, don't flatten them into uniform cards.
+2. **Everything has atmosphere.** No flat fills: grain on every ground, light from gradients and glows — never drop shadows.
+3. **Two voices.** *Shout* = Big Shoulders Display, uppercase, short lines (2–4 words). *Whisper* = Bodoni Moda italic for scripture, leads and quotes. Hanken Grotesk does the work in between.
+4. **Water moves.** Drift, tide, fill. Never bounce, spring or wobble.
+5. **Hard edges, soft light.** Posters/images/sections are square (radius 0). Pills and nav are fully round. Softness lives in light and grain.
+6. **Every section a different shape.** No bento grids, no symmetric three-card rows repeated down a page. If two sections on a page look alike, change one.
 
-## Visual system
+## Tokens (`src/index.css` `@theme` → real Tailwind utilities)
 
-### Color
+| Utility | Hex | Role |
+|---|---|---|
+| `abyss` | `#06131b` | Primary ground. Deep water, not black |
+| `abyss-2` | `#0a1d27` | Raised surface on abyss |
+| `deep` | `#0b2a33` | Between abyss and river |
+| `river` | `#0e5f68` | Secondary ground / section bands (ROG 11 calls it `--current`; renamed because Tailwind reserves `current`) |
+| `shallows` | `#7fc2b8` | Secondary text & eyebrows on dark |
+| `bone` | `#f4ede2` | Text on dark; light ground |
+| `bone-2` | `#e9dfcf` | Raised surface on bone |
+| `sand` | `#cdb892` | Warm meta text on dark |
+| `ember` | `#f2761c` | **The one accent.** Primary CTA, LIVE, active state, fill lines |
+| `ember-ink` | `#a3420b` | Ember as text on bone only |
 
-The foundation is monochrome. Use contrast, photography, and light to create depth; reserve the cool accent for small points of attention.
+Contrast: bone/abyss 16.2 · bone/river 6.3 · shallows/abyss 9.2 · sand/abyss 9.7 · ember/abyss 6.6 · abyss-on-ember 6.6 · ember-ink/bone 5.4. **Ember is never text on bone or on river.** shallows/sand on river = large text only.
 
-| Role | Dark plate | Light plate |
-| --- | --- | --- |
-| Page background | `#000000` | `#ffffff` |
-| Main text | `#ffffff` | `#000000` |
-| Muted text | `#a6a6a6` | `#5c5c5c` |
-| Subtle text | `#737373` | `#8f8f8f` |
-| Raised surface | `#0d0d0d` | `#f4f4f4` |
-| Border | `#262626` | `#e4e4e4` |
-| Strong border | `#3d3d3d` | `#c4c4c4` |
+Fonts: `font-shout`, `font-whisper`, `font-sans` (default). Self-hosted in `public/fonts`.
+Easing: `ease-current` (UI), `ease-tide` (reveals). Animations: `animate-marquee`, `animate-boil`, `animate-drift`, `animate-wave-draw`, `animate-live`.
+Texture utilities: `grain` (local grain overlay; parent `relative`), `duotone` (River duotone → true colour on hover/focus/centre = **Colour Bloom**), `halftone`, `no-scrollbar`. A global grain layer already sits on `body::after`.
 
-The shared palette lives in `src/shared/styles/tokens.ts` as `plate.dark` and `plate.light`. Mark large sections with `data-plate="dark"` or `data-plate="light"`; the floating navigation uses that marker to choose a readable text and glass treatment.
+Opacity modifiers work on every token (`text-bone/70`, `border-bone/12`, `bg-abyss/80`).
 
-The shared accent is cyan: use the existing `accent` token (`text-cyan-300`, `ring-cyan-400/30`, `border-cyan-400/30`, and `bg-cyan-400/10`). `riverGlow` is the existing low-opacity ambient treatment for dark sections. Some current pages still use the older pale mint `#8FD4C9` and deeper green `#1b7a70`. Treat those as legacy color drift; use the shared cyan tokens for new work and align old components when they are next revised.
+## Shared class strings (`src/shared/styles/tokens.ts`)
 
-Do not use saturated accent color as a large section background. It should identify a live state, eyebrow, small badge, focus ring, or restrained glow while black and white remain dominant.
+`displayXL / displayL / displayM / displayS / numeral` (shout scale), `whisperL / lead` (whisper), `meta`, `eyebrow`, `container` (`mx-auto max-w-[88rem] px-4 sm:px-8` — use on every section), `reveal*` / `maskLine*` / `heroReveal*` (motion), `riverGlow`, `emberGlow`, `plate.dark|light` (legacy prop-switched colour sets), `accent`.
 
-### Typography
+## Primitives (`src/shared/components/ui/`)
 
-- The site-wide stack is `'proxima-nova', 'Figtree', ui-sans-serif, system-ui, sans-serif`.
-- Figtree is the active web-font stand-in. Proxima Nova is first in the stack for when the church Adobe Fonts kit is enabled on this domain.
-- Use strong, compact headings with generous line breaks. Headline tracking is generally tight; small section labels use bold, widely tracked uppercase text.
-- Body text uses a global line-height of `1.6` and slight negative letter spacing.
-- Prefer the shared fluid `textH1` and `textH2` sizes in `src/shared/styles/tokens.ts` where they fit. Existing pages also use responsive Tailwind size steps; keep their scale and weight consistent when editing.
+- `Button` — `variant`: `ember` (the ONE primary action per view, has the only glow), `solid` (bone), `outline`, `ghost` (ember underline flows in). `size`: sm/md/lg. `tone`: dark/light. `live` adds pulsing dot, `arrow` adds sliding arrow.
+- `River.tsx` — `WaveMark` (ROG's three strokes; `draw` animates), `WaveRule` (full-width wave hairline divider), `Pill` (outlined italic lowercase label — ROG's own label style), `Eyebrow` (wave + uppercase label), `RiverImage` (duotone + scrim + grain; `bloom="hover"` for lists, `"always"` for detail pages), `Reveal` (scroll entrance for a group; `delay` for 60ms staggers), `Marquee` (with pause control — WCAG 2.2.2), `SectionHead` (eyebrow + masked shout title + whisper lead), `useCenterBloom`.
+- `PageHero` — every inner page's first screen: eyebrow, masked shout title (array = explicit lines), whisper lead, optional `image` (drift + scrim + boiling grain), `aside` slot, `actions`, `align`, `size`.
 
-### Layout and shape
+Hooks: `useInView` (fires once, has failsafe), `useScrollProgress` (writes 0→1 progress to a style without re-rendering — for fill lines).
 
-- Center primary content in a maximum width of `86rem`, with `px-6` page gutters as the common pattern.
-- Give sections room to breathe. Use an editorial hierarchy: a short eyebrow, a clear heading, concise supporting text, then one primary action or a focused content group.
-- Use full-bleed, darkened photography for story, ministry, and event heroes. Place a strong scrim between image and text so copy stays legible across crops.
-- The home hero is a special, centered stage composition: black canvas, ROG logo, the motto, and two actions. Its soft white light beams, subtle grain, vignette, and restrained cyan glow should stay atmospheric rather than compete with the message.
-- Use wave-shaped dividers where one page section intentionally hands into the next dark plate; keep them occasional rather than a repeated decoration on every section.
-- Keep cards quiet: simple surfaces, fine borders, and clear content hierarchy. Let real people, ministry names, message artwork, and event details supply the interest.
+## Rules
 
-### Photography and brand assets
+- Mark every section `data-plate="dark"` or `"light"` (the nav flips its ink on light). Bone sections are the light plate.
+- Section padding ≥ `py-24` (`sm:py-32` typical). Full-bleed hero heights use `svh`, never `h-screen`.
+- One `h1` per page (PageHero provides it). Keep heading order.
+- Everything moving has a reduced-motion fallback (`motion-reduce:` or the global rule in `index.css`). Nothing's meaning is hover-only.
+- Text over photos always sits on a scrim.
+- Use complete literal class strings (Tailwind scans source text). Per-item colours from data go in `style`, not interpolated class names.
+- Keep MVVM: views call the feature's ViewModel hook; data lives in `shared/data`, `features/*/data` or `shared/models`. Never fetch in a view.
+- Legacy colours `#1b7a70`, `#8FD4C9`, `#161616`, `#232323`, `bg-black`, `text-[#a6a6a6]`, cyan-* and `font-heading` (a dead class) are retired — replace on sight.
 
-Prefer genuine ROG, congregation, worship, and community photography. The current project uses the site logo assets under `public/assets/` and remote Unsplash photos for several hero sections. For new imagery, choose candid, documentary-feeling moments and leave enough quiet area for the headline. Use a dark scrim when text overlays a photo. Mark purely decorative images with empty alt text; give meaningful portraits and message artwork useful descriptions.
+## Page map
 
-Use the logo paths from `src/shared/config/site.ts` rather than hardcoding an asset path in page components. The full lockup is for prominent brand moments; the wide wave mark is suited to the compact navigation and footer.
-
-## Shared interface patterns
-
-### Navigation and footer
-
-- Keep the navigation fixed near the top in a rounded, translucent glass pill with backdrop blur.
-- On desktop, show the primary links and concise action links. The pill adapts its text and surface to the dark or light section behind it and becomes more opaque after scrolling.
-- On small screens, use the menu toggle and a focused mobile navigation state; opening it should prevent background scrolling and Escape should close it.
-- Keep the footer dark. It carries the mark, motto, address, phone, social link, grouped site links, and legal links.
-
-### Buttons and controls
-
-Use `src/shared/components/ui/Button.tsx` for shared calls to action. It provides solid and outline treatments, dark and light tones, and size variants. A solid button may use its existing sheen hover; the optional live state uses a small pulsing dot. Keep button labels action-oriented and consistent with `src/shared/config/navigation.ts`.
-
-Forms should use visible labels, clear required states, comfortable spacing, and a distinct confirmation state. The Plan a Visit page is the reference: a narrow, centered form on black with a simple step label, high-contrast heading, and dark bordered confirmation panel.
-
-## Motion
-
-Motion should feel slow, smooth, and purposeful: it can suggest stage light, water, or a welcoming transition without delaying access to content.
-
-- Use the shared easing curve `cubic-bezier(0.32, 0.72, 0, 1)` for shared transitions.
-- Existing patterns include a subtle hero entrance, masked heading reveals, scroll-triggered fade/slide reveals, understated button highlights, and slow ambient movement in the home hero.
-- Use `useInView` and the shared `reveal*`, `maskLine*`, and `heroReveal*` tokens for matching existing reveal patterns.
-- Keep continuous ambient movement very slow and low contrast. Avoid adding motion to every card or section.
-- Honor reduced-motion preferences. Shared transition tokens already include `motion-reduce:transition-none`; apply an equivalent reduced-motion behavior to new Framer Motion effects.
-
-## Page patterns currently implemented
-
-| Route | Page composition and visual pattern |
-| --- | --- |
-| `/` | Centered logo-and-motto hero; upcoming events; message previews; live-service links; service times and center address. |
-| `/about/who-we-are` | Dark photo hero; in-page section navigation; founders’ story; leadership and team lists; life-stage coordinators; expandable statement of faith. |
-| `/ministries` and `/ministries/body-of-christ` | Photo-led introduction followed by ministry and life-stage content. |
-| `/media` | Featured-message hero followed by a light media library with Series, Topics, Speakers, and Scripture tabs plus search. |
-| `/media/series/:slug`, `/media/browse/:type/:slug`, `/media/watch/:slug` | Series, category, and individual-message detail views. Keep thumbnails and message metadata central. |
-| `/events` | Dark photo hero followed by weekly gatherings and upcoming event cards. |
-| `/plan-a-visit` | Narrow, centered guest form with a clear completion state. |
-| `/watch-live` | Dark, photo-led live-service page with current/next-service information. |
-| `/give` | Dark, spacious giving page with restrained cyan-family ambient light and giving choices. |
-| `/about/him-ph` | One continuous dark page (`#121212`) like Who We Are: full-screen photo hero with three network facts and an Explore link (no in-page section bar); the mission motto as display type beside mission and vision; a River of God and HIM connection band; two featured leaders plus a directory where each person appears once with Council/Board/Staff tags and one black-and-white portrait treatment; all 12 core values open (a swipeable row on phones); a numbered statement of faith; a closing membership panel with the application download and contact card, then a wave into the footer. See [HIM-PHILIPPINES-REDESIGN-PLAN.md](HIM-PHILIPPINES-REDESIGN-PLAN.md) for the full content inventory and asset notes. |
-
-Every page keeps the shared navigation and footer. Preserve this shell and use each route’s existing page components when extending a section.
-
-## Accessibility and implementation notes
-
-- Keep one clear page-level heading and preserve heading order within sections.
-- Maintain visible keyboard focus, usable contrast over photographs, and descriptive labels for links, tabs, buttons, and form fields.
-- Decorative overlays, glow, texture, and background images should not add noise to screen readers.
-- The project is Tailwind-first. `src/index.css` loads Tailwind and the web font; shared literal values and class strings live in `src/shared/styles/tokens.ts`. Use complete, static Tailwind class strings so the compiler can detect them.
-- Keep navigation labels and action destinations centralized in `src/shared/config/navigation.ts`; keep site identity, logos, service times, and contact details in `src/shared/config/site.ts`.
-
-### Route coverage note
-
-The app currently sends unmatched paths to a stub route. Some configured navigation destinations (`/about/rbsi`, `/discipleship`, and `/activate12`) do not yet have dedicated routes, and the Home “Watch Latest Service” button currently points to `/sermons` while message pages live under `/media/watch/:slug`. Treat these as route follow-ups, not as implemented page designs. `/about/him-ph` now has a dedicated implementation; its source-content inventory and asset notes are in [HIM-PHILIPPINES-REDESIGN-PLAN.md](HIM-PHILIPPINES-REDESIGN-PLAN.md).
+| Route | Shape |
+|---|---|
+| `/` | Poster hero (liquid teal/ember texture, motto, service times) → ember marquee → The Current (weekly rhythm on river ground) → Watch or Listen editorial split + index rows → Five crossings (5Es) → upcoming events poster shelf → visit CTA |
+| `/about/who-we-are` | PageHero → in-page pill nav → founders timeline → leadership → teams → life stages → **Core Values** (value rail with slide colours + photos) → Statement of Faith → Discipleship teaser → footer |
+| `/discipleship` | PageHero with stage index → five chapters on one ember Current Fill line (pinned title, scripture, goal/tools/environment, materials) → "the path" on bone → next step on river |
+| other routes | PageHero + content sections following the rules above |

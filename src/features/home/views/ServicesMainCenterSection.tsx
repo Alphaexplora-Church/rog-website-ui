@@ -1,47 +1,25 @@
 import { site } from '../../../shared/config/site'
 import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { Button } from '../../../shared/components/ui/Button'
+import { Eyebrow, Pill } from '../../../shared/components/ui/River'
+import { container, revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
 
 /**
- * Home — "Our Services & Main Center," last section before the footer.
- * Reads straight from `site.services` / `site.location` / `site.phone`, so
- * there is exactly one source of truth for all of it.
+ * Home, section 3 — "The Current": the weekly rhythm + the Main Center.
+ * REVAMP 2026-09-25 (ROG 11 §6 Home 2).
  *
- * ── REWORKED 2026-09-23 ──────────────────────────────────────────────────
- * Jude: "under the Our Services & Main Center, fix the UI and the design."
+ * ROG's schedule graphics set time — line — label; this is that pattern
+ * as a section: one wave line flows across the full width on the river
+ * ground and every gathering in `site.services` sits on it (each stop
+ * draws its own segment in turn, so the line flows left → right). Sunday stops
+ * are ember. On phones the line becomes a scroll-snap rail.
  *
- * WHAT WAS ACTUALLY WRONG:
- *   1. THE SCHEDULE WAS ONE RUN-ON LINE. All three Sunday services were
- *      `.join(' · ')` into "10:00 AM Taglish · 1:00 PM Taglish · 4:00 PM
- *      English" — a single sentence for the most looked-up fact on a church
- *      site. Times are a list; they are rows now, each with its own line and
- *      its language beside it.
- *   2. THE ADDRESS WAS ONE RUN-ON LINE TOO. Venue and area were
- *      concatenated into a 150-character paragraph. Two lines now, venue
- *      over area, the way an address is actually read.
- *   3. THE HEADING WAS 24px. Every other section on this page now opens at
- *      text-3xl/4xl, so this one read as a subsection of the thing above it
- *      rather than its own section. It also had no eyebrow pill while all
- *      its neighbours do (Doc 9 §4C).
- *   4. THE PHONE NUMBER WAS MISSING. `site.phone` exists and this is the
- *      "how do I reach the church" card — it is now here, as a real `tel:`
- *      link.
- *   5. THE MAIN CENTER PHOTO NEVER LOADED. `photo-1760367121593…` returns
- *      nothing (it fails on the Facebook card in LiveServicesSection too).
- *      It sat under a 90%-opaque teal wash so the failure was invisible,
- *      but it was still a broken request on every page load. Swapped for a
- *      URL confirmed to load.
+ * Only the gatherings already in site.ts are shown. The weekday
+ * programmes on ROG's schedule graphics (Riverbites, Rivertalks,
+ * Riverflow) are credited to another campus — ROG 11 §10 Q5 — so they stay
+ * off until ROG confirms which campus runs them.
  *
- * Note for the record: `bg-white/6` on the old tiles was *not* broken — it
- * compiles fine. It is simply 6% white, which is close enough to nothing
- * that the tiles read as unstyled. They now use the same
- * `bg-white/[0.02]` + hairline-border treatment as every other card on the
- * site, which is fainter in fill but actually visible because it has an
- * edge.
- *
- * The Figma asymmetric corners (`rounded-[20px_6px_20px_6px]`) are gone for
- * the same reason they went everywhere else — nothing else on the site
- * rounds that way any more.
+ * `id="service-times"` kept: other pages link to it.
  */
 const DIRECTIONS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
   `${site.location.venue}, ${site.location.area}`,
@@ -51,168 +29,85 @@ export function ServicesMainCenterSection() {
   const { ref, shown } = useInView<HTMLElement>()
   const reveal = `${revealBase} ${shown ? revealShown : revealHidden}`
 
-  const sundayServices = site.services.filter((s) => s.day.toLowerCase().includes('sunday'))
-  const midweekServices = site.services.filter((s) => !s.day.toLowerCase().includes('sunday'))
-
   return (
     <section
       ref={ref}
       id="service-times"
       data-plate="dark"
-      aria-labelledby="services-main-center-heading"
-      className="relative overflow-hidden bg-[#232323] text-white"
+      aria-labelledby="the-current-heading"
+      className="grain relative overflow-hidden bg-river py-24 text-bone sm:py-32"
     >
-      <div className="relative mx-auto max-w-[86rem] px-6 pt-24 pb-36 sm:pt-28 sm:pb-44">
-        <div className={reveal} style={{ transitionDelay: '0ms' }}>
-          <span
-            className="inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase"
-            style={{
-              color: '#8FD4C9',
-              backgroundColor: 'rgb(27 122 112 / 0.18)',
-              boxShadow: 'inset 0 0 0 1px rgb(143 212 201 / 0.25)',
-            }}
-          >
-            Visit Us
-          </span>
-          <h2
-            id="services-main-center-heading"
-            className="mt-4 font-heading text-3xl font-bold tracking-tight sm:text-4xl"
-          >
-            Our Services &amp; Main Center
-          </h2>
-          <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-white/55">
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] blur-[80px] [background-image:radial-gradient(ellipse_40%_45%_at_90%_10%,rgb(6_19_27/0.55),transparent_70%),radial-gradient(ellipse_35%_35%_at_5%_95%,rgb(242_118_28/0.18),transparent_70%)]" />
+
+      <div className={`${container} relative`}>
+        <div className={`flex flex-wrap items-end justify-between gap-8 ${reveal}`}>
+          <div>
+            <Eyebrow className="text-bone/85">The Current</Eyebrow>
+            <h2 id="the-current-heading" className="mt-5 font-shout text-[clamp(3rem,7vw,6.5rem)] leading-[0.88] font-extrabold uppercase">
+              Every week,
+              <br />
+              we gather.
+            </h2>
+          </div>
+          <p className="max-w-[34ch] font-whisper text-xl italic leading-snug text-bone/85">
             Come as you are — there&apos;s a seat for you at every service.
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1.05fr_1fr] lg:gap-8">
-          <div
-            className={`grid grid-cols-1 gap-6 sm:grid-cols-2 ${reveal}`}
-            style={{ transitionDelay: '120ms' }}
-          >
-            <ServiceCard day="Sundays" services={sundayServices} />
-            <ServiceCard day="Wednesdays" services={midweekServices} />
+        {/* The line */}
+        <div className="relative mt-20">
+          <ol className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-10 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0">
+            {site.services.map((s, i) => {
+              const sunday = s.day === 'Sunday'
+              return (
+                <li
+                  key={`${s.day}-${s.time}`}
+                  className={`w-[62vw] max-w-[16rem] flex-none snap-start md:w-auto md:max-w-none ${revealBase} ${shown ? revealShown : revealHidden}`}
+                  style={{ transitionDelay: `${300 + i * 90}ms` }}
+                >
+                  <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-bone/75 uppercase">{s.day}</p>
+                  <p className="mt-2 font-shout text-[clamp(3rem,5.5vw,5rem)] leading-none font-extrabold tabular-nums">
+                    {s.time}
+                  </p>
+                  <span aria-hidden="true" className="relative mt-4 block h-6">
+                    {/* the line: each stop draws its own segment so the
+                        joined segments read as one current across the row */}
+                    <span
+                      className={`absolute top-1/2 left-0 h-px origin-left bg-bone/45 transition-transform duration-[1400ms] ease-tide motion-reduce:transition-none ${i === site.services.length - 1 ? 'right-0' : '-right-10 md:-right-6'} ${shown ? 'scale-x-100' : 'scale-x-0'}`}
+                      style={{ transitionDelay: `${250 + i * 180}ms` }}
+                    />
+                    <span className={`absolute top-1/2 left-1 h-3.5 w-3.5 -translate-y-1/2 rounded-full ring-4 ring-river ${sunday ? 'bg-ember' : 'bg-bone'}`} />
+                  </span>
+                  <div className="mt-3">
+                    <Pill tone={sunday ? 'ember' : 'dark'} className={sunday ? 'border-ember/80 !text-bone' : ''}>
+                      {s.label ? s.label.toLowerCase() : `${s.language.toLowerCase()} service`}
+                    </Pill>
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+
+        {/* Main Center */}
+        <div className={`mt-24 grid gap-10 border-t border-bone/20 pt-12 lg:grid-cols-[1fr_auto] lg:items-end ${reveal}`} style={{ transitionDelay: '500ms' }}>
+          <div>
+            <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-bone/75 uppercase">Main Center</p>
+            <p className="mt-4 max-w-[26ch] font-shout text-[clamp(2rem,3.6vw,3.25rem)] leading-[0.95] font-bold uppercase">
+              {site.location.venue}
+            </p>
+            <p className="mt-4 max-w-[52ch] text-bone/80">{site.location.area}</p>
           </div>
-
-          <div
-            className={`relative overflow-hidden rounded-2xl ${reveal}`}
-            style={{ transitionDelay: '200ms' }}
-          >
-            {/* Texture under the wash. Was a URL that returns nothing. */}
-            <img
-              src="https://images.unsplash.com/photo-1622598453695-4fbaf151aadc?auto=format&fit=crop&w=900&q=80"
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <span
-              aria-hidden="true"
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(160deg, rgba(27,122,112,0.92), rgba(12,62,56,0.96))',
-              }}
-            />
-
-            <div className="relative flex h-full flex-col p-7 sm:p-8">
-              <span className="text-[10px] font-bold tracking-[0.2em] text-white/70 uppercase">
-                Main Center
-              </span>
-
-              {/* Venue over area — this used to be one 150-character line. */}
-              <p className="mt-4 font-heading text-lg leading-snug font-bold text-white sm:text-xl">
-                {site.location.venue}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-white/75">{site.location.area}</p>
-
-              <a
-                href={`tel:${site.phone.replace(/[^\d+]/g, '')}`}
-                className="mt-5 inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-white underline-offset-4 transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-[#8FD4C9] hover:underline"
-              >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4 shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M3 5c0 8.284 6.716 15 15 15a2 2 0 002-2v-2a1 1 0 00-.76-.97l-3.6-.9a1 1 0 00-1 .27l-1.1 1.1a12 12 0 01-5.44-5.44l1.1-1.1a1 1 0 00.27-1l-.9-3.6A1 1 0 007.6 3H5.6A2 2 0 003 5z" />
-                </svg>
-                {site.phone}
-              </a>
-
-              <a
-                href={DIRECTIONS_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="group mt-auto inline-flex h-11 items-center justify-center gap-2 self-start rounded-full bg-white px-6 pt-0 text-sm font-semibold text-[#0b3b36] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#8FD4C9] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100"
-              >
-                Get directions
-                <svg
-                  viewBox="0 0 20 20"
-                  className="h-4 w-4 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1 motion-reduce:transition-none"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 10h12M11 5l5 5-5 5" />
-                </svg>
-              </a>
-            </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button href={DIRECTIONS_URL} variant="solid" arrow>
+              Get directions
+            </Button>
+            <Button href={`tel:${site.phone.replace(/[^\d+]/g, '')}`} variant="outline">
+              {site.phone}
+            </Button>
           </div>
         </div>
       </div>
-
-      {/* Wave divider into the footer (bg-black — see Footer.tsx). */}
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1440 140"
-        preserveAspectRatio="none"
-        className="absolute bottom-0 left-0 h-[90px] w-full sm:h-[120px]"
-      >
-        <path
-          d="M0,70 C240,10 480,130 720,60 C960,10 1200,120 1440,55 L1440,140 L0,140 Z"
-          fill="#000000"
-        />
-      </svg>
     </section>
-  )
-}
-
-/**
- * One day's services as rows rather than a joined sentence. The time leads
- * because that is what someone is scanning for; the language sits beside it
- * because at ROG it is the thing that decides which service you attend.
- */
-function ServiceCard({
-  day,
-  services,
-}: {
-  day: string
-  services: typeof site.services
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-      <span className="text-[10px] font-bold tracking-[0.2em] text-[#8FD4C9] uppercase">{day}</span>
-
-      <ul className="mt-4 flex flex-col">
-        {services.map((s, i) => (
-          <li
-            key={`${s.day}-${s.time}-${s.language}`}
-            className={`flex items-baseline justify-between gap-4 py-3 ${
-              i > 0 ? 'border-t border-white/10' : ''
-            }`}
-          >
-            <span className="font-heading text-lg font-bold text-white tabular-nums">{s.time}</span>
-            <span className="text-right text-sm text-white/55">{s.label ?? s.language}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
   )
 }

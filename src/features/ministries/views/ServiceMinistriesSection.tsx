@@ -1,91 +1,39 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ministries, type Ministry } from '../../../shared/data/ministries'
 import { person } from '../../../shared/data/people'
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { Reveal, SectionHead } from '../../../shared/components/ui/River'
+import { container } from '../../../shared/styles/tokens'
 
 /**
- * Ministries, section 4 — "Service Ministries" (volunteer recruitment).
- * NOT part of the Figma Ministries.dc.html board — this is real copy Jude
- * pasted from riverofgod.ph's own recruitment page ("#SAVEDTOSERVE"),
- * distinct from Body of Christ Ministries above (that section is
- * cross-church programs; this one is internal serving teams recruiting
- * volunteers, each with a named contact and phone number).
+ * Ministries, section 3 — "Service Ministries" (#SAVEDTOSERVE volunteer
+ * recruitment). REVAMP 2026-09-25.
  *
- * ── SINGLE-SOURCED 2026-09-23 ────────────────────────────────────────────
- * Jude: "make sure that the data placeholders are all the same… para pag
- * inimplement tsaka inintegrate natin yung cms, we wont encounter any
- * issue."
+ * Real copy Jude pasted from riverofgod.ph's recruitment page — internal
+ * serving teams, each with a named contact and phone number. Distinct from
+ * Body of Christ Ministries below (cross-church programmes). Data is
+ * single-sourced in `shared/data/ministries.ts`; the contact is a slug into
+ * `people.ts` (2026-09-23). Every description, tagline, hashtag, contact
+ * and number is unchanged.
  *
- * The eight ministries used to be an array in this file, and About's
- * "Serving Ministry Heads" roster carried its own second copy of six of the
- * same people — with two role labels spelled differently there ("Media &
- * Production", "Discipleship & Connect"). They now both read
- * `shared/data/ministries.ts`, and the contact person is a slug into
- * `shared/data/people.ts` rather than a name and a phone number typed out
- * beside each ministry. Nothing on this page changed to look at; About's
- * two mismatched labels did.
+ * Shape: an EDITORIAL INDEX on the river band, not a card grid. Each
+ * ministry is one full-width row — number, big shout name, whisper
+ * one-liner (the `blurb`, compressed from its own description on
+ * 2026-09-23 after Jude's "too much wording"). Hover/focus lifts the row,
+ * grows the ministry's own hue bar, slides in "How to join" and a
+ * duotone thumbnail. The full copy lives one tap away in a dialog — the
+ * row is a real <button>, so nothing depends on hover.
  *
- * All descriptions, taglines, hashtags, contacts and numbers moved across
- * byte-for-byte — including the two reconciliations against the official
- * cards ("Carissa Traigo", one r; and "Nica Moreno" rather than "Veronica
- * Moreno", flagged then as an inference since Nica is a common nickname for
- * Veronica).
- *
- * ── REVAMPED 2026-09-23 ──────────────────────────────────────────────────
- * Jude: "masyado siyang makalat, too much wording, not enough color, it's
- * too pale, add some placeholder pictures." All four were true:
- *
- *   1. MAKALAT / TOO MUCH WORDING. Eight cards each rendered a full ~90-word
- *      description PLUS a tagline PLUS contact PLUS hashtags, all at once —
- *      roughly 800 words of body copy in a single viewport. No word has been
- *      deleted; the long copy now lives behind a tap (progressive
- *      disclosure), and the card face carries a one-line blurb compressed
- *      from each ministry's OWN description. Those blurbs are compressions,
- *      never new claims — Creative Arts' names its three divisions because
- *      its own description names them.
- *   2. TOO PALE. Every card was `bg-white/5` on `#232323` — one flat wash,
- *      eight times.
- *   3. NOT ENOUGH COLOUR. The previous version's own comment justified the
- *      teal-only palette by citing "Doc 9's 'black is primary, teal is the
- *      one allowed accent' rule". That rule is not in Doc 9 — Doc 9 §4
- *      actually calls the current palette "an explicitly placeholder
- *      palette, not designed work". The teal-only rule is tokens.ts's own
- *      ACCENT comment, a code convention. Under Doc 9 §2 precedence 1 ("the
- *      brief wins") Jude's instruction outranks a code comment, and
- *      riverofgod.ph itself gives each serving ministry its own colour — so
- *      each one gets a hue here.
- *   4. NO PICTURES. Added — see the placeholder warning below.
- *
- * COLOURS ARE INLINE `style`, NOT TAILWIND CLASSES, deliberately. Tailwind
- * only emits utilities whose exact class string it has already seen in the
- * project, so eight brand-new `from-[#…]` pairs would render as nothing in
- * the running dev server until it restarts — the one thing this pass exists
- * to fix would be invisible. Inline style bypasses the compiler and is the
- * same escape hatch tokens.ts uses for textH1.
- *
- * ⚠ THE PHOTOS ARE PLACEHOLDERS AND TWO MINISTRIES SHARE ONE. They are
- * stock Unsplash frames already shipping elsewhere in this codebase, chosen
- * by looking at them rather than trusting a filename (for the record,
- * ServiceTimesSection's "Sunday Worship" image is a hippopotamus). No stock
- * frame here honestly reads as River Kids, so it reuses the congregation
- * frame rather than passing off a stock photo of someone else's children as
- * ROG's. Every one of these wants a real ROG photo of the actual team; that
- * swap is the `image:` field and nothing else.
- *
- * Doc 9 obligations applied: eyebrow pill above the H2 (§4C), double-bezel
- * shells (§4A), `py-24`+ section padding, hairline rings rather than 1px
- * grey borders, custom cubic-bezier on every transition, reduced-motion
- * honoured, tap targets over 44px, and no hover-only affordance — each card
- * is a real `<button>`, so touch and keyboard reach the detail exactly the
- * way a mouse does.
+ * Per-ministry hues (`tint`) stay as inline style: riverofgod.ph gives
+ * each serving ministry its own colour, and Tailwind cannot see runtime
+ * hex values. Photos are stock placeholders (two ministries share one);
+ * every image has a tinted-gradient ground so a failed load is never an
+ * empty box.
  */
-
-
 export function ServiceMinistriesSection() {
-  const { ref, shown } = useInView<HTMLElement>()
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const open = openIndex === null ? null : ministries[openIndex]
+  const returnFocus = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -98,152 +46,164 @@ export function ServiceMinistriesSection() {
     return () => {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', onKey)
+      returnFocus.current?.focus()
     }
   }, [open])
 
   return (
     <section
-      ref={ref}
       id="service-ministries"
       data-plate="dark"
       aria-labelledby="service-ministries-heading"
-      className="bg-[#0d0d0d] text-white"
+      className="relative isolate overflow-hidden bg-river py-24 text-bone sm:py-32"
     >
-      <div className="mx-auto max-w-[86rem] px-6 py-24 sm:py-32">
-        <div className={`${revealBase} ${shown ? revealShown : revealHidden}`}>
-          {/* Doc 9 §4C eyebrow pill. */}
-          <span
-            className="inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase"
-            style={{
-              color: '#8FD4C9',
-              backgroundColor: 'rgb(27 122 112 / 0.18)',
-              boxShadow: 'inset 0 0 0 1px rgb(143 212 201 / 0.25)',
-            }}
-          >
-            #SavedToServe
-          </span>
-          <h2
+      <div aria-hidden="true" className="grain pointer-events-none absolute inset-0 -z-10" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-[15%] -z-10 blur-[80px] [background-image:radial-gradient(ellipse_40%_35%_at_10%_90%,rgb(6_19_27/0.55),transparent_70%)]"
+      />
+
+      <div className={container}>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <SectionHead
             id="service-ministries-heading"
-            className="mt-5 font-heading text-3xl font-bold sm:text-5xl"
-          >
-            Service Ministries
-          </h2>
-          <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-[#a6a6a6] sm:text-base">
-            Eight teams, always in need of committed volunteers. Being under discipleship at ROG is
-            a requirement to join any of them.
+            eyebrow="#SavedToServe"
+            title={
+              <>
+                Service
+                <br />
+                ministries
+              </>
+            }
+            lead="Eight teams, always in need of committed volunteers."
+          />
+          <p className="max-w-[34ch] border-l-2 border-bone/40 pl-5 text-[0.95rem] leading-relaxed text-bone/85">
+            Being under discipleship at ROG is a requirement to join any of them.
           </p>
         </div>
 
-        <ul className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-16 border-t border-bone/25">
           {ministries.map((m, i) => (
-            <li
-              key={m.title}
-              className={`${revealBase} ${shown ? revealShown : revealHidden}`}
-              style={{ transitionDelay: `${120 + Math.min(i, 7) * 60}ms` }}
-            >
-              <MinistryCard ministry={m} index={i} onOpen={() => setOpenIndex(i)} />
-            </li>
+            <Reveal as="li" key={m.slug} delay={Math.min(i, 7) * 50} className="border-b border-bone/25">
+              <MinistryRow
+                ministry={m}
+                index={i}
+                onOpen={(el) => {
+                  returnFocus.current = el
+                  setOpenIndex(i)
+                }}
+              />
+            </Reveal>
           ))}
-        </ul>
+        </ol>
       </div>
 
-      {open && <MinistryDialog ministry={open} onClose={() => setOpenIndex(null)} />}
+      {/* Portalled: this section is `isolate`, which would trap the dialog
+          under the fixed navbar whatever its z-index. */}
+      {open && createPortal(<MinistryDialog ministry={open} onClose={() => setOpenIndex(null)} />, document.body)}
     </section>
   )
 }
 
-/**
- * Poster card. Double-bezel per Doc 9 §4A — the outer shell carries the
- * ministry's gradient and a hairline edge, the inner core is the photo at a
- * tighter radius. The whole card is one `<button>` rather than a hover
- * target, because Doc 9 bans hover-only affordances: touch is the majority
- * case for this audience.
- */
-function MinistryCard({
+function MinistryRow({
   ministry,
   index,
   onOpen,
 }: {
   ministry: Ministry
   index: number
-  onOpen: () => void
+  onOpen: (el: HTMLElement) => void
 }) {
   const [deep, light] = ministry.tint
 
   return (
     <button
       type="button"
-      onClick={onOpen}
+      onClick={(e) => onOpen(e.currentTarget)}
       aria-label={`${ministry.title} — read more and how to join`}
-      className="group block h-full w-full rounded-3xl p-[1.5px] text-left transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100"
-      style={{ background: `linear-gradient(160deg, ${deep}, ${light}55 55%, transparent)` }}
+      className="group relative grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 py-6 text-left transition-colors duration-[500ms] ease-current hover:bg-abyss/25 focus-visible:bg-abyss/25 focus-visible:outline-offset-[-2px] motion-reduce:transition-none sm:grid-cols-[3.5rem_minmax(0,1.1fr)_minmax(0,1fr)_auto] sm:gap-x-6 sm:py-8 lg:px-4"
     >
-      <div className="relative flex h-full flex-col overflow-hidden rounded-[1.4rem] bg-[#141414]">
-        <div className="relative aspect-[4/3] w-full overflow-hidden">
+      {/* hue bar — the ministry's own colour, grows on engage */}
+      <span
+        aria-hidden="true"
+        className="absolute top-0 left-0 h-[3px] w-10 origin-left transition-transform duration-[700ms] ease-current group-hover:scale-x-[6] group-focus-visible:scale-x-[6] motion-reduce:transition-none"
+        style={{ background: light }}
+      />
+      <span className="self-start pt-2 font-shout text-sm font-bold tabular-nums text-bone/60 sm:pt-3 sm:text-base">
+        {String(index + 1).padStart(2, '0')}
+      </span>
+
+      <span className="min-w-0">
+        <span className="block font-shout text-[clamp(2.25rem,5.2vw,4.75rem)] font-extrabold uppercase leading-[0.88] transition-transform duration-[600ms] ease-current group-hover:translate-x-2 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0">
+          {ministry.title}
+        </span>
+        {/* one-liner under the name on mobile */}
+        <span className="mt-2 block font-whisper text-[1.05rem] italic leading-snug text-bone/85 sm:hidden">
+          {ministry.blurb}
+        </span>
+      </span>
+
+      <span className="hidden items-center gap-6 sm:flex">
+        <span
+          aria-hidden="true"
+          className="relative hidden h-20 w-28 flex-none overflow-hidden opacity-0 transition-[opacity,transform] duration-[600ms] ease-current group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none lg:block lg:-translate-x-3"
+          style={{ background: `linear-gradient(150deg, ${light}, ${deep} 60%, #06131b)` }}
+        >
           <img
             src={ministry.image}
             alt=""
-            aria-hidden="true"
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105 motion-reduce:transition-none"
-          />
-          {/* The hue lives here — a wash over the photo, so cards that share
-              a stock frame still read as different ministries. */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(to top, #141414 6%, ${deep}CC 45%, ${light}40 100%)`,
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
             }}
+            className="absolute inset-0 h-full w-full object-cover"
           />
-          <span
-            className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-[10px] font-black tracking-[0.18em] text-black uppercase"
-            style={{ backgroundColor: light }}
-          >
-            {String(index + 1).padStart(2, '0')}
-          </span>
-        </div>
+          <span className="grain absolute inset-0" />
+        </span>
+        <span className="font-whisper text-[1.2rem] italic leading-snug text-bone/90">{ministry.blurb}</span>
+      </span>
 
-        <div className="flex flex-grow flex-col p-5">
-          <h3 className="font-heading text-lg leading-tight font-bold text-white">
-            {ministry.title}
-          </h3>
-          <p className="mt-2 text-xs leading-relaxed text-[#a6a6a6]">{ministry.blurb}</p>
-
-          <span
-            className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.12em] uppercase"
-            style={{ color: light }}
-          >
+      <span className="flex items-center gap-3 self-center text-[0.72rem] font-semibold tracking-[0.2em] uppercase">
+        <span className="hidden overflow-hidden xl:block">
+          <span className="block translate-y-full transition-transform duration-[500ms] ease-current group-hover:translate-y-0 group-focus-visible:translate-y-0 motion-reduce:translate-y-0">
             How to join
-            <svg
-              viewBox="0 0 20 20"
-              className="h-3.5 w-3.5 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1 motion-reduce:transition-none"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 10h12M11 5l5 5-5 5" />
-            </svg>
           </span>
-        </div>
-      </div>
+        </span>
+        <span className="flex h-11 w-11 items-center justify-center rounded-full border border-bone/40 transition-colors duration-[400ms] ease-current group-hover:border-bone group-hover:bg-bone group-hover:text-abyss">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="h-4 w-4 transition-transform duration-[400ms] ease-current group-hover:translate-x-0.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </span>
+      </span>
     </button>
   )
 }
 
 /**
- * The full copy, on demand. Everything the old card showed at once lives
- * here — description, tagline, contact, hashtags — so the trim lost nothing.
- * The phone is a real `tel:` link, which the flat text version never was, so
- * a phone can dial it in one tap.
+ * The full copy, on demand — description, tagline, contact, hashtags. The
+ * phone is a real `tel:` link so a phone dials it in one tap. Square
+ * abyss-2 sheet (hard edges), the ministry's hue only as a top rule and
+ * the header ground. Focus moves to Close on open and back to the row on
+ * close; Escape and the backdrop close it.
  */
 function MinistryDialog({ ministry, onClose }: { ministry: Ministry; onClose: () => void }) {
   const [entered, setEntered] = useState(false)
+  const [imgFailed, setImgFailed] = useState(false)
+  const closeRef = useRef<HTMLButtonElement>(null)
   const [deep, light] = ministry.tint
+  const contact = person(ministry.contact)
 
   useEffect(() => {
+    closeRef.current?.focus()
     const id = requestAnimationFrame(() => setEntered(true))
     return () => cancelAnimationFrame(id)
   }, [])
@@ -252,96 +212,77 @@ function MinistryDialog({ ministry, onClose }: { ministry: Ministry; onClose: ()
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={ministry.title}
-      className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center sm:p-6"
+      aria-labelledby="ministry-dialog-title"
+      className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center sm:p-6"
     >
       <button
         type="button"
         aria-label="Close"
+        tabIndex={-1}
         onClick={onClose}
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none"
+        className="absolute inset-0 bg-abyss/85 backdrop-blur-sm transition-opacity duration-300 ease-current motion-reduce:transition-none"
         style={{ opacity: entered ? 1 : 0 }}
       />
 
       <div
-        className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-3xl p-[1.5px] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none sm:rounded-3xl"
+        className="relative max-h-[88svh] w-full max-w-xl overflow-y-auto bg-abyss-2 text-bone transition-[opacity,transform] duration-[500ms] ease-tide motion-reduce:transition-none"
         style={{
-          background: `linear-gradient(160deg, ${deep}, ${light}55 55%, transparent)`,
           opacity: entered ? 1 : 0,
-          transform: entered ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.98)',
+          transform: entered ? 'translateY(0)' : 'translateY(24px)',
         }}
       >
-        <div className="rounded-t-[1.4rem] bg-[#141414] sm:rounded-[1.4rem]">
-          <div className="relative h-32 w-full overflow-hidden rounded-t-[1.4rem]">
+        <div
+          className="relative h-40 w-full overflow-hidden sm:h-48"
+          style={{ background: `linear-gradient(150deg, ${light}, ${deep} 55%, #06131b)` }}
+        >
+          {!imgFailed && (
             <img
               src={ministry.image}
               alt=""
-              aria-hidden="true"
-              className="h-full w-full object-cover"
+              onError={() => setImgFailed(true)}
+              className="absolute inset-0 h-full w-full object-cover"
             />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0"
-              style={{
-                background: `linear-gradient(to top, #141414 8%, ${deep}CC 55%, ${light}40 100%)`,
-              }}
-            />
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="absolute top-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-black/70"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+          )}
+          <div aria-hidden="true" className="grain absolute inset-0" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-abyss-2 via-abyss-2/40 to-transparent" />
+          <button
+            ref={closeRef}
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-3 right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-abyss/70 text-bone transition-colors duration-300 ease-current hover:bg-bone hover:text-abyss"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-          <div className="p-6 sm:p-8">
-            <h3 className="font-heading text-2xl font-bold text-white">{ministry.title}</h3>
-            <p className="mt-4 text-sm leading-relaxed text-[#a6a6a6]">{ministry.description}</p>
-            <p className="mt-4 text-sm font-semibold" style={{ color: light }}>
-              {ministry.tagline}
-            </p>
+        <div className="px-6 pb-8 sm:px-10 sm:pb-10">
+          <span aria-hidden="true" className="block h-[3px] w-16" style={{ background: light }} />
+          <h3 id="ministry-dialog-title" className="mt-5 font-shout text-[clamp(2.5rem,8vw,3.75rem)] font-extrabold uppercase leading-[0.9]">
+            {ministry.title}
+          </h3>
+          <p className="mt-5 text-[0.95rem] leading-relaxed text-bone/80">{ministry.description}</p>
+          <p className="mt-6 font-whisper text-xl italic leading-snug text-bone">{ministry.tagline}</p>
 
-            <div className="mt-6 rounded-2xl p-4" style={{ backgroundColor: `${deep}26` }}>
-              <p className="text-[10px] font-bold tracking-[0.18em] text-[#a6a6a6] uppercase">
-                To join, contact
-              </p>
-              <p className="mt-1 font-heading text-base font-bold text-white">
-                {person(ministry.contact).name}
-              </p>
+          <div className="mt-8 border-t border-bone/12 pt-6">
+            <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-shallows uppercase">To join, contact</p>
+            <p className="mt-2 font-shout text-2xl font-bold uppercase">{contact.name}</p>
+            {contact.phone && (
               <a
-                href={`tel:${person(ministry.contact).phone ?? ''}`}
-                className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline-offset-4 transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:underline"
-                style={{ color: light }}
+                href={`tel:${contact.phone}`}
+                className="mt-2 inline-flex min-h-11 items-center gap-2 text-[0.95rem] font-semibold text-ember underline-offset-4 hover:underline"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 5c0 8.284 6.716 15 15 15a2 2 0 002-2v-2a1 1 0 00-.76-.97l-3.6-.9a1 1 0 00-1 .27l-1.1 1.1a12 12 0 01-5.44-5.44l1.1-1.1a1 1 0 00.27-1l-.9-3.6A1 1 0 007.6 3H5.6A2 2 0 003 5z" />
                 </svg>
-                {person(ministry.contact).phone}
+                {contact.phone}
               </a>
-            </div>
-
-            <p className="mt-4 text-xs text-[#737373]">{ministry.hashtag}</p>
+            )}
           </div>
+
+          <p className="mt-6 text-sm tracking-[0.04em] text-sand">{ministry.hashtag}</p>
         </div>
       </div>
     </div>

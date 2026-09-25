@@ -1,55 +1,34 @@
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
 import { ErrorBlock } from '../../../shared/components/ui/LoadState'
+import { Reveal, SectionHead } from '../../../shared/components/ui/River'
+import { container } from '../../../shared/styles/tokens'
 import { useEventsViewModel } from '../viewModels/useEventsViewModel'
-import { EventRow, FeaturedEvent } from './EventsCalendarItems'
+import { EventCard } from './EventCard'
+import { FeaturedEvent } from './EventsCalendarItems'
 import { groupByMonth } from './eventDateParts'
 
 /**
- * Events, section 3 — "Upcoming Events".
+ * Events, sections 3 + 4 — "Upcoming Events".
  *
- * ── REBUILT 2026-09-23 ───────────────────────────────────────────────────
- * Jude: "fix the UI of the Upcoming events under the Events Tab. make sure
- * that the data of both Events in Home tab and events tab are the same."
- * Both tabs read one source, so the content cannot drift (see below).
+ * History worth keeping: both tabs read one source since 2026-09-23 (Jude:
+ * "make sure that the data of both Events in Home tab and events tab are the
+ * same"), live-wired to rog-cms's Event type via `useEventsViewModel` on
+ * 2026-09-24 — the same react-query cache entry the Home teaser reads.
  *
- * ── LIVE-WIRED 2026-09-24 ────────────────────────────────────────────────
- * Reads the Events section of Manage Contents through `useEventsViewModel`
- * (rog-cms's Event content type, via `shared/models/api/eventsApi.ts`) —
- * the same react-query cache entry the Home teaser reads.
+ * REVAMP 2026-09-25 ("Textured Editorial") — a poster wall that flows:
  *
- * ── EDITORIAL REDESIGN 2026-09-24 ────────────────────────────────────────
- * Jude: "enhance the design of the UpcomingEventsSection" — scoped to the
- * Events page only, "richer & editorial" direction.
+ *   · NEXT UP (abyss) — the soonest event gets the spread: its poster at
+ *     native 4:5, a giant shout date, the description and a live countdown.
+ *     "What's next, and when?" is the question; answer it first.
+ *   · LATER THIS SEASON (bone plate) — everything after it hangs as a
+ *     staggered poster wall on the light plate, still grouped by month (the
+ *     first poster of each month carries the month tag). On phones the wall
+ *     becomes a scroll-snap shelf with the next poster peeking in.
  *
- * It used to be the Home teaser's stack of identical rows, repeated. On a
- * page whose whole job is the calendar that under-sells the one thing a
- * visitor came to find out: what's next, and when. So:
- *
- *   · THE SOONEST EVENT GETS A SPREAD — large header photo, a calendar
- *     leaf, the full description. "Next up" is the question; answer it
- *     before anything else.
- *   · EVERYTHING AFTER IT READS AS A CALENDAR — grouped under month
- *     headings, each row led by a month/day/weekday leaf so dates scan
- *     down the left edge the way they do on a printed church bulletin.
- *   · A PHOTO-LESS EVENT STILL LOOKS DESIGNED — the fallback panel carries
- *     the day numeral in large type instead of an empty tint.
- *
- * Home keeps `EventCard` untouched; these layouts live in
- * `EventsCalendarItems.tsx`. Same data, page-appropriate presentation.
- *
- * ── MOTION PASS 2026-09-24 ───────────────────────────────────────────────
- * Hover effects and the live countdown live in `EventsCalendarItems.tsx`
- * (see its header). Here: the calendar rows now arrive one after another
- * (60ms apart) instead of as one block, so the list reads top-down.
- *
- * The loading skeleton is shaped like this layout (spread + rows) rather
- * than the shared 3-up `LoadingBlock` grid, so nothing jumps when the
- * data lands. The error state still uses the shared `ErrorBlock`.
+ * Two grounds, two shapes, one data source. The loading skeleton is shaped
+ * like the spread so nothing jumps when data lands; errors use the shared
+ * `ErrorBlock`.
  */
 export function UpcomingEventsSection() {
-  const { ref, shown } = useInView<HTMLElement>()
-  const reveal = `${revealBase} ${shown ? revealShown : revealHidden}`
   const { events, isLoading, error, retry } = useEventsViewModel()
 
   const [next, ...later] = events
@@ -57,154 +36,114 @@ export function UpcomingEventsSection() {
   const count = events.length
 
   return (
-    <section
-      ref={ref}
-      data-plate="dark"
-      aria-labelledby="events-upcoming-heading"
-      className="relative overflow-hidden bg-[#161616] text-white"
-    >
-      <div className="relative mx-auto max-w-[86rem] px-6 pt-24 pb-36 sm:pt-28 sm:pb-44">
-        <div
-          className={`flex flex-wrap items-end justify-between gap-6 ${reveal}`}
-          style={{ transitionDelay: '0ms' }}
-        >
-          <div>
-            <span
-              className="inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase"
-              style={{
-                color: '#8FD4C9',
-                backgroundColor: 'rgb(27 122 112 / 0.18)',
-                boxShadow: 'inset 0 0 0 1px rgb(143 212 201 / 0.25)',
-              }}
-            >
-              What&apos;s On
-            </span>
-            <h2
-              id="events-upcoming-heading"
-              className="mt-4 font-heading text-3xl font-bold tracking-tight sm:text-4xl"
-            >
-              Upcoming Events
-            </h2>
-            <p className="mt-3 max-w-[50ch] text-sm leading-relaxed text-white/55">
-              Gatherings, retreats and conferences across the season. Dates and venues are confirmed
-              closer to each one.
-            </p>
-          </div>
-
-          {!isLoading && !error && count > 0 ? (
-            <p className="text-sm text-white/45 tabular-nums">
-              <span className="font-heading text-2xl font-bold text-white">{count}</span>{' '}
-              {count === 1 ? 'event' : 'events'} on the calendar
-            </p>
-          ) : null}
-        </div>
-
-        {isLoading ? (
-          <EventsSkeleton />
-        ) : error ? (
-          <div className="mt-12">
-            <ErrorBlock tone="dark" error={error} onRetry={retry} label="Events" />
-          </div>
-        ) : !next ? (
-          <div
-            className={`mt-12 rounded-3xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-16 text-center ${reveal}`}
-            style={{ transitionDelay: '120ms' }}
-          >
-            <p className="font-heading text-lg font-bold text-white">Nothing on the calendar yet</p>
-            <p className="mt-2 text-sm text-white/50">
-              New events are posted here as they&apos;re confirmed — check back soon.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className={`mt-12 ${reveal}`} style={{ transitionDelay: '120ms' }}>
-              <FeaturedEvent event={next} />
-            </div>
-
-            {months.length > 0 ? (
-              <div className={`mt-16 ${reveal}`} style={{ transitionDelay: '200ms' }}>
-                <h3 className="text-[11px] font-bold tracking-[0.2em] text-white/45 uppercase">
-                  Later this season
-                </h3>
-
-                <div className="mt-6 flex flex-col gap-10">
-                  {months.map((group, g) => (
-                    <div
-                      key={group.key}
-                      className="grid gap-2 border-t border-white/10 pt-6 lg:grid-cols-12 lg:gap-8"
-                    >
-                      <p className="font-heading text-base font-bold text-white/80 lg:col-span-3 lg:pt-6">
-                        {group.label}
-                      </p>
-                      <ul className="divide-y divide-white/10 lg:col-span-9">
-                        {group.events.map((event, i) => (
-                          <li
-                            key={event.slug}
-                            className={reveal}
-                            style={{ transitionDelay: `${260 + (g * 2 + i) * 60}ms` }}
-                          >
-                            <EventRow event={event} />
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </>
-        )}
-      </div>
-
-      {/* Wave divider into the footer (bg-black — see Footer.tsx), the same
-          way the home page closes its last section. */}
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1440 140"
-        preserveAspectRatio="none"
-        className="absolute bottom-0 left-0 h-[90px] w-full sm:h-[120px]"
+    <>
+      <section
+        data-plate="dark"
+        aria-labelledby="events-upcoming-heading"
+        className="relative overflow-hidden bg-abyss py-24 text-bone sm:py-32"
       >
-        <path
-          d="M0,70 C240,10 480,130 720,60 C960,10 1200,120 1440,55 L1440,140 L0,140 Z"
-          fill="#000000"
-        />
-      </svg>
-    </section>
+        <div aria-hidden="true" className="pointer-events-none absolute -inset-[15%] blur-[70px] [background-image:radial-gradient(ellipse_40%_35%_at_12%_60%,rgb(14_95_104/0.5),transparent_70%),radial-gradient(ellipse_30%_30%_at_95%_20%,rgb(242_118_28/0.12),transparent_70%)]" />
+        <div className={`${container} relative`}>
+          <div className="flex flex-wrap items-end justify-between gap-8">
+            <SectionHead
+              id="events-upcoming-heading"
+              eyebrow="What's On"
+              title="Upcoming Events"
+              lead="Gatherings, retreats and conferences across the season. Dates and venues are confirmed closer to each one."
+            />
+            {!isLoading && !error && count > 0 ? (
+              <Reveal>
+                <p className="flex items-baseline gap-3 text-sand">
+                  <span className="font-shout text-[clamp(3.5rem,6vw,5.5rem)] font-extrabold leading-none tabular-nums text-bone">
+                    {String(count).padStart(2, '0')}
+                  </span>
+                  <span className="max-w-[9ch] text-[0.8rem] font-semibold uppercase leading-snug tracking-[0.18em]">
+                    {count === 1 ? 'event' : 'events'} on the calendar
+                  </span>
+                </p>
+              </Reveal>
+            ) : null}
+          </div>
+
+          <div className="mt-16 sm:mt-20">
+            {isLoading ? (
+              <EventsSkeleton />
+            ) : error ? (
+              <ErrorBlock tone="dark" error={error} onRetry={retry} label="Events" />
+            ) : !next ? (
+              <Reveal className="border-y border-bone/15 py-16 text-center">
+                <p className="font-shout text-4xl font-extrabold uppercase">Nothing on the calendar yet</p>
+                <p className="mt-3 font-whisper text-lg italic text-bone/70">
+                  New events are posted here as they&apos;re confirmed — check back soon.
+                </p>
+              </Reveal>
+            ) : (
+              <Reveal>
+                <FeaturedEvent event={next} />
+              </Reveal>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {!isLoading && !error && months.length > 0 ? (
+        <section
+          data-plate="light"
+          aria-labelledby="events-later-heading"
+          className="relative overflow-hidden bg-bone py-24 text-abyss sm:py-32"
+        >
+          <div className={container}>
+            <SectionHead
+              id="events-later-heading"
+              tone="light"
+              eyebrow="The calendar"
+              title="Later this season"
+            />
+          </div>
+
+          {/* Phones: a shelf that scrolls sideways, next poster peeking.
+              md+: a three-up wall, middle column dropped for a hung look. */}
+          <ul className="no-scrollbar mt-14 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-4 px-4 pb-4 sm:scroll-px-8 sm:px-8 md:mx-auto md:grid md:max-w-[88rem] md:grid-cols-3 md:gap-x-8 md:gap-y-20 md:overflow-visible md:pb-0 lg:gap-x-12 md:[&>li:nth-child(3n+2)]:mt-24">
+            {months.flatMap((group) =>
+              group.events.map((event, i) => (
+                <Reveal
+                  as="li"
+                  key={event.slug}
+                  delay={Math.min(i, 3) * 60}
+                  className="w-[74vw] max-w-[22rem] flex-none snap-start md:w-auto md:max-w-none"
+                >
+                  <p
+                    className={`mb-4 flex items-center gap-3 text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-abyss/60 ${i === 0 ? '' : 'invisible'}`}
+                    aria-hidden={i === 0 ? undefined : true}
+                  >
+                    <span className="h-px w-8 bg-abyss/40" aria-hidden="true" />
+                    {group.label}
+                  </p>
+                  <EventCard event={event} tone="light" />
+                </Reveal>
+              )),
+            )}
+          </ul>
+        </section>
+      ) : null}
+    </>
   )
 }
 
-/** Placeholder in the shape of the real layout: one spread, two rows. */
+/** Placeholder in the shape of the spread. */
 function EventsSkeleton() {
-  const tile = 'bg-white/[0.06]'
+  const tile = 'bg-bone/[0.07]'
   return (
-    <div role="status" aria-live="polite" className="mt-12">
+    <div role="status" aria-live="polite">
       <span className="sr-only">Loading events…</span>
-      <div aria-hidden="true" className="motion-safe:animate-pulse">
-        <div className="grid overflow-hidden rounded-3xl border border-white/10 lg:grid-cols-12">
-          <div className={`aspect-[16/10] lg:col-span-7 lg:aspect-auto lg:min-h-[26rem] ${tile}`} />
-          <div className="flex flex-col justify-center gap-4 p-6 sm:p-10 lg:col-span-5">
-            <div className={`h-3 w-20 rounded-full ${tile}`} />
-            <div className="mt-2 flex items-start gap-5">
-              <div className={`h-24 w-20 shrink-0 rounded-xl ${tile}`} />
-              <div className="flex-1 space-y-3 pt-2">
-                <div className={`h-6 w-3/4 rounded-full ${tile}`} />
-                <div className={`h-3 w-1/3 rounded-full ${tile}`} />
-              </div>
-            </div>
-            <div className={`mt-2 h-3 w-full rounded-full ${tile}`} />
-            <div className={`h-3 w-5/6 rounded-full ${tile}`} />
-          </div>
-        </div>
-        <div className="mt-16 space-y-6">
-          {[0, 1].map((i) => (
-            <div key={i} className="flex items-center gap-6 border-t border-white/10 pt-6">
-              <div className={`h-[4.5rem] w-16 shrink-0 rounded-xl ${tile}`} />
-              <div className="flex-1 space-y-3">
-                <div className={`h-5 w-1/2 rounded-full ${tile}`} />
-                <div className={`h-3 w-2/3 rounded-full ${tile}`} />
-              </div>
-            </div>
-          ))}
+      <div aria-hidden="true" className="grid gap-10 motion-safe:animate-pulse md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:items-center lg:gap-20">
+        <div className={`aspect-[4/5] w-full max-w-[34rem] ${tile}`} />
+        <div className="space-y-5">
+          <div className={`h-3 w-24 rounded-full ${tile}`} />
+          <div className={`h-40 w-48 ${tile}`} />
+          <div className={`h-10 w-3/4 ${tile}`} />
+          <div className={`h-4 w-2/3 rounded-full ${tile}`} />
+          <div className={`h-4 w-1/2 rounded-full ${tile}`} />
         </div>
       </div>
     </div>

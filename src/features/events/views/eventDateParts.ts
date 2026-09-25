@@ -39,6 +39,31 @@ export function eventDateParts(isoDate?: string): EventDateParts | null {
   }
 }
 
+/** What a poster's date stamp prints: "OCT" over "4" (or "14–15"). */
+export interface EventStamp {
+  month: string
+  day: string
+  weekday?: string
+}
+
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+/**
+ * The date stamp for a poster. `isoDate` first (see above); when an event
+ * has none — sample data, or a CMS entry saved before Event Date was
+ * required — the human-readable `date` ("November 14–15") is read for
+ * DISPLAY ONLY, so the poster still shouts a date instead of "TBA". Nothing
+ * that computes (countdown, grouping) ever uses this fallback.
+ */
+export function eventStamp(event: Pick<EventItem, 'isoDate' | 'date'>): EventStamp | null {
+  const parts = eventDateParts(event.isoDate)
+  if (parts) return { month: parts.month, day: parts.day, weekday: parts.weekday }
+  const m = event.date?.match(/^([A-Za-z]{3,})\.?\s+(\d{1,2})(?:\s*[–-]\s*(\d{1,2}))?/)
+  if (!m || !MONTHS.includes(m[1].slice(0, 3).toLowerCase())) return null
+  const month = m[1].slice(0, 1).toUpperCase() + m[1].slice(1, 3).toLowerCase()
+  return { month, day: m[3] ? `${m[2]}–${m[3]}` : m[2] }
+}
+
 export interface EventMonthGroup {
   key: string
   label: string
@@ -56,14 +81,19 @@ export function groupByMonth(events: EventItem[]): EventMonthGroup[] {
 
   for (const event of events) {
     const parts = eventDateParts(event.isoDate)
-    if (!parts) {
+    // No isoDate: group by the month named in the display date (no year —
+    // the string carries none), so the heading agrees with the poster.
+    const named = parts ? null : event.date?.match(/^([A-Za-z]{3,})\.?\s+\d/)?.[1]
+    const key = parts?.monthKey ?? (named && eventStamp(event) ? `m-${named.toLowerCase()}` : null)
+    if (!key) {
       undated.push(event)
       continue
     }
-    let group = groups.get(parts.monthKey)
+    let group = groups.get(key)
     if (!group) {
-      group = { key: parts.monthKey, label: parts.monthLabel, events: [] }
-      groups.set(parts.monthKey, group)
+      const label = parts?.monthLabel ?? `${named!.slice(0, 1).toUpperCase()}${named!.slice(1).toLowerCase()}`
+      group = { key, label, events: [] }
+      groups.set(key, group)
     }
     group.events.push(event)
   }

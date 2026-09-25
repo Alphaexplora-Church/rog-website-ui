@@ -1,64 +1,37 @@
 import { useState } from 'react'
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { Reveal, SectionHead, WaveMark } from '../../../shared/components/ui/River'
+import { container } from '../../../shared/styles/tokens'
 
 /**
- * Ministries, section 3 — "Body of Christ Ministries". From the Figma
- * Ministries.dc.html board: ministries ROG runs for the wider Body of Christ,
- * not just Ortigas (PCEC Transformation & Revival, Supernatural Ministry,
- * Soaking in the River, Worship Mentoring, Activate, Women Arise) — copy
- * pulled verbatim from the Figma source and unchanged since.
+ * Ministries, section 4 — "Body of Christ Ministries". REVAMP 2026-09-25.
  *
- * Not to be confused with the "Serving Ministry Heads" roster on the About
- * page, or the volunteer-recruitment "Service Ministries" section — that's
- * internal serving teams recruiting volunteers, a different concept from these
- * cross-church programmes. It sits directly ABOVE this one on the page; Jude
- * reordered Ministries.tsx to put it there, which is why this section is now
- * the last band before the footer and carries the closing wave.
+ * Ministries ROG runs for the wider Body of Christ, not just Ortigas (PCEC
+ * Transformation & Revival, Supernatural Ministry, Soaking in the River,
+ * Worship Mentoring, Activate, Women Arise) — copy verbatim from the Figma
+ * source. Not the #SavedToServe serving teams above (those recruit
+ * volunteers inside ROG).
  *
  * `navigation.ts` lists `/ministries/body-of-christ` as its own nav child;
- * rather than a second route duplicating this section, the `id` below lets
- * that link anchor-jump straight here. Keep the id.
+ * that route renders the Ministries page and scrolls to the `id` below
+ * (see Ministries.tsx). Keep the id.
  *
- * ── REWORKED 2026-09-23 ──────────────────────────────────────────────────
- * Jude: "fix also the body of christ ministries section… gandahan mo rin
- * yung design which matches the theme nung mga nirevise nating website."
- *
- * Every title, teaser and body string is byte-identical to before. What
- * changed is how they are presented, and four things were genuinely broken
- * rather than merely dated:
- *
- *   1. UNICODE GLYPHS AS BUTTONS. The carousel arrows were the literal
- *      characters "‹" and "›". Doc 9's first surviving ban is "no unicode
- *      glyphs or emoji as icons" — the same violation as the "▷" that was
- *      sitting in LiveServicesSection until today.
- *   2. THE CAROUSEL HID HALF THE CONTENT. Six ministries, three visible, and
- *      a fixed 320px step with 300px cards — so it neither filled a wide
- *      screen nor fitted a narrow one, and three of the six needed an
- *      interaction to reach. They are a responsive grid now; all six are
- *      simply there. Same call as the Upcoming Events and Watch or Listen
- *      carousels earlier today.
- *   3. THE FIRST CARD'S PHOTO NEVER LOADED. `photo-1760367121593…` returns
- *      nothing — that is now the fourth place this one dead URL has turned
- *      up (Christmas Eve event, Main Center card, the Facebook tile). Every
- *      card also falls back to a tinted panel rather than a broken frame.
- *   4. IT DID NOT MATCH THE REVISED THEME. 24px heading with no eyebrow
- *      pill, `bg-white/5` cards with no edge, Figma's asymmetric corners, a
- *      112px-tall image strip, and no stagger on entrance. All brought in
- *      line with the sections revised this week.
- *
- * PLATE: #161616, between Service Ministries' #0d0d0d above and the footer's
- * black below, so it reads as its own band against both. The closing wave is
- * the same one the Events page uses to hand off to the footer.
+ * Shape: the page's LIGHT PLATE — a numbered two-column index on bone, so
+ * it reads nothing like the river-band row list above it. Big ember-ink
+ * numeral, shout title, the teaser as ROG's italic pill, the body in plain
+ * text, and a small portrait thumbnail that blooms on hover. History worth
+ * keeping: the old carousel hid half the six behind arrows (all six are
+ * simply listed now), and the first photo URL (photo-1760367121593…) was
+ * dead and has been swapped. Every thumbnail has a textured ground, so a
+ * failed load never shows an empty frame.
  */
-interface Ministry {
+interface BodyMinistry {
   title: string
   teaser: string
   body: string
   photo: string
 }
 
-const ministries: Ministry[] = [
+const ministries: BodyMinistry[] = [
   {
     title: 'PCEC Transformation & Revival',
     teaser: 'Events, activities & testimonies',
@@ -105,106 +78,90 @@ const ministries: Ministry[] = [
 ]
 
 export function BodyOfChristMinistriesSection() {
-  const { ref, shown } = useInView<HTMLElement>()
-  const reveal = `${revealBase} ${shown ? revealShown : revealHidden}`
-
   return (
     <section
       id="body-of-christ"
-      ref={ref}
-      data-plate="dark"
+      data-plate="light"
       aria-labelledby="bocm-heading"
-      className="relative overflow-hidden bg-[#161616] text-white"
+      className="relative isolate scroll-mt-16 overflow-hidden bg-bone py-24 text-abyss sm:py-32"
     >
-      <div className="relative z-10 mx-auto max-w-[86rem] px-6 pt-24 pb-36 sm:pt-28 sm:pb-44">
-        <div className={reveal} style={{ transitionDelay: '0ms' }}>
-          <span
-            className="inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase"
-            style={{
-              color: '#8FD4C9',
-              backgroundColor: 'rgb(27 122 112 / 0.18)',
-              boxShadow: 'inset 0 0 0 1px rgb(143 212 201 / 0.25)',
-            }}
-          >
-            Beyond Ortigas
-          </span>
-          <h2
-            id="bocm-heading"
-            className="mt-4 font-heading text-3xl font-bold tracking-tight sm:text-4xl"
-          >
-            Body of Christ Ministries
-          </h2>
-          <p className="mt-3 max-w-[50ch] text-sm leading-relaxed text-white/55 sm:text-base">
-            Ministries ROG runs for the wider Body of Christ and other churches — not just
-            Ortigas.
-          </p>
-        </div>
-
-        <ul className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {ministries.map((m, i) => (
-            <li
-              key={m.title}
-              className={reveal}
-              style={{ transitionDelay: `${120 + Math.min(i, 5) * 60}ms` }}
-            >
-              <MinistryCard ministry={m} />
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Wave divider into the footer (bg-black — see Footer.tsx). This is now
-          the last content band on /ministries, so it closes the page the same
-          way Home and Events close theirs. */}
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1440 140"
-        preserveAspectRatio="none"
-        className="absolute bottom-0 left-0 h-[90px] w-full sm:h-[120px]"
-      >
-        <path
-          d="M0,70 C240,10 480,130 720,60 C960,10 1200,120 1440,55 L1440,140 L0,140 Z"
-          fill="#000000"
+      <WaveMark
+        className="pointer-events-none absolute -right-[12%] -top-[4%] -z-10 h-auto w-[60vw] max-w-[900px] text-abyss/[0.05]"
+        strokeWidth={3}
+      />
+      <div className={container}>
+        <SectionHead
+          id="bocm-heading"
+          tone="light"
+          eyebrow="Beyond Ortigas"
+          title={
+            <>
+              Body of Christ
+              <br />
+              ministries
+            </>
+          }
+          lead="Ministries ROG runs for the wider Body of Christ and other churches — not just Ortigas."
         />
-      </svg>
+
+        <ol className="mt-16 grid border-t border-abyss/15 md:grid-cols-2 md:gap-x-12 lg:gap-x-20">
+          {ministries.map((m, i) => (
+            <Reveal
+              as="li"
+              key={m.title}
+              delay={(i % 2) * 90}
+              className="border-b border-abyss/15"
+            >
+              <Entry ministry={m} index={i} />
+            </Reveal>
+          ))}
+        </ol>
+      </div>
     </section>
   )
 }
 
-function MinistryCard({ ministry }: { ministry: Ministry }) {
-  const [imageFailed, setImageFailed] = useState(false)
+function Entry({ ministry, index }: { ministry: BodyMinistry; index: number }) {
+  const [failed, setFailed] = useState(false)
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-[#1b7a70]/40 motion-reduce:transition-none">
-      <div className="relative aspect-video w-full overflow-hidden">
-        {imageFailed ? (
-          <div
-            aria-hidden="true"
-            className="h-full w-full"
-            style={{ background: 'linear-gradient(135deg, #161616, rgb(27 122 112 / 0.35))' }}
-          />
-        ) : (
+    <article className="group grid grid-cols-[minmax(0,1fr)_5.5rem] gap-6 py-10 sm:grid-cols-[4.5rem_minmax(0,1fr)_7rem] sm:gap-8">
+      <p
+        aria-hidden="true"
+        className="hidden font-shout text-[3.5rem] font-black leading-[0.8] tabular-nums text-ember-ink sm:block"
+      >
+        {String(index + 1).padStart(2, '0')}
+      </p>
+
+      <div className="min-w-0">
+        <p className="font-shout text-sm font-bold tabular-nums text-ember-ink sm:hidden">
+          {String(index + 1).padStart(2, '0')}
+        </p>
+        <h3 className="mt-1 font-shout text-[clamp(1.9rem,3vw,2.6rem)] font-extrabold uppercase leading-[0.92] text-balance sm:mt-0">
+          {ministry.title}
+        </h3>
+        <span className="mt-4 inline-flex rounded-full border border-abyss/30 px-3 py-[0.2rem] text-[0.82rem] font-medium italic leading-snug text-abyss/80">
+          {ministry.teaser}
+        </span>
+        <p className="mt-4 max-w-[46ch] text-[0.95rem] leading-relaxed text-abyss/75">{ministry.body}</p>
+      </div>
+
+      <div
+        aria-hidden="true"
+        className="duotone relative aspect-[4/5] w-full self-start overflow-hidden"
+        style={{ background: 'linear-gradient(160deg, #0e5f68, #06131b 85%)' }}
+      >
+        {!failed && (
           <img
             src={ministry.photo}
             alt=""
-            aria-hidden="true"
             loading="lazy"
-            onError={() => setImageFailed(true)}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105 motion-reduce:transition-none"
+            onError={() => setFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover group-hover:scale-[1.05] motion-reduce:group-hover:scale-100"
           />
         )}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#161616] via-transparent to-transparent"
-        />
-      </div>
-
-      <div className="flex flex-grow flex-col gap-2 p-6">
-        <p className="text-[11px] font-bold tracking-[0.12em] text-[#8FD4C9] uppercase">
-          {ministry.teaser}
-        </p>
-        <h3 className="font-heading text-lg leading-snug font-bold text-white">{ministry.title}</h3>
-        <p className="text-sm leading-relaxed text-white/55">{ministry.body}</p>
+        <WaveMark className="absolute bottom-3 left-3 h-3 w-10 text-bone/50" strokeWidth={7} />
+        <span className="grain absolute inset-0" />
       </div>
     </article>
   )

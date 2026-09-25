@@ -1,5 +1,4 @@
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealDelay1, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { RiverImage, WaveMark } from '../../../shared/components/ui/River'
 
 export interface RosterPerson {
   name: string
@@ -10,92 +9,42 @@ export interface RosterPerson {
   roles: string[]
 }
 
-interface TeamRosterRowProps {
-  id: string
-  heading: string
-  people: RosterPerson[]
-  /** Literal Tailwind bg class — only two shades are used site-wide, both passed as complete strings by the caller (Tailwind's JIT needs the literal token, never an assembled one). */
-  bg: 'bg-[#232323]' | 'bg-[#161616]'
-}
-
 /**
- * Generic avatar placeholder — flat circle + person glyph, standing in for
- * a real headshot until one is supplied. REPLACED the earlier stock/seeded
- * photo placeholders 2026-09-22 per Jude's direct feedback on a screenshot
- * of this row ("make it like this icon") pointing at a plain gray default-
- * avatar circle rather than a random stock photo — stock photos read as
- * real people who aren't actually these pastors/leads, which is worse than
- * an obviously-generic placeholder.
+ * Portrait frame for the About page's people sections. REVAMP 2026-09-25.
+ *
+ * No real headshots exist yet. Jude's standing rule (2026-09-22) is a
+ * plainly generic placeholder rather than stock photos — stock faces read
+ * as real people who aren't these pastors. So the frame is a square-edged
+ * poster (radius 0, grain, river light) carrying a faint silhouette and the
+ * wave mark. Pass `photo` once headshots arrive and it becomes a
+ * `RiverImage` with Colour Bloom (duotone at rest, colour on hover/centre)
+ * — no layout change needed.
  */
-function AvatarPlaceholder() {
+export function Portrait({
+  photo,
+  alt = '',
+  className = '',
+}: {
+  photo?: string
+  alt?: string
+  className?: string
+}) {
+  if (photo) return <RiverImage src={photo} alt={alt} bloom="hover" className={className} />
   return (
     <div
       aria-hidden="true"
-      className="flex h-24 w-24 items-center justify-center rounded-full bg-[#3a3a3a] ring-1 ring-white/10"
+      className={`grain relative overflow-hidden bg-deep ${className}`}
     >
-      <svg viewBox="0 0 24 24" className="h-12 w-12 text-[#525252]" fill="currentColor">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_30%_15%,rgb(14_95_104/0.85),transparent_70%)] transition-opacity duration-700 ease-current group-hover:opacity-60" />
+      <svg
+        viewBox="0 0 24 24"
+        className="absolute bottom-0 left-1/2 h-[78%] w-auto -translate-x-1/2 translate-y-[6%] text-abyss/70 transition-transform duration-[1200ms] ease-current group-hover:scale-[1.04] motion-reduce:transition-none"
+        fill="currentColor"
+      >
         <circle cx="12" cy="8.5" r="4" />
-        <path d="M4 20.2C4 16.2 7.6 13.5 12 13.5s8 2.7 8 6.7c0 .4-.3.8-.8.8H4.8c-.5 0-.8-.4-.8-.8Z" />
+        <path d="M4 22C4 16.8 7.6 13.5 12 13.5s8 3.3 8 8.5Z" />
       </svg>
+      <WaveMark className="absolute top-4 left-4 h-3 w-8 text-shallows/50" strokeWidth={7} />
     </div>
-  )
-}
-
-/**
- * Shared roster row — used by ApostolicTeamSection, OrtigasPastorsSection
- * and ServingMinistryHeadsSection, which are identical in shape in the
- * Figma design (a heading + a row of avatar/name/role cards) and differ
- * only in heading, roster and background shade. Pulled out once three
- * sections needed the exact same markup, rather than tripling it.
- *
- * REVISED 2026-09-22 (three rounds, same day): left-aligned horizontal
- * scroll of bare circles → centered wrapping row of bare circles → each
- * avatar inside its own rounded card box with name/role captioned below
- * it → this round, name/role moved INSIDE the box too (per Jude's
- * screenshot: everything — avatar, name, role — lives inside the one card).
- * Card box stretches evenly to fill the row via a CSS grid with
- * `auto-fit`/`minmax`, however many people are in the roster.
- */
-export function TeamRosterRow({ id, heading, people, bg }: TeamRosterRowProps) {
-  const { ref, shown } = useInView<HTMLElement>()
-
-  return (
-    <section
-      ref={ref}
-      id={id}
-      data-plate="dark"
-      aria-labelledby={`${id}-heading`}
-      className={`${bg} text-white`}
-    >
-      <div className="mx-auto max-w-[86rem] px-6 py-20 sm:py-24">
-        <h2
-          id={`${id}-heading`}
-          className="font-heading text-2xl font-bold text-white sm:text-3xl"
-        >
-          {heading}
-        </h2>
-
-        <div
-          className={`mt-10 grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-6 ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-        >
-          {people.map((p) => (
-            <div
-              key={p.name}
-              className="flex flex-col items-center gap-4 rounded-2xl bg-white/5 px-6 py-8 text-center ring-1 ring-white/10"
-            >
-              <AvatarPlaceholder />
-              <div>
-                <p className="font-heading text-base font-bold text-white">{p.name}</p>
-                {p.roles.map((r) => (
-                  <p key={r} className="mt-1 text-sm text-[#a6a6a6]">
-                    {r}
-                  </p>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
   )
 }

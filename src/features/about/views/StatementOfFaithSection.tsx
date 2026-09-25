@@ -1,13 +1,18 @@
 import { useState } from 'react'
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealDelay1, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { Reveal, SectionHead } from '../../../shared/components/ui/River'
+import { container } from '../../../shared/styles/tokens'
 
 /**
- * About, section 8 — Statement of Faith. Real doctrinal text UPDATED
- * 2026-09-22, pasted verbatim from riverofgod.ph by Jude — replacing the
- * earlier bracketed placeholder note (doctrinal copy isn't something to
- * paraphrase, so this is reproduced as given rather than edited for web
- * tone). Ten articles, same order as the live site.
+ * About — Statement of Faith. REVAMP 2026-09-25: the bone light plate
+ * (rhythm after the dark Core Values poster wall), set as a numbered
+ * accordion — shout numerals and titles, the article itself in the
+ * whisper voice because it is the church's confession, not UI copy.
+ * Heading pins on the left on desktop; one article open at a time,
+ * the first open on load so the interaction reads immediately.
+ *
+ * Text: pasted verbatim from riverofgod.ph by Jude 2026-09-22 — doctrinal
+ * copy isn't something to paraphrase, so it is reproduced exactly as
+ * given. Ten articles, same order as the live site.
  */
 const articles = [
   {
@@ -53,70 +58,90 @@ const articles = [
 ]
 
 export function StatementOfFaithSection() {
-  const { ref, shown } = useInView<HTMLElement>()
   const [open, setOpen] = useState<number | null>(0)
 
   return (
     <section
-      ref={ref}
       id="statement-of-faith"
-      data-plate="dark"
+      data-plate="light"
       aria-labelledby="statement-of-faith-heading"
-      className="relative bg-[#232323] text-white"
+      className="relative scroll-mt-32 bg-bone py-24 text-abyss sm:py-32"
     >
-      <div className="mx-auto max-w-[80rem] px-6 py-24 sm:py-32">
-        <h2
-          id="statement-of-faith-heading"
-          className="font-heading text-3xl font-bold sm:text-4xl"
-        >
-          Statement of Faith
-        </h2>
-
-        <div
-          className={`mt-12 grid grid-cols-1 gap-x-10 sm:grid-cols-2 ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-        >
-          {articles.map((article, i) => {
-            const isOpen = open === i
-            return (
-              <div key={article.title} className="border-b border-white/10 py-5">
-                <button
-                  type="button"
-                  onClick={() => setOpen(isOpen ? null : i)}
-                  aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-4 text-left"
-                >
-                  <span className="font-heading text-lg font-bold text-white">
-                    {article.title}
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className={`shrink-0 text-2xl font-light text-[#1b7a70] transition-transform ${isOpen ? 'rotate-45' : ''}`}
-                  >
-                    +
-                  </span>
-                </button>
-                {isOpen ? (
-                  <p className="mt-3 max-w-[56ch] text-sm leading-relaxed text-[#a6a6a6]">
-                    {article.body}
-                  </p>
-                ) : null}
-              </div>
-            )
-          })}
+      <div className={`${container} grid gap-14 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-20`}>
+        <div className="lg:sticky lg:top-44 lg:self-start">
+          <SectionHead
+            id="statement-of-faith-heading"
+            tone="light"
+            eyebrow={<span className="text-river">What we believe</span>}
+            title={
+              <>
+                Statement
+                <br />
+                of Faith
+              </>
+            }
+          />
+          <p className="mt-6 hidden font-shout text-[clamp(5rem,10vw,9rem)] lg:block font-black leading-[0.8] tabular-nums text-abyss/[0.07]" aria-hidden="true">
+            10
+          </p>
         </div>
-      </div>
 
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1440 130"
-        preserveAspectRatio="none"
-        className="absolute bottom-0 left-0 h-[60px] w-full sm:h-[90px]"
-      >
-        <path
-          d="M0,50 C360,100 720,0 1080,45 C1260,68 1350,58 1440,45 L1440,130 L0,130 Z"
-          fill="#000000"
-        />
-      </svg>
+        <Reveal>
+          <ol className="border-t border-abyss/15">
+            {articles.map((article, i) => {
+              const isOpen = open === i
+              const panelId = `faith-article-${i}`
+              return (
+                <li key={article.title} className="border-b border-abyss/15">
+                  <h3>
+                    <button
+                      type="button"
+                      onClick={() => setOpen(isOpen ? null : i)}
+                      aria-expanded={isOpen}
+                      aria-controls={panelId}
+                      className="group grid w-full grid-cols-[3.25rem_1fr_auto] items-center gap-4 py-6 text-left sm:grid-cols-[5.5rem_1fr_auto] sm:gap-6"
+                    >
+                      <span
+                        className={`font-shout text-[2.4rem] font-black leading-none tabular-nums transition-colors duration-500 ease-current sm:text-[3.4rem] ${
+                          isOpen ? 'text-ember-ink' : 'text-abyss/45 group-hover:text-abyss/70'
+                        }`}
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="font-shout text-[clamp(1.6rem,2.8vw,2.4rem)] font-bold uppercase leading-[0.95]">
+                        {article.title}
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className={`relative flex h-10 w-10 flex-none items-center justify-center rounded-full border transition-[transform,background-color,border-color] duration-500 ease-current ${
+                          isOpen ? 'rotate-45 border-abyss bg-abyss text-bone' : 'border-abyss/25 group-hover:border-abyss'
+                        }`}
+                      >
+                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                      </span>
+                    </button>
+                  </h3>
+                  <div
+                    id={panelId}
+                    role="region"
+                    aria-label={article.title}
+                    className={`grid transition-[grid-template-rows] duration-500 ease-current motion-reduce:transition-none ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                    inert={!isOpen}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <p className="max-w-[58ch] pb-8 pl-[4.25rem] font-whisper text-[clamp(1.1rem,1.5vw,1.3rem)] italic leading-[1.55] text-abyss/85 sm:pl-[7rem]">
+                        {article.body}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </Reveal>
+      </div>
     </section>
   )
 }

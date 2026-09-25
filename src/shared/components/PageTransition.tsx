@@ -9,7 +9,7 @@ import { useLocation } from 'react-router-dom'
  * frame the scroll snapped to the top. Keying this wrapper by pathname makes
  * React insert a fresh element for every page, and Tailwind's `starting:`
  * variant (CSS `@starting-style`) gives that element a 300ms entrance from
- * transparent, over the black root background in App.tsx.
+ * transparent, over the abyss root background (index.css `html`, body).
  *
  * No exit animation on purpose: the old page stays up until the new route's
  * code has loaded (React Router wraps navigation in a transition), then it is

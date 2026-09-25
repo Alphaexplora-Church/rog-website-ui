@@ -1,15 +1,14 @@
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
-import {
-  categoryLabel,
-  categoryQuery,
-  parseCategory,
-  sermonThumbnail,
-  type Sermon,
-} from '../data/mediaData'
+import { PageHero } from '../../../shared/components/ui/PageHero'
+import { Button } from '../../../shared/components/ui/Button'
+import { Pill, Reveal, WaveMark } from '../../../shared/components/ui/River'
+import { container } from '../../../shared/styles/tokens'
+import { categoryLabel, categoryQuery, parseCategory, type Sermon } from '../data/mediaData'
 import { useMediaLibraryViewModel } from '../viewModels/useMediaLibraryViewModel'
 import { MediaPageStatus } from './MediaPageStatus'
+import { BackLink, MediaNotFound, MessageIndex } from './MediaParts'
+
+const TYPE_LABEL: Record<string, string> = { topic: 'Topic', speaker: 'Speaker', scripture: 'Scripture' }
 
 /**
  * Media — one shared "browse" page for Topics, Speakers, and Scripture
@@ -17,12 +16,15 @@ import { MediaPageStatus } from './MediaPageStatus'
  * filtered-sermon-list pages without three near-identical components.
  * `:type` is 'topic' | 'speaker' | 'scripture'.
  *
- * CATEGORY-AWARE, 2026-09-23. The Media Library's Category filter carries
- * into this page as `?category=series|sermon`, and the list is scoped to it —
- * so "Topics → Hope" opened from the Sermons category shows Sermon messages
- * about Hope, not every message about Hope. The back link returns to the
- * library with the same category still selected, and a one-tap way out of
- * the scope is offered when there is one.
+ * REVAMP 2026-09-25 (ROG 11 §6): PageHero with the term as the shout title,
+ * then the SAME index rows as the library (MediaParts `MessageIndex`, with
+ * its Cursor Preview) on the bone plate.
+ *
+ * CATEGORY-AWARE, 2026-09-23. The library's Category filter carries into
+ * this page as `?category=series|sermon`, and the list is scoped to it —
+ * "Topics → Hope" opened from Sermons shows Sermon messages about Hope. The
+ * back link returns to the library with the same category still selected,
+ * and a one-tap way out of the scope is offered when there is one.
  */
 export default function BrowseDetail() {
   const { type = '', slug = '' } = useParams()
@@ -48,93 +50,65 @@ export default function BrowseDetail() {
     list = media.sermonsByScripture(slug, pool)
   }
 
-  const { ref, shown } = useInView<HTMLElement>()
   const backTo = `/media${categoryQuery(category)}`
 
   if (isLoading || error) return <MediaPageStatus error={error} onRetry={retry} backTo={backTo} />
 
-  if (!title) {
-    return (
-      <section data-plate="dark" className="bg-black text-white">
-        <div className="mx-auto max-w-[86rem] px-6 py-32 text-center">
-          <p className="text-white/60">Not found.</p>
-          <Link to={backTo} className="mt-4 inline-block text-[#8FD4C9] underline">
-            Back to Media Library
-          </Link>
-        </div>
-      </section>
-    )
-  }
+  if (!title) return <MediaNotFound message="Not found." backTo={backTo} />
 
   return (
-    <section ref={ref} data-plate="dark" className="bg-black text-white">
-      <div
-        className={`mx-auto max-w-[86rem] px-6 py-20 sm:py-24 ${revealBase} ${shown ? revealShown : revealHidden}`}
-      >
-        <Link to={backTo} className="text-xs font-bold tracking-[0.15em] text-[#8FD4C9] uppercase">
-          ← Media Library
-        </Link>
-        <h1 className="mt-4 font-heading text-3xl font-bold sm:text-4xl">{title}</h1>
-
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/55">
-          <span>
+    <>
+      <PageHero
+        size="short"
+        eyebrow={`Media Library · ${TYPE_LABEL[type] ?? 'Browse'}`}
+        title={title}
+        lead={
+          <>
             {list.length} {list.length === 1 ? 'message' : 'messages'}
-          </span>
-          {scoped && (
-            <>
-              <span
-                className="rounded-full px-2.5 py-1 text-[10px] font-bold tracking-[0.14em] uppercase"
-                style={{
-                  color: '#8FD4C9',
-                  backgroundColor: 'rgb(27 122 112 / 0.18)',
-                  boxShadow: 'inset 0 0 0 1px rgb(143 212 201 / 0.25)',
-                }}
-              >
-                In {categoryLabel(category)}
-              </span>
-              <Link
-                to={`/media/browse/${type}/${slug}`}
-                className="text-xs font-semibold text-white/60 underline decoration-white/25 underline-offset-4 transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white"
-              >
-                See all categories
-              </Link>
-            </>
+            {scoped ? ` in ${categoryLabel(category)}` : ''}
+          </>
+        }
+        actions={
+          <>
+            <BackLink to={backTo} />
+            {scoped && (
+              <>
+                <Pill active>In {categoryLabel(category)}</Pill>
+                <Link
+                  to={`/media/browse/${type}/${slug}`}
+                  className="text-[0.85rem] font-semibold text-bone/75 underline decoration-ember decoration-1 underline-offset-[6px] transition-colors duration-300 hover:text-bone"
+                >
+                  See all categories
+                </Link>
+              </>
+            )}
+          </>
+        }
+      />
+
+      <section data-plate="light" aria-label={`Messages — ${title}`} className="relative overflow-hidden bg-bone py-24 text-abyss sm:py-32">
+        <div className={container}>
+          {list.length === 0 ? (
+            <Reveal className="border border-dashed border-abyss/25 px-6 py-16 text-center">
+              <WaveMark className="mx-auto h-6 w-16 text-abyss/40" strokeWidth={6} />
+              <p className="mx-auto mt-6 max-w-[30ch] font-whisper text-[clamp(1.4rem,2.6vw,2.2rem)] italic leading-tight">
+                {scoped
+                  ? `No messages under this term in ${categoryLabel(category)} yet.`
+                  : 'No messages under this term yet.'}
+              </p>
+              <div className="mt-8">
+                <Button to={scoped ? `/media/browse/${type}/${slug}` : backTo} variant="solid" tone="light">
+                  {scoped ? 'See all categories' : 'Back to Media Library'}
+                </Button>
+              </div>
+            </Reveal>
+          ) : (
+            <Reveal>
+              <MessageIndex items={list} showCategory={!scoped} topicTitle={(t) => media.findTopic(t)?.title} />
+            </Reveal>
           )}
         </div>
-
-        {list.length === 0 ? (
-          <p className="mt-10 text-white/45 italic">
-            {scoped
-              ? `No messages under this term in ${categoryLabel(category)} yet.`
-              : 'No messages under this term yet.'}
-          </p>
-        ) : (
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((s) => (
-              <Link key={s.slug} to={`/media/watch/${s.slug}`} className="group">
-                <img
-                  src={sermonThumbnail(s)}
-                  alt={s.title}
-                  loading="lazy"
-                  className="aspect-video w-full rounded-xl object-cover"
-                />
-                <p className="mt-3 font-heading text-base font-bold group-hover:text-[#8FD4C9]">
-                  {s.title}
-                </p>
-                <p className="mt-1 text-xs text-white/50">
-                  {s.date && (
-                    <span className={s.dateIsPlaceholder ? 'text-white/30 italic' : undefined}>
-                      {s.date}
-                    </span>
-                  )}
-                  {s.date && s.speakerName ? ' · ' : ''}
-                  {s.speakerName}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
+      </section>
+    </>
   )
 }

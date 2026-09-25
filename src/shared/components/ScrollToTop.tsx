@@ -47,8 +47,27 @@ export function ScrollToTop() {
 
   useLayoutEffect(() => {
     if (navigationType === 'POP') return
-    if (hash) return
+    if (!hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      return
+    }
+    /* Hash links into another route (e.g. Home's "Five crossings" rows →
+       /discipleship#stage-equip, 2026-09-25): the target page is lazy, so
+       its element may not exist on this frame. Start at the top, then
+       retry for up to ~1s until the anchor mounts and scroll to it. */
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    let tries = 0
+    let frame = 0
+    const seek = () => {
+      const el = document.getElementById(decodeURIComponent(hash.slice(1)))
+      if (el) {
+        el.scrollIntoView({ block: 'start' })
+        return
+      }
+      if (tries++ < 60) frame = requestAnimationFrame(seek)
+    }
+    frame = requestAnimationFrame(seek)
+    return () => cancelAnimationFrame(frame)
   }, [pathname, hash, navigationType])
 
   return null

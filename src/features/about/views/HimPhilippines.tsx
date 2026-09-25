@@ -1,564 +1,480 @@
-import type { ReactNode } from 'react'
+import { useRef } from 'react'
+import { PageHero } from '../../../shared/components/ui/PageHero'
 import { Button } from '../../../shared/components/ui/Button'
-import { site } from '../../../shared/config/site'
+import { Eyebrow, Pill, Reveal, RiverImage, SectionHead, WaveMark, WaveRule } from '../../../shared/components/ui/River'
 import { useInView } from '../../../shared/hooks/useInView'
-import {
-  maskLineBase,
-  maskLineHidden,
-  maskLineShown,
-  revealBase,
-  revealDelay1,
-  revealHidden,
-  revealShown,
-  riverGlow,
-} from '../../../shared/styles/tokens'
-import {
-  himApplicationForm,
-  himCoreValues,
-  himCoreValuesIntroduction,
-  himDpoBadge,
-  himHeroImage,
-  himIntroduction,
-  himLeadership,
-  himLogo,
-  himMembershipStatement,
-  himMission,
-  himMotto,
-  himNetworkFacts,
-  himRiverOfGodConnection,
-  himSecretary,
-  himVision,
-  statementOfFaith,
-  statementOfFaithIntroduction,
-  type HimLeader,
-  type HimLeaderGroup,
-} from '../data/himPhilippinesData'
+import { container, displayL, maskLineBase, maskLineHidden, maskLineShown } from '../../../shared/styles/tokens'
+import type { HimLeaderGroup, HimLeaderProfile } from '../data/himPhilippinesData'
+import { useHimPhilippinesViewModel } from '../viewModels/useHimPhilippinesViewModel'
 
 /**
- * H.I.M. Philippines — /about/him-ph.
+ * H.I.M. Philippines — /about/him-ph. REVAMP 2026-09-25 ("Textured Editorial").
  *
- * REDESIGN 2026-09-24. One continuous dark page (#121212) that belongs with
- * Who We Are, replacing the earlier light/dark alternation that changed the
- * background seven times and made the floating nav flip tone on every
- * section. Sections are separated by space and hairlines; the only
- * elevated surfaces are the featured leaders, the River of God band and the
- * closing membership panel. A wave hands the page to the black footer.
+ * All data comes from `useHimPhilippinesViewModel` (Model: himPhilippinesData,
+ * copy from riverofgod.ph). Seven sections, each a different shape, on
+ * alternating grounds:
  *
- * Every class string below is a complete literal (see tokens.ts): classes are
- * combined with cx(), never assembled from fragments.
+ *  1. PageHero — worship photo, "H.I.M. / Philippines", three-fact aside.
+ *  2. Mission & vision (abyss) — the motto as a giant three-line shout, the
+ *     mission and vision in whisper beside it.
+ *  3. Connection band (river) — ROG mark ↔ HIM mark with the one-paragraph
+ *     link between them.
+ *  4. Leadership (abyss) — a featured pair of tall portraits, then an
+ *     editorial directory (numbered rows). Each person appears ONCE with Pill
+ *     tags for every group they serve on (the merge happens in the Model).
+ *     Portraits use Colour Bloom: the source photos have mismatched
+ *     backgrounds, so the River duotone unifies them at rest.
+ *  5. Core values (deep) — a horizontal poster rail, 12 posters, scroll-snap
+ *     with a peek; arrow buttons on desktop, swipe on touch.
+ *  6. Statement of faith (bone light plate) — pinned head, numbered list.
+ *  7. Membership (river) — shout CTA, the ONE ember button (PDF download),
+ *     contact card and the NPC DPO/DPS badge.
  */
-
-const cx = (...classes: (string | false | null | undefined)[]) => classes.filter(Boolean).join(' ')
-const pad = (n: number) => String(n).padStart(2, '0')
-
-const container = 'mx-auto w-full max-w-[86rem] px-6'
-const sectionScroll = 'scroll-mt-10 sm:scroll-mt-4 lg:scroll-mt-0'
-const displaySize = { fontSize: 'clamp(2.25rem, 4.5vw, 3.75rem)' }
-
-
 export default function HimPhilippines() {
-  return (
-    <div className="bg-[#121212] text-white">
-      <Hero />
-      <Overview />
-      <Leadership />
-      <CoreValues />
-      <StatementOfFaith />
-      <Join />
-    </div>
-  )
-}
-
-/* ------------------------------------------------------------------ HERO */
-
-function Hero() {
-  const { ref, shown } = useInView<HTMLElement>({ threshold: 0 })
+  const vm = useHimPhilippinesViewModel()
 
   return (
-    <section
-      ref={ref}
-      data-plate="dark"
-      aria-labelledby="him-philippines-heading"
-      className="relative isolate flex min-h-svh flex-col overflow-hidden"
-    >
-      <img
-        src={himHeroImage}
-        alt=""
-        aria-hidden="true"
-        fetchPriority="high"
-        className="absolute inset-0 -z-20 h-full w-full object-cover object-[64%_35%]"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(18,18,18,0.94)_0%,rgba(18,18,18,0.72)_42%,rgba(18,18,18,0.18)_100%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 -z-10 h-3/4 bg-[linear-gradient(to_top,#121212_6%,rgba(18,18,18,0.72)_45%,transparent_100%)]"
-      />
-
-      <div className={cx(container, 'flex flex-1 flex-col justify-end pt-28 pb-8 sm:pt-40 sm:pb-12')}>
-        <p className={cx('mb-5 text-xs font-semibold tracking-[0.18em] text-white/70 uppercase', revealBase, shown ? revealShown : revealHidden)}>
-          Harvest International Ministry
-        </p>
-        <h1
-          id="him-philippines-heading"
-          className="font-extrabold leading-[0.95] tracking-[-0.045em]"
-          style={{ fontSize: 'clamp(2.75rem, 8.5vw, 7rem)' }}
-        >
-          <span className="block overflow-hidden pb-[0.08em]">
-            <span className={cx(maskLineBase, shown ? maskLineShown : maskLineHidden)}>H.I.M. Philippines</span>
-          </span>
-        </h1>
-        <p
-          className={cx(
-            'mt-6 max-w-[58ch] text-pretty text-base leading-7 text-white/80 sm:text-lg sm:leading-8',
-            revealBase,
-            revealDelay1,
-            shown ? revealShown : revealHidden,
-          )}
-        >
-          {himIntroduction}
-        </p>
-
-        <div
-          className={cx(
-            'mt-10 flex flex-col gap-6 border-t border-white/15 pt-6 sm:mt-14 sm:gap-8 md:flex-row md:items-end md:justify-between',
-            revealBase,
-            revealDelay1,
-            shown ? revealShown : revealHidden,
-          )}
-        >
-          <dl className="grid max-w-[50rem] flex-1 grid-cols-3 gap-4 sm:gap-10">
-            {himNetworkFacts.map((fact) => (
-              <div key={fact.label} className="flex flex-col-reverse gap-2">
-                <dt className="text-xs leading-5 text-white/60 sm:text-sm">{fact.label}</dt>
-                <dd className="text-3xl font-bold tracking-[-0.03em] tabular-nums sm:text-5xl">{fact.value}</dd>
+    <>
+      <PageHero
+        eyebrow="About · Harvest International Ministry"
+        title={['H.I.M.', 'Philippines']}
+        lead={vm.hero.introduction}
+        image={vm.hero.image}
+        imagePosition="64% 35%"
+        actions={
+          <>
+            <Button href="#join-him-philippines" variant="solid" arrow>
+              Join the network
+            </Button>
+            <Button href="#leadership" variant="ghost">
+              Meet the leaders
+            </Button>
+          </>
+        }
+        aside={
+          <dl className="grid grid-cols-3 gap-6 border-t border-bone/20 pt-6 lg:w-[19rem] lg:grid-cols-1 lg:gap-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+            {vm.hero.facts.map((fact) => (
+              <div key={fact.label} className="flex flex-col-reverse gap-1">
+                <dt className="text-[0.8rem] leading-snug text-bone/70">{fact.label}</dt>
+                <dd className="font-shout text-[clamp(2.25rem,5vw,3.75rem)] leading-none font-extrabold tabular-nums">
+                  {fact.value}
+                </dd>
               </div>
             ))}
           </dl>
-          <a
-            href="#overview"
-            className="group/cue inline-flex items-center gap-3 self-start text-sm font-semibold text-white/75 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300 md:self-end"
-          >
-            Explore
-            <span
-              aria-hidden="true"
-              className="flex size-10 items-center justify-center rounded-full border border-white/25 transition-[border-color,transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/cue:translate-y-0.5 group-hover/cue:border-white/60"
-            >
-              ↓
-            </span>
-          </a>
+        }
+      />
+      <MissionVision mission={vm.mission} />
+      <ConnectionBand brand={vm.brand} text={vm.connection} />
+      <Leadership leadership={vm.leadership} />
+      <CoreValues coreValues={vm.coreValues} />
+      <StatementOfFaith sof={vm.statementOfFaith} />
+      <Join membership={vm.membership} />
+    </>
+  )
+}
+
+type VM = ReturnType<typeof useHimPhilippinesViewModel>
+const pad = (n: number) => String(n).padStart(2, '0')
+
+/* ── 2. Mission & vision ───────────────────────────────────────────────── */
+
+function MissionVision({ mission }: { mission: VM['mission'] }) {
+  const { ref, shown } = useInView<HTMLDivElement>()
+  return (
+    <section
+      id="overview"
+      data-plate="dark"
+      aria-labelledby="overview-heading"
+      className="relative isolate scroll-mt-20 overflow-hidden bg-abyss py-24 text-bone sm:py-32"
+    >
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-[15%] -z-10 blur-[60px] [background-image:radial-gradient(ellipse_40%_40%_at_10%_30%,rgb(14_95_104/0.45),transparent_70%)]" />
+      <div className={`${container} grid gap-16 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-20`}>
+        <div ref={ref}>
+          <Eyebrow>Mission and vision</Eyebrow>
+          <h2 id="overview-heading" className={`mt-6 ${displayL}`}>
+            {mission.motto.map((line, i) => (
+              <span key={line} className="block overflow-hidden pb-[0.05em]">
+                <span
+                  className={`${maskLineBase} ${shown ? maskLineShown : maskLineHidden} ${i === 2 ? 'text-bone' : i === 1 ? 'text-bone/70' : 'text-shallows'}`}
+                  style={{ transitionDelay: `${i * 120}ms` }}
+                >
+                  {line}
+                </span>
+              </span>
+            ))}
+          </h2>
+          <span aria-hidden="true" className="mt-10 block h-1.5 w-28 bg-ember" />
         </div>
+
+        <Reveal className="grid content-end gap-12 lg:pb-3">
+          <article>
+            <h3 className="text-[0.72rem] font-semibold tracking-[0.22em] text-sand uppercase">Our Mission</h3>
+            <p className="mt-4 font-whisper text-[clamp(1.2rem,1.6vw,1.45rem)] leading-[1.5] italic text-bone/90">
+              {mission.mission}
+            </p>
+          </article>
+          <WaveRule className="text-bone/15" />
+          <article>
+            <h3 className="text-[0.72rem] font-semibold tracking-[0.22em] text-sand uppercase">Our Vision</h3>
+            <p className="mt-4 font-whisper text-[clamp(1.2rem,1.6vw,1.45rem)] leading-[1.5] italic text-bone/90">
+              {mission.vision}
+            </p>
+          </article>
+        </Reveal>
       </div>
     </section>
   )
 }
 
-/* ---------------------------------------------------------------- SHARED */
+/* ── 3. River of God ↔ HIM band ────────────────────────────────────────── */
 
-function Eyebrow({ children }: { children: ReactNode }) {
+function ConnectionBand({ brand, text }: { brand: VM['brand']; text: string }) {
   return (
-    <p className="mb-4 flex items-center gap-3 text-xs font-semibold tracking-[0.18em] text-white/55 uppercase">
-      <span aria-hidden="true" className="h-px w-8 bg-cyan-300/70" />
-      {children}
-    </p>
-  )
-}
-
-interface SectionHeaderProps {
-  id: string
-  eyebrow: string
-  title: string
-  intro?: string
-  shown: boolean
-  stacked?: boolean
-}
-
-function SectionHeader({ id, eyebrow, title, intro, shown, stacked = false }: SectionHeaderProps) {
-  return (
-    <div
-      className={cx(
-        !stacked && 'grid gap-6 md:grid-cols-12 md:items-end',
-        revealBase,
-        shown ? revealShown : revealHidden,
-      )}
+    <section
+      data-plate="dark"
+      aria-labelledby="connection-heading"
+      className="relative isolate overflow-hidden bg-river py-24 text-bone sm:py-28"
     >
-      <div className={cx(!stacked && 'md:col-span-6')}>
-        <Eyebrow>{eyebrow}</Eyebrow>
-        <h2 id={id} className="text-balance font-bold leading-[1.04] tracking-[-0.04em]" style={displaySize}>
-          {title}
-        </h2>
-      </div>
-      {intro ? (
-        <p
-          className={cx(
-            'max-w-[60ch] text-pretty text-base leading-7 text-white/65',
-            stacked ? 'mt-5' : 'md:col-span-6 md:col-start-7',
-          )}
-        >
-          {intro}
-        </p>
-      ) : null}
-    </div>
-  )
-}
-
-/** One portrait treatment for every leader: the source photos have white,
- *  gray, navy, blue and brown backgrounds, so each sits in the same frame in
- *  black and white and turns to colour on hover. */
-function Portrait({ leader, className }: { leader: HimLeader; className: string }) {
-  return (
-    <div className={cx('relative shrink-0 overflow-hidden bg-[#1f1f1f]', className)}>
-      <img
-        src={leader.portrait}
-        alt={'Portrait of ' + leader.name}
-        loading="lazy"
-        decoding="async"
-        className="h-full w-full object-cover object-[center_22%] brightness-[0.92] contrast-[1.05] grayscale transition-[filter,transform] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.03] group-hover:brightness-100 group-hover:grayscale-0 motion-reduce:transition-none"
+      <div aria-hidden="true" className="grain absolute inset-0 -z-10" />
+      <WaveMark
+        className="pointer-events-none absolute -right-[10%] -bottom-[20%] -z-10 h-auto w-[80vw] max-w-[900px] text-bone/[0.06]"
+        strokeWidth={3}
       />
-      <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-white/10 ring-inset" />
-    </div>
+      <Reveal className={`${container} grid items-center gap-12 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-20`}>
+        <div className="flex items-center gap-5 sm:gap-8">
+          <img src={brand.rogLogo.src} alt={brand.rogLogo.alt} className="h-auto w-28 sm:w-40" />
+          <span aria-hidden="true" className="flex flex-col items-center gap-2 text-bone/70">
+            <WaveMark className="h-4 w-12" strokeWidth={7} />
+          </span>
+          <img src={brand.himLogo} alt={brand.himLogoAlt} className="h-auto w-40 sm:w-56" />
+        </div>
+        <div>
+          <h2 id="connection-heading" className="font-shout text-[clamp(2.25rem,4.5vw,3.75rem)] leading-[0.92] font-extrabold uppercase">
+            Where River of God fits
+          </h2>
+          <p className="mt-5 max-w-[60ch] text-[1.05rem] leading-relaxed text-bone/90">{text}</p>
+        </div>
+      </Reveal>
+    </section>
   )
 }
 
-function GroupTags({ groups }: { groups: readonly HimLeaderGroup[] }) {
+/* ── 4. Leadership ─────────────────────────────────────────────────────── */
+
+function GroupPills({ groups }: { groups: readonly HimLeaderGroup[] }) {
   return (
     <ul aria-label="Serves on" className="flex flex-wrap gap-1.5">
-      {groups.map((group) => (
-        <li
-          key={group}
-          className={cx(
-            'rounded-full border px-2.5 py-0.5 text-[0.6875rem] font-semibold tracking-[0.06em] uppercase',
-            group === 'Apostolic Council' ? 'border-cyan-400/30 text-cyan-200' : 'border-white/15 text-white/65',
-          )}
-        >
-          {group}
+      {groups.map((g) => (
+        <li key={g}>
+          <Pill active={g === 'Apostolic Council'}>{g}</Pill>
         </li>
       ))}
     </ul>
   )
 }
 
-/* -------------------------------------------------------------- OVERVIEW */
-
-function Overview() {
-  const { ref, shown } = useInView<HTMLElement>()
-
-  return (
-    <section ref={ref} id="overview" data-plate="dark" aria-labelledby="overview-heading" className={sectionScroll}>
-      <div className={cx(container, 'py-16 sm:py-24 lg:py-32')}>
-        <div className="grid gap-14 lg:grid-cols-12 lg:gap-10">
-          <div className="lg:col-span-7">
-            <Eyebrow>Mission and vision</Eyebrow>
-            <h2
-              id="overview-heading"
-              className="font-bold leading-[1.02] tracking-[-0.04em]"
-              style={{ fontSize: 'clamp(2.5rem, 5.6vw, 4.75rem)' }}
-            >
-              {himMotto.map((line, index) => (
-                <span key={line} className="block overflow-hidden pb-[0.06em]">
-                  <span
-                    className={cx(
-                      maskLineBase,
-                      shown ? maskLineShown : maskLineHidden,
-                      index === 0 && 'text-white/45',
-                      index === 1 && 'text-white/70 delay-[120ms]',
-                      index === 2 && 'delay-[240ms]',
-                    )}
-                  >
-                    {line}
-                  </span>
-                </span>
-              ))}
-            </h2>
-          </div>
-
-          <div className={cx('grid gap-10 lg:col-span-5 lg:pt-14', revealBase, revealDelay1, shown ? revealShown : revealHidden)}>
-            <article>
-              <h3 className="text-lg font-semibold tracking-[-0.02em]">Our Mission</h3>
-              <p className="mt-3 text-base leading-7 text-white/70">{himMission}</p>
-            </article>
-            <article className="border-t border-white/10 pt-10">
-              <h3 className="text-lg font-semibold tracking-[-0.02em]">Our Vision</h3>
-              <p className="mt-3 text-base leading-7 text-white/70">{himVision}</p>
-            </article>
-          </div>
-        </div>
-
-        <div className="mt-14 grid gap-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:mt-20 sm:p-10 md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-14">
-          <div className="flex items-center gap-6">
-            <img src={site.logo.src} alt={site.logo.alt} className="aspect-[1.9/1] w-28 object-cover sm:w-32" />
-            <span aria-hidden="true" className="h-12 w-px bg-white/20" />
-            <img src={himLogo} alt="Harvest International Ministry Philippines" className="h-auto w-36 sm:w-44" />
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold tracking-[-0.02em] sm:text-2xl">Where River of God fits</h3>
-            <p className="mt-3 max-w-[62ch] text-base leading-7 text-white/70">{himRiverOfGodConnection}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ------------------------------------------------------------ LEADERSHIP */
-
-function Leadership() {
-  const { ref, shown } = useInView<HTMLElement>({ threshold: 0.04 })
-  const featured = himLeadership.slice(0, 2)
-  const directory = himLeadership.slice(2)
-  const councilCount = himLeadership.filter((l) => l.groups.includes('Apostolic Council')).length
-  const boardCount = himLeadership.filter((l) => l.groups.includes('Board')).length
-  const bothCount = himLeadership.filter((l) => l.groups.includes('Apostolic Council') && l.groups.includes('Board')).length
-  const intro =
-    councilCount +
-    ' leaders serve on the Apostolic Council and ' +
-    boardCount +
-    ' on the H.I.M. Philippines Board; ' +
-    bothCount +
-    ' serve on both.'
-
+function Leadership({ leadership }: { leadership: VM['leadership'] }) {
+  const intro = `${leadership.councilCount} leaders serve on the Apostolic Council and ${leadership.boardCount} on the H.I.M. Philippines Board; ${leadership.bothCount} serve on both.`
   return (
     <section
-      ref={ref}
       id="leadership"
       data-plate="dark"
       aria-labelledby="leadership-heading"
-      className={cx(sectionScroll, 'border-t border-white/10')}
+      className="relative scroll-mt-20 bg-abyss py-24 text-bone sm:py-32"
     >
-      <div className={cx(container, 'py-16 sm:py-24 lg:py-32')}>
-        <SectionHeader id="leadership-heading" eyebrow="The people who lead" title="Leadership" intro={intro} shown={shown} />
+      <div className={container}>
+        <SectionHead id="leadership-heading" eyebrow="The people who lead" title="Leadership" lead={intro} />
 
-        <ul className={cx('mt-10 grid gap-4 sm:mt-14 sm:gap-6 md:grid-cols-2', revealBase, revealDelay1, shown ? revealShown : revealHidden)}>
-          {featured.map((leader) => (
-            <li key={leader.portrait} className="group">
-              <article className="flex h-full items-start gap-5 overflow-hidden rounded-2xl border border-white/10 bg-[#181818] p-4 sm:grid sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] sm:items-stretch sm:gap-0 sm:p-0">
-                <Portrait leader={leader} className="size-24 rounded-xl sm:size-auto sm:h-full sm:min-h-[20rem] sm:rounded-none" />
-                <div className="flex min-w-0 flex-col justify-end gap-3 sm:gap-4 sm:p-8">
-                  <GroupTags groups={leader.groups} />
-                  <h3 className="text-xl font-semibold leading-tight tracking-[-0.03em] sm:text-[1.75rem]">{leader.name}</h3>
-                  <ul className="flex flex-col gap-1 text-sm leading-6 text-white/65 sm:gap-1.5 sm:text-[0.9375rem]">
+        {/* Featured pair — portrait + credit spreads, the second stepped down
+            so the two never read as twin cards */}
+        <ul className="mt-16 grid gap-14 md:grid-cols-2 md:gap-10">
+          {leadership.featured.map((leader, i) => (
+            <Reveal as="li" key={leader.portrait} delay={i * 120} className={i === 1 ? 'md:mt-20' : ''}>
+              <article className="group grid gap-6 border-t border-bone/20 pt-6 sm:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] sm:items-end">
+                <div className="relative">
+                  <RiverImage
+                    src={leader.portrait}
+                    alt={`Portrait of ${leader.name}`}
+                    position="center 22%"
+                    className="aspect-[4/5] w-full"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-3 left-3 z-[3] font-shout text-5xl leading-none font-extrabold text-bone/85 tabular-nums"
+                  >
+                    {pad(i + 1)}
+                  </span>
+                </div>
+                <div>
+                  <GroupPills groups={leader.groups} />
+                  <h3 className="mt-4 font-shout text-[clamp(2.25rem,3vw,2.9rem)] leading-[0.92] font-extrabold uppercase transition-colors duration-300 group-hover:text-shallows">
+                    {leader.name}
+                  </h3>
+                  <ul className="mt-4 grid gap-1 text-[0.92rem] leading-relaxed text-bone/75">
                     {leader.roles.map((role) => (
                       <li key={role}>{role}</li>
                     ))}
                   </ul>
                 </div>
               </article>
-            </li>
+            </Reveal>
           ))}
         </ul>
 
-        <ul className={cx('mt-10 grid gap-x-8 sm:mt-14 sm:grid-cols-2 lg:grid-cols-3', revealBase, revealDelay1, shown ? revealShown : revealHidden)}>
-          {directory.map((leader) => (
-            <li key={leader.portrait} className="group border-t border-white/10 py-5 sm:py-6">
-              <article className="flex items-start gap-4 sm:gap-5">
-                <Portrait leader={leader} className="size-16 rounded-xl sm:size-24" />
-                <div className="min-w-0 pt-1">
-                  <h3 className="text-lg font-semibold leading-snug tracking-[-0.02em]">{leader.name}</h3>
-                  <ul className="mt-1.5 flex flex-col gap-1 text-sm leading-6 text-white/65">
-                    {leader.roles.map((role) => (
-                      <li key={role}>{role}</li>
-                    ))}
-                  </ul>
-                  <div className="mt-2.5 sm:mt-3">
-                    <GroupTags groups={leader.groups} />
-                  </div>
-                  {leader.groups.includes('Secretary and Staff') ? (
-                    <a
-                      href="#join-him-philippines"
-                      className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
-                    >
-                      Membership contact <span aria-hidden="true">↓</span>
-                    </a>
-                  ) : null}
-                </div>
-              </article>
-            </li>
+        {/* Directory — numbered editorial rows */}
+        <div className="mt-24 flex items-end justify-between gap-6">
+          <Eyebrow className="text-sand">Council, board and staff</Eyebrow>
+          <p className="hidden text-[0.8rem] text-bone/55 sm:block">{leadership.all.length} people</p>
+        </div>
+        <ol className="mt-6 grid border-t border-bone/15 lg:grid-cols-2 lg:gap-x-12">
+          {leadership.directory.map((leader, i) => (
+            <DirectoryRow key={leader.portrait} leader={leader} index={i + 3} />
           ))}
-        </ul>
+        </ol>
       </div>
     </section>
   )
 }
 
-/* ----------------------------------------------------------- CORE VALUES */
+function DirectoryRow({ leader, index }: { leader: HimLeaderProfile; index: number }) {
+  const isStaff = leader.groups.includes('Secretary and Staff')
+  return (
+    <Reveal as="li" className="border-b border-bone/15">
+      <article className="group grid grid-cols-[4.5rem_minmax(0,1fr)] gap-5 py-6 sm:grid-cols-[2.5rem_6rem_minmax(0,1fr)] sm:gap-6">
+        <span aria-hidden="true" className="hidden pt-1 font-shout text-xl font-bold text-bone/35 tabular-nums sm:block">
+          {pad(index)}
+        </span>
+        <RiverImage
+          src={leader.portrait}
+          alt={`Portrait of ${leader.name}`}
+          position="center 22%"
+          className="aspect-[4/5] w-full"
+        />
+        <div className="min-w-0">
+          <h3 className="font-shout text-[1.75rem] leading-[0.95] font-bold uppercase transition-colors duration-300 group-hover:text-shallows">
+            {leader.name}
+          </h3>
+          <ul className="mt-2 grid gap-0.5 text-[0.9rem] leading-relaxed text-bone/70">
+            {leader.roles.map((role) => (
+              <li key={role}>{role}</li>
+            ))}
+          </ul>
+          <div className="mt-3">
+            <GroupPills groups={leader.groups} />
+          </div>
+          {isStaff && (
+            <div className="mt-4">
+              <Button href="#join-him-philippines" variant="ghost" className="text-[0.9rem]">
+                Membership contact ↓
+              </Button>
+            </div>
+          )}
+        </div>
+      </article>
+    </Reveal>
+  )
+}
 
-function CoreValues() {
-  const { ref, shown } = useInView<HTMLElement>({ threshold: 0.05 })
+/* ── 5. Core values rail ───────────────────────────────────────────────── */
+
+function CoreValues({ coreValues }: { coreValues: VM['coreValues'] }) {
+  const rail = useRef<HTMLOListElement>(null)
+  const scroll = (dir: 1 | -1) => {
+    const el = rail.current
+    if (!el) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: reduce ? 'auto' : 'smooth' })
+  }
+  const arrowBtn =
+    'flex h-12 w-12 items-center justify-center rounded-full border border-bone/30 text-bone transition-colors duration-300 hover:border-bone hover:bg-bone/5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ember'
 
   return (
     <section
-      ref={ref}
       id="core-values"
       data-plate="dark"
       aria-labelledby="core-values-heading"
-      className={cx(sectionScroll, 'border-t border-white/10')}
+      className="relative isolate scroll-mt-20 overflow-hidden bg-deep py-24 text-bone sm:py-32"
     >
-      <div className={cx(container, 'py-16 sm:py-24 lg:py-32')}>
-        <SectionHeader
+      <div aria-hidden="true" className="grain absolute inset-0 -z-10" />
+      <div className={`${container} flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between`}>
+        <SectionHead
           id="core-values-heading"
           eyebrow="What shapes us"
-          title="Our Core Values"
-          intro={himCoreValuesIntroduction}
-          shown={shown}
+          title={
+            <>
+              Our 12 core
+              <br />
+              values
+            </>
+          }
+          lead={coreValues.introduction}
         />
-        <p className="mt-10 text-sm text-white/50 md:hidden">Swipe to see all 12 values.</p>
+        <div className="hidden gap-3 lg:flex">
+          <button type="button" onClick={() => scroll(-1)} aria-label="Previous core values" className={arrowBtn}>
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path d="M19 12H5M11 6l-6 6 6 6" />
+            </svg>
+          </button>
+          <button type="button" onClick={() => scroll(1)} aria-label="Next core values" className={arrowBtn}>
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <p className="mt-10 px-4 text-[0.8rem] text-bone/60 sm:px-8 lg:hidden">Swipe to see all 12 values.</p>
+      <Reveal className="mt-4 lg:mt-14">
         <ol
+          ref={rail}
           aria-label="The 12 core values"
           tabIndex={0}
-          className={cx(
-            '-mx-6 mt-4 flex snap-x snap-mandatory items-start gap-3 overflow-x-auto scroll-px-6 px-6 pb-2 [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300 md:mx-0 md:mt-14 md:grid md:snap-none md:grid-cols-2 md:gap-x-12 md:gap-y-0 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden',
-            revealBase,
-            revealDelay1,
-            shown ? revealShown : revealHidden,
-          )}
+          className="no-scrollbar flex items-start snap-x snap-mandatory scroll-px-4 gap-0 overflow-x-auto px-4 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember sm:scroll-px-8 sm:px-8 lg:scroll-px-[max(2rem,calc((100vw-88rem)/2+2rem))] lg:px-[max(2rem,calc((100vw-88rem)/2+2rem))]"
         >
-          {himCoreValues.map((value, index) => (
+          {coreValues.values.map((value, i) => (
             <li
               key={value.label}
-              className="w-[82%] shrink-0 snap-start rounded-2xl border border-white/10 bg-[#181818] p-5 md:w-auto md:rounded-none md:border-x-0 md:border-b-0 md:bg-transparent md:px-0 md:pt-6 md:pb-10"
+              className="group relative flex w-[80vw] max-w-[24rem] shrink-0 snap-start flex-col border-l border-bone/15 px-6 pt-2 pb-4 last:border-r sm:w-[22rem] sm:px-8"
             >
-              <span aria-hidden="true" className="text-sm font-semibold tabular-nums text-cyan-300/80">
-                {pad(index + 1)}
+              <span
+                aria-hidden="true"
+                className="font-shout text-[clamp(5rem,9vw,7.5rem)] leading-[0.8] font-black text-bone/10 tabular-nums transition-colors duration-500 group-hover:text-ember"
+              >
+                {pad(i + 1)}
               </span>
-              <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em]">{value.label}</h3>
-              {value.paragraphs.map((paragraph) => (
-                <p key={paragraph} className="mt-3 text-[0.9375rem] leading-7 text-white/65">
-                  {paragraph}
-                </p>
-              ))}
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-  )
-}
-
-/* ------------------------------------------------------ STATEMENT OF FAITH */
-
-function StatementOfFaith() {
-  const { ref, shown } = useInView<HTMLElement>({ threshold: 0.05 })
-
-  return (
-    <section
-      ref={ref}
-      id="statement-of-faith"
-      data-plate="dark"
-      aria-labelledby="statement-of-faith-heading"
-      className={cx(sectionScroll, 'border-t border-white/10')}
-    >
-      <div className={cx(container, 'grid gap-10 py-16 sm:gap-12 sm:py-24 lg:grid-cols-12 lg:gap-10 lg:py-32')}>
-        <div className="lg:col-span-4">
-          <div className="lg:sticky lg:top-32">
-            <SectionHeader
-              id="statement-of-faith-heading"
-              eyebrow="What we believe"
-              title="Statement of Faith"
-              intro={statementOfFaithIntroduction}
-              shown={shown}
-              stacked
-            />
-          </div>
-        </div>
-        <ol className={cx('lg:col-span-7 lg:col-start-6', revealBase, revealDelay1, shown ? revealShown : revealHidden)}>
-          {statementOfFaith.map((statement, index) => (
-            <li
-              key={statement.summary}
-              className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3 border-t border-white/10 py-5 first:border-t-0 first:pt-0 sm:grid-cols-[4rem_minmax(0,1fr)] sm:gap-x-4 sm:py-7"
-            >
-              <span aria-hidden="true" className="text-lg font-semibold tabular-nums leading-tight text-white/30 sm:text-3xl">
-                {pad(index + 1)}
-              </span>
-              <div>
-                <h3 className="text-lg font-semibold leading-snug tracking-[-0.02em] sm:text-xl">{statement.summary}</h3>
-                <p className="mt-2 max-w-[62ch] text-base leading-7 text-white/65">{statement.text}</p>
+              <h3 className="mt-6 font-shout text-[2.25rem] leading-[0.92] font-extrabold uppercase">{value.label}</h3>
+              <span aria-hidden="true" className="mt-5 block h-px w-12 origin-left bg-ember transition-transform duration-500 ease-current group-hover:scale-x-[2]" />
+              <div className="mt-5 grid gap-4">
+                {value.paragraphs.map((p) => (
+                  <p key={p} className="text-[0.95rem] leading-relaxed text-bone/75">
+                    {p}
+                  </p>
+                ))}
               </div>
             </li>
           ))}
         </ol>
+      </Reveal>
+    </section>
+  )
+}
+
+/* ── 6. Statement of faith (light plate) ───────────────────────────────── */
+
+function StatementOfFaith({ sof }: { sof: VM['statementOfFaith'] }) {
+  return (
+    <section
+      id="statement-of-faith"
+      data-plate="light"
+      aria-labelledby="statement-of-faith-heading"
+      className="relative scroll-mt-20 bg-bone py-24 text-abyss sm:py-32"
+    >
+      <div className={`${container} grid gap-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20`}>
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <SectionHead
+            id="statement-of-faith-heading"
+            tone="light"
+            eyebrow={<span className="text-ember-ink">What we believe</span>}
+            title={
+              <>
+                Statement
+                <br />
+                of faith
+              </>
+            }
+            lead={sof.introduction}
+          />
+        </div>
+        <ol className="border-t border-abyss/15">
+          {sof.statements.map((s, i) => (
+            <Reveal
+              as="li"
+              key={s.summary}
+              delay={(i % 3) * 60}
+              className="group grid grid-cols-[3.25rem_minmax(0,1fr)] gap-x-4 border-b border-abyss/15 py-8 sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:gap-x-6"
+            >
+              <span
+                aria-hidden="true"
+                className="font-shout text-[2.5rem] leading-[0.85] font-extrabold text-abyss/25 tabular-nums transition-colors duration-300 group-hover:text-ember-ink sm:text-[4rem]"
+              >
+                {pad(i + 1)}
+              </span>
+              <div>
+                <h3 className="font-shout text-[1.6rem] leading-[1] font-bold uppercase sm:text-[2rem]">{s.summary}</h3>
+                <p className="mt-3 max-w-[62ch] text-[1rem] leading-relaxed text-abyss/75">{s.text}</p>
+              </div>
+            </Reveal>
+          ))}
+        </ol>
       </div>
     </section>
   )
 }
 
-/* ------------------------------------------------------------------ JOIN */
+/* ── 7. Membership ─────────────────────────────────────────────────────── */
 
-function Join() {
-  const { ref, shown } = useInView<HTMLElement>()
-
+function Join({ membership }: { membership: VM['membership'] }) {
+  const { contact } = membership
   return (
     <section
-      ref={ref}
       id="join-him-philippines"
       data-plate="dark"
       aria-labelledby="join-him-heading"
-      className="relative scroll-mt-[4.5rem] pt-8 pb-32 sm:pb-40"
+      className="relative isolate scroll-mt-20 overflow-hidden bg-river py-24 text-bone sm:py-32"
     >
-      <div className={container}>
-        <div
-          className={cx(
-            'relative isolate overflow-hidden rounded-3xl border border-white/10 bg-[#181818] px-6 py-14 sm:px-12 sm:py-16 lg:px-16',
-            revealBase,
-            shown ? revealShown : revealHidden,
-          )}
-        >
-          <div aria-hidden="true" className={riverGlow} />
-          <div className="relative z-10 grid gap-12 lg:grid-cols-12 lg:items-end">
-            <div className="lg:col-span-7">
-              <Eyebrow>Membership</Eyebrow>
-              <h2 id="join-him-heading" className="text-balance font-bold leading-[1.04] tracking-[-0.04em]" style={displaySize}>
-                Sign up to join H.I.M. Philippines
-              </h2>
-              <p className="mt-5 max-w-[60ch] text-base leading-7 text-white/70">{himMembershipStatement}</p>
-              <div className="mt-9">
-                <Button href={himApplicationForm} download tone="dark" size="md">
-                  Download application form (PDF)
-                </Button>
-              </div>
-            </div>
+      <div aria-hidden="true" className="grain absolute inset-0 -z-10" />
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] -z-10 blur-[70px] [background-image:radial-gradient(ellipse_35%_35%_at_85%_20%,rgb(242_118_28/0.22),transparent_70%),radial-gradient(ellipse_45%_45%_at_10%_90%,rgb(6_19_27/0.6),transparent_70%)]" />
+      <div className={`${container} grid gap-16 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-20`}>
+        <Reveal>
+          <Eyebrow className="text-bone/85">Membership</Eyebrow>
+          <h2 id="join-him-heading" className="mt-6 font-shout text-[clamp(3rem,7.5vw,7rem)] leading-[0.86] font-extrabold uppercase">
+            Sign up to join
+            <br />
+            H.I.M. Philippines
+          </h2>
+          <p className="mt-8 max-w-[56ch] font-whisper text-[clamp(1.15rem,1.6vw,1.4rem)] leading-[1.5] italic text-bone/90">
+            {membership.statement}
+          </p>
+          <div className="mt-10">
+            <Button href={membership.applicationForm} download variant="ember" size="lg" arrow>
+              Download application form (PDF)
+            </Button>
+          </div>
+        </Reveal>
 
-            <div className="lg:col-span-5">
-              <div className="group flex items-center gap-5 rounded-2xl border border-white/10 bg-black/30 p-5">
-                <Portrait leader={himSecretary} className="size-20 rounded-xl" />
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold tracking-[0.12em] text-white/50 uppercase">For questions, please contact</p>
-                  <p className="mt-1.5 font-semibold">{himSecretary.name}</p>
-                  <p className="text-sm text-white/60">{himSecretary.roles[0]}</p>
-                  <a
-                    href="mailto:pastorgreeko@gmail.com"
-                    className="mt-2 inline-block text-sm font-semibold break-all text-cyan-200 underline decoration-cyan-300/40 underline-offset-4 transition-colors hover:decoration-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
-                  >
-                    pastorgreeko@gmail.com
-                  </a>
-                </div>
-              </div>
-              <figure className="mt-5 flex items-center gap-4 px-1">
-                <img
-                  src={himDpoBadge}
-                  alt="National Privacy Commission DPO/DPS registration badge"
-                  loading="lazy"
-                  decoding="async"
-                  className="h-14 w-auto shrink-0 opacity-80"
-                />
-                <figcaption className="text-xs leading-5 text-white/50">
-                  National Privacy Commission DPO/DPS registration. The badge shown is valid through 15 December 2025.
-                </figcaption>
-              </figure>
+        <Reveal delay={150} className="grid gap-8">
+          <div className="group grid grid-cols-[6rem_minmax(0,1fr)] gap-5 border-t border-bone/25 pt-6">
+            <RiverImage
+              src={contact.portrait}
+              alt={`Portrait of ${contact.name}`}
+              position="center 22%"
+              className="aspect-[4/5] w-full"
+            />
+            <div className="min-w-0">
+              <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-bone/80 uppercase">For questions, please contact</p>
+              <p className="mt-2 font-shout text-[1.75rem] leading-[0.95] font-bold uppercase">{contact.name}</p>
+              <p className="mt-1 text-[0.9rem] text-bone/80">{contact.roles[0]}</p>
+              <a
+                href={`mailto:${membership.contactEmail}`}
+                className="mt-3 inline-block text-[0.95rem] font-semibold break-all text-bone underline decoration-bone/40 underline-offset-4 transition-colors hover:decoration-ember focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ember"
+              >
+                {membership.contactEmail}
+              </a>
             </div>
           </div>
-        </div>
+          <figure className="flex items-center gap-5 border-t border-bone/25 pt-6">
+            <img
+              src={membership.dpoBadge}
+              alt={membership.dpoBadgeAlt}
+              loading="lazy"
+              decoding="async"
+              className="h-20 w-auto shrink-0"
+            />
+            <figcaption className="text-[0.82rem] leading-relaxed text-bone/80">{membership.dpoCaption}</figcaption>
+          </figure>
+        </Reveal>
       </div>
-
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1440 130"
-        preserveAspectRatio="none"
-        className="absolute bottom-0 left-0 h-[60px] w-full sm:h-[90px]"
-      >
-        <path d="M0,50 C360,100 720,0 1080,45 C1260,68 1350,58 1440,45 L1440,130 L0,130 Z" fill="#000000" />
-      </svg>
     </section>
   )
 }

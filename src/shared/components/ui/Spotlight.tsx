@@ -13,6 +13,9 @@ import { useCallback, type PointerEvent } from 'react'
  * re-renders anything. Mouse only: on touch there is no hover, and a glow
  * that jumps to wherever a finger landed reads as a glitch.
  *
+ * REVAMP 2026-09-25: the glow is the `shallows` token (#7fc2b8) on the
+ * shared `ease-current` curve. Props unchanged.
+ *
  * Tailwind v4's `group-hover:` only applies under `@media (hover: hover)`,
  * so the glow never gets stuck "on" after a tap on a phone either.
  */
@@ -31,9 +34,9 @@ export function Spotlight({ size = 420, strength = 0.14 }: { size?: number; stre
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-[1] opacity-0 transition-opacity duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:opacity-100 motion-reduce:hidden"
+      className="pointer-events-none absolute inset-0 z-[1] opacity-0 transition-opacity duration-500 ease-current group-hover:opacity-100 motion-reduce:hidden"
       style={{
-        background: `radial-gradient(${size}px circle at var(--spot-x, 50%) var(--spot-y, 50%), rgb(143 212 201 / ${strength}), transparent 65%)`,
+        background: `radial-gradient(${size}px circle at var(--spot-x, 50%) var(--spot-y, 50%), rgb(127 194 184 / ${strength}), transparent 65%)`,
       }}
     />
   )

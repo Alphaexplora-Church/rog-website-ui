@@ -1,26 +1,217 @@
 /**
- * Tailwind bootstrap only — every hand-authored class this file used to
- * define is gone (converted to inline utilities across every component; see
- * shared/styles/tokens.ts and each component's own doc comment for where).
+ * River of God — design tokens + the handful of global rules Tailwind
+ * utilities can't express. REVAMP 2026-09-25 ("Textured Editorial", ROG 11).
  *
- * THIS IMPORT LINE ITSELF IS NOT "CUSTOM CSS" IN THE SENSE THE MIGRATION
- * TARGETED — it's Tailwind's own required entry point. In Tailwind v4's
- * Vite plugin, `@import 'tailwindcss'` is what tells the build where to
- * inject the generated utility stylesheet; without a file somewhere doing
- * this import, NO Tailwind class works, including plain stock ones like
- * `text-white` or `flex`. I found this out the hard way earlier in this
- * same migration: removing this file's import from main.tsx (thinking it
- * was purely the old custom classes) zeroed out `document.styleSheets`
- * entirely on the live site — not just the old `.hero`/`.mask`/`.nav-*`
- * rules, ALL Tailwind output, everywhere. Restored immediately; this file
- * and its import in main.tsx both have to stay for the site to render at
- * all with Tailwind utility classes.
+ * WHY TOKENS ARE BACK IN THIS FILE. The 2026-09-17 migration deleted every
+ * hand-authored class and moved literal hex strings into
+ * `shared/styles/tokens.ts`. That fixed the old drift problem, but it meant
+ * every colour was an arbitrary value (`bg-[#161616]`) retyped per file.
+ * Tailwind v4's own mechanism for design tokens is `@theme`: each variable
+ * below GENERATES real utilities (`bg-abyss`, `text-ember`, `font-shout`,
+ * `ease-tide`, `animate-marquee`…), so components use named tokens and a
+ * palette change is one edit here. This is Tailwind-native configuration,
+ * not the custom-class stylesheet the migration removed — there are still
+ * no component classes in this file.
  *
- * The Google Fonts import stays for the same practical reason: Figtree is
- * the interim stand-in for Proxima Nova (see shared/styles/tokens.ts's
- * `fontFamily` export) and has to be fetched from somewhere; a `<link>` in
- * index.html would work exactly as well, but moving it there wasn't part of
- * what Jude asked for and isn't a hand-authored style rule either way.
+ * What lives here and nowhere else:
+ *   1. @theme      — palette, type families, easings, animations
+ *   2. @font-face  — the three self-hosted OFL families (public/fonts)
+ *   3. base        — body ground + the fixed global grain layer
+ *   4. @utility    — the four textures (grain, duotone, halftone, scrim)
+ *                    that need pseudo-elements or blend modes
+ *
+ * Contrast pairs (WCAG 2.1, measured in ROG 11 §4.1): bone/abyss 16.2,
+ * bone/current 6.3, shallows/abyss 9.2, sand/abyss 9.7, ember/abyss 6.6,
+ * abyss-on-ember 6.6 (button labels), ember-ink/bone 5.4. Ember is NEVER
+ * text on bone or on current (2.5 / 2.6).
  */
 @import 'tailwindcss';
-@import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,400..900&display=swap');
+
+@theme {
+  /* ── Palette — sampled from ROG's own graphics (ROG 11 §2) ── */
+  --color-abyss: #06131b;       /* primary ground — deep water, not black */
+  --color-abyss-2: #0a1d27;     /* raised surface on abyss */
+  --color-deep: #0b2a33;        /* between abyss and current */
+  --color-river: #0e5f68;     /* secondary ground, duotone mid */
+  --color-shallows: #7fc2b8;    /* light teal — secondary text on dark */
+  --color-bone: #f4ede2;        /* primary text on dark; light ground */
+  --color-bone-2: #e9dfcf;      /* raised surface on bone */
+  --color-sand: #cdb892;        /* warm meta text on dark */
+  --color-ember: #f2761c;       /* THE signature accent */
+  --color-ember-ink: #a3420b;   /* ember as text on light grounds only */
+
+  /* ── Type — shout / whisper / body (ROG 11 §4.2) ── */
+  --font-shout: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
+  --font-whisper: 'Bodoni Moda', 'Didot', Georgia, serif;
+  --font-sans: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Motion ── */
+  --ease-current: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-tide: cubic-bezier(0.7, 0, 0.2, 1);
+
+  --animate-marquee: marquee 48s linear infinite;
+  --animate-boil: boil 0.9s steps(6) infinite;
+  --animate-drift: drift 38s ease-in-out infinite alternate;
+  --animate-wave-draw: wave-draw 1.6s var(--ease-tide) both;
+  --animate-live: live 1.8s ease-out infinite;
+
+  @keyframes marquee {
+    to { transform: translate3d(-50%, 0, 0); }
+  }
+  @keyframes boil {
+    0% { transform: translate(0, 0); }
+    20% { transform: translate(-3%, 2%); }
+    40% { transform: translate(2%, -3%); }
+    60% { transform: translate(-2%, -1%); }
+    80% { transform: translate(3%, 3%); }
+    100% { transform: translate(0, 0); }
+  }
+  @keyframes drift {
+    from { transform: scale(1.08) translate3d(-1.5%, 0, 0); }
+    to { transform: scale(1.14) translate3d(1.5%, -2%, 0); }
+  }
+  @keyframes wave-draw {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes live {
+    0% { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(2.6); opacity: 0; }
+  }
+}
+
+/* ── Self-hosted fonts (OFL). Display face is preloaded in index.html. ── */
+@font-face {
+  font-family: 'Big Shoulders Display';
+  src: url('/fonts/big-shoulders-display.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bodoni Moda';
+  src: url('/fonts/bodoni-moda.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bodoni Moda';
+  src: url('/fonts/bodoni-moda-italic.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
+  src: url('/fonts/hanken-grotesk.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
+  src: url('/fonts/hanken-grotesk-italic.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    background: var(--color-abyss);
+    color-scheme: dark;
+  }
+  body {
+    background: var(--color-abyss);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Global grain — ONE fixed layer, so it never repaints on scroll
+     (ROG 11 §4.3). Soft-light keeps it ≤ 0.08 effective over body text. */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background-image: url('/assets/rog/grain.png');
+    background-size: 160px;
+    opacity: 0.09;
+    mix-blend-mode: soft-light;
+  }
+  ::selection {
+    background: var(--color-ember);
+    color: var(--color-abyss);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+}
+
+/* Local grain on a surface that needs more texture than the global layer
+   (images, the hero, posters). Parent must be `relative`. */
+@utility grain {
+  isolation: isolate;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-image: url('/assets/rog/grain.png');
+    background-size: 160px;
+    opacity: 0.18;
+    mix-blend-mode: overlay;
+  }
+}
+
+/* River duotone over an image (Colour Bloom's resting state). Apply to a
+   wrapper; the image inside is desaturated and tinted abyss → shallows.
+   `group-hover` / `data-bloom` on the parent fades it to true colour. */
+@utility duotone {
+  & > img {
+    filter: grayscale(1) contrast(1.08) brightness(0.9);
+    transition: filter 700ms var(--ease-current), transform 1200ms var(--ease-current);
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(160deg, var(--color-river), var(--color-abyss) 85%);
+    mix-blend-mode: color;
+    opacity: 1;
+    transition: opacity 700ms var(--ease-current);
+  }
+  &:is(:hover, :focus-within, [data-bloom='true']) > img,
+  :is(a, button, article):is(:hover, :focus-visible) & > img {
+    filter: none;
+  }
+  &:is(:hover, :focus-within, [data-bloom='true'])::after,
+  :is(a, button, article):is(:hover, :focus-visible) &::after {
+    opacity: 0;
+  }
+}
+
+/* Halftone dots — used in exactly one place (the 477 church finder). */
+@utility halftone {
+  background-image: radial-gradient(circle, currentColor 1.1px, transparent 1.4px);
+  background-size: 9px 9px;
+}
+
+/* Hide scrollbars on horizontal rails while keeping them scrollable. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}

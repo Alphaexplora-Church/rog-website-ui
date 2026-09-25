@@ -1,203 +1,159 @@
+import { useEffect, useState, type MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealHidden, revealShown, riverGlow } from '../../../shared/styles/tokens'
+import { Button } from '../../../shared/components/ui/Button'
+import { Eyebrow, Pill, WaveMark } from '../../../shared/components/ui/River'
+import { container, heroRevealBase, heroRevealDelay1, heroRevealDelay2, heroRevealHidden, heroRevealShown } from '../../../shared/styles/tokens'
 import { sermonThumbnail, type Sermon } from '../data/mediaData'
 import { useMediaLibraryViewModel } from '../viewModels/useMediaLibraryViewModel'
+import { Cover, PlayGlyph } from './MediaParts'
 
 /**
- * Media, section 1 — hero spotlight. Modeled on the real site's "Most
- * Recent" hero (screenshot Jude shared), but relabeled "Featured Message"
- * rather than "Most Recent" — of our sample sermons only this one carries a
- * confirmed real date, so claiming it's the most *recent* upload would be a
- * guess we can't back up. Real most-recent ordering is a job for the actual
- * CMS/API once that's wired.
+ * Media, section 1 — the FEATURED latest message owns the first screen.
  *
- * UPDATED 2026-09-22: featured sermon switched from "Spirit of Elijah" to
- * "Redemption, Reconciliation and Restoration" — the sourced videoId for
- * Spirit of Elijah turned out to belong to a different church entirely
- * (Grace Church Shah Alam, not River of God), so it is no longer a safe pick
- * to feature until Jude sends the real link.
+ * REVAMP 2026-09-25 (ROG 11 §6): full-bleed, full colour, a slow drift on
+ * the thumbnail under a River scrim + boiling grain, the title as a giant
+ * shout, and a big round play affordance. Built like PageHero but around the
+ * message itself — the hero is the thing you can watch, not a caption for it.
  *
- * ── REDESIGNED 2026-09-23 ────────────────────────────────────────────────
- * Jude: "fix also the design of the hero section… in the Media tab."
+ * History that still holds:
+ *  - The featured message is the NEWEST by date (`media.latestSermon()`,
+ *    Jude 2026-09-24), so the eyebrow can honestly say "Latest Message".
+ *  - The "Spirit of Elijah" videoId belonged to a different church and was
+ *    dropped from featuring (2026-09-22).
+ *  - ⚠ The sample thumbnail for the featured message is another church's
+ *    artwork ("DESTINYC3 SERMONS") — sample data, must not ship; replacing it
+ *    is a `mediaData`/CMS job, not a layout one.
+ *  - Loading / CMS-unreachable / nothing-published each get an honest hero
+ *    of the same height so the page never jumps (HeroWithoutMessage).
  *
- * THE REAL BUG FIRST. The section had `py-20` and no top padding, so its
- * first line sat underneath the floating navbar — "FEATURED MESSAGE" was
- * physically clipped by the nav pill at every viewport width. Every other
- * hero on this site clears it with `pt-40 sm:pt-48`; this one never did.
- * That alone was most of why the page read as broken rather than merely
- * plain.
- *
- * The rest of it: the headline was `text-3xl`, a body-copy size for a page
- * hero; the thumbnail of a *video* carried no play affordance, so it read as
- * a decorative still; there was no eyebrow pill (Doc 9 §4C); no depth behind
- * the plate; and the single CTA left no route down to the library.
- *
- * Now: cleared top padding, eyebrow pill, hero-scale headline, the shared
- * `riverGlow` ambience, a double-bezel media card (Doc 9 §4A) carrying the
- * same play badge LatestSermonSection already uses, and a second link down
- * to `#media-library`. Section padding is `py-24`+ per Doc 9.
- *
- * ── CMS-CONNECTED, 2026-09-23 ────────────────────────────────────────────
- * The hero now features the NEWEST message from the CMS, so the eyebrow
- * says "Latest Message" — a claim the data can now back. The old hardcoded
- * `findSermon('redemption…')!` would have crashed the page the moment that
- * entry didn't exist; there are now honest states for loading, a CMS that
- * can't be reached, and a library with nothing published yet.
- *
- * ── PICKED BY DATE, NOT ARRAY ORDER, 2026-09-24 ──────────────────────────
- * This used to be `media.sermons.find((s) => s.date && !s.dateIsPlaceholder)
- * ?? media.sermons[0]` — "the first message with a confirmed date," which
- * only equalled the latest one because it trusted Strapi to keep handing
- * the list back newest-first. Jude asked for the real thing: whichever
- * message actually has the latest upload date, compared explicitly. That
- * logic now lives once, in `mediaData.ts`'s `latestSermon()`, so every
- * "latest message" spot on the site can share it rather than re-deriving
- * its own array-order assumption.
- *
- * ⚠ THE SAMPLE THUMBNAIL IS ANOTHER CHURCH'S ARTWORK. The frame this pulls
- * reads "DESTINYC3 SERMONS" across the top — the same class of problem as
- * the Spirit of Elijah videoId noted above. It is sample data, not ROG's,
- * and should not ship. Replacing it is a `mediaData.ts` job, not a layout
- * one.
+ * When a thumbnail can't load (offline, YouTube blocked), `Cover` falls back
+ * to designed River art with the title set big and faint, so the hero still
+ * reads as a poster rather than an empty box.
  */
 export function MediaHero() {
-  const { ref, shown } = useInView<HTMLDivElement>()
   const { media, isLoading, error } = useMediaLibraryViewModel()
   const sermon: Sermon | undefined = media.latestSermon()
-  const reveal = `${revealBase} ${shown ? revealShown : revealHidden}`
+  const [on, setOn] = useState(false)
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setOn(true))
+    return () => cancelAnimationFrame(t)
+  }, [])
 
   if (!sermon) {
     return <HeroWithoutMessage state={isLoading ? 'loading' : error ? 'error' : 'empty'} />
+  }
+
+  const topics = sermon.topicSlugs.map((t) => media.findTopic(t)?.title).filter(Boolean) as string[]
+  const rise = (d = '') => `${heroRevealBase} ${d} ${on ? heroRevealShown : heroRevealHidden}`
+  const slug = sermon.slug
+  const to = `/media/watch/${slug}`
+
+  /* Poster Morph: either watch link names the hero image just before the
+     view transition, so the photo grows into the player. */
+  function namePosterMorph(e: MouseEvent<HTMLElement>) {
+    if (!(e.target as HTMLElement).closest(`a[href="${to}"]`)) return
+    const hero = e.currentTarget.querySelector<HTMLElement>('[data-cover]')
+    if (hero) hero.style.viewTransitionName = `cover-${slug}`
   }
 
   return (
     <section
       data-plate="dark"
       aria-labelledby="media-hero-heading"
-      className="relative overflow-hidden bg-black text-white"
+      onClickCapture={namePosterMorph}
+      className="relative isolate flex min-h-[92svh] items-end overflow-hidden bg-abyss text-bone"
     >
-      <div aria-hidden="true" className={riverGlow} />
+      <Cover
+        src={sermonThumbnail(sermon)}
+        bloom="always"
+        scrim="hero"
+        priority
+        className="absolute! inset-0 -z-10"
+        imgClassName="animate-drift motion-reduce:animate-none"
+      />
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-[10%] -z-10 animate-boil bg-[url('/assets/rog/grain.png')] bg-[length:180px] opacity-[0.14] mix-blend-overlay motion-reduce:animate-none" />
 
-      <div
-        ref={ref}
-        className="relative z-10 mx-auto grid max-w-[86rem] grid-cols-1 items-center gap-10 px-6 pt-32 pb-24 sm:pt-40 sm:pb-28 lg:grid-cols-2 lg:gap-16"
-      >
-        <div className={reveal} style={{ transitionDelay: '0ms' }}>
-          {/* Doc 9 §4C eyebrow pill — this was bare tracked-out text, and it
-              was the exact element the navbar used to sit on top of. */}
-          <span
-            className="inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase"
-            style={{
-              color: '#8FD4C9',
-              backgroundColor: 'rgb(27 122 112 / 0.18)',
-              boxShadow: 'inset 0 0 0 1px rgb(143 212 201 / 0.25)',
-            }}
-          >
-            Latest Message
-          </span>
-
-          <h1
-            id="media-hero-heading"
-            className="mt-5 text-balance font-heading text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl"
-            style={{ letterSpacing: '-0.035em' }}
-          >
-            {sermon.title}
-          </h1>
-
-          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[#a6a6a6]">
-            {sermon.date && (
-              <span className={sermon.dateIsPlaceholder ? 'text-white/35 italic' : undefined}>
-                {sermon.date}
+      <div className={`${container} relative pt-36 pb-14 sm:pb-20`}>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div>
+            <div className={rise()}>
+              <Eyebrow className="text-bone/85">Latest Message</Eyebrow>
+            </div>
+            <h1
+              id="media-hero-heading"
+              className="mt-6 max-w-[14ch] text-balance font-shout text-[clamp(3.25rem,9.5vw,9.5rem)] font-extrabold uppercase leading-[0.86] tracking-[-0.01em]"
+            >
+              <span className="block overflow-hidden pb-[0.04em]">
+                <span
+                  className={`block transition-transform duration-[1200ms] ease-tide motion-reduce:transition-none ${on ? 'translate-y-0' : 'translate-y-[106%] motion-reduce:translate-y-0'}`}
+                  style={{ transitionDelay: '120ms' }}
+                >
+                  {sermon.title}
+                </span>
               </span>
-            )}
-            {sermon.date && sermon.speakerName && (
-              <span aria-hidden="true" className="text-white/25">
-                ·
-              </span>
-            )}
-            {sermon.speakerName && <span>{sermon.speakerName}</span>}
+            </h1>
+
+            <div className={`mt-7 flex flex-wrap items-center gap-x-4 gap-y-3 ${rise(heroRevealDelay1)}`}>
+              <p className="text-[0.95rem] font-medium tabular-nums text-sand">
+                {sermon.date && (
+                  <span className={sermon.dateIsPlaceholder ? 'italic opacity-75' : undefined}>{sermon.date}</span>
+                )}
+                {sermon.date && sermon.speakerName && <span aria-hidden="true" className="px-2 text-bone/40">·</span>}
+                {sermon.speakerName && <span className="text-bone">{sermon.speakerName}</span>}
+              </p>
+              {topics.map((t) => (
+                <Pill key={t}>{t}</Pill>
+              ))}
+            </div>
+
+            <div className={`mt-10 flex flex-wrap items-center gap-6 ${rise(heroRevealDelay2)}`}>
+              <Button to={to} variant="ember" size="lg">
+                <span className="flex items-center gap-2.5">
+                  <PlayGlyph className="h-4 w-4" />
+                  Watch Now
+                </span>
+              </Button>
+              <Button href="#media-library" variant="ghost">
+                Browse the library
+              </Button>
+            </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              to={`/media/watch/${sermon.slug}`}
-              className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#1b7a70] px-7 font-heading text-sm font-semibold tracking-[0.04em] text-white transition-[transform,background-color,box-shadow] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#166059] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100"
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              Watch Now
-            </Link>
-
-            <a
-              href="#media-library"
-              className="group inline-flex h-12 items-center gap-2 text-sm font-semibold text-white/70 transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white"
-            >
-              Browse the library
-              <svg
-                viewBox="0 0 20 20"
-                className="h-4 w-4 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-y-1 motion-reduce:transition-none"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M10 4v12M5 11l5 5 5-5" />
-              </svg>
-            </a>
-          </div>
+          {/* The big play affordance — the whole poster is a video. */}
+          <Link
+            to={to}
+            viewTransition
+            aria-label={`Watch ${sermon.title}`}
+            className={`group relative hidden h-40 w-40 items-center justify-center self-end rounded-full border border-bone/40 lg:flex ${rise(heroRevealDelay2)}`}
+          >
+            <span className="absolute inset-3 rounded-full bg-bone/10 backdrop-blur-sm transition-[transform,background-color] duration-[700ms] ease-current group-hover:scale-[1.12] group-hover:bg-ember motion-reduce:transition-none" />
+            <PlayGlyph className="relative h-9 w-9 text-bone transition-colors duration-500 group-hover:text-abyss" />
+            <svg aria-hidden="true" viewBox="0 0 160 160" className="absolute inset-0 h-full w-full animate-[spin_24s_linear_infinite] motion-reduce:animate-none">
+              <defs>
+                <path id="media-hero-ring" d="M80 80 m-66 0 a66 66 0 1 1 132 0 a66 66 0 1 1 -132 0" />
+              </defs>
+              <text className="fill-bone/75 font-sans text-[9.5px] font-semibold uppercase">
+                <textPath href="#media-hero-ring" textLength="408" lengthAdjust="spacing">
+                  Play the latest message · Watch now ·
+                </textPath>
+              </text>
+            </svg>
+          </Link>
         </div>
-
-        {/* Double-bezel media card (Doc 9 §4A): gradient shell, photo core. */}
-        <Link
-          to={`/media/watch/${sermon.slug}`}
-          aria-label={`Watch ${sermon.title}`}
-          className={`group block rounded-3xl p-[1.5px] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100 ${reveal}`}
-          style={{
-            transitionDelay: '140ms',
-            background:
-              'linear-gradient(160deg, #1b7a70, rgb(143 212 201 / 0.35) 55%, transparent)',
-          }}
-        >
-          <div className="relative aspect-video overflow-hidden rounded-[1.4rem] bg-[#0B0F14]">
-            <img
-              src={sermonThumbnail(sermon)}
-              alt={sermon.title}
-              className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105 motion-reduce:transition-none"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"
-            />
-            {/* It is a video. Say so — same play badge LatestSermonSection uses. */}
-            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center">
-              <span
-                className="flex h-16 w-16 items-center justify-center rounded-full ring-1 ring-white/25 backdrop-blur-sm transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-110 motion-reduce:transition-none"
-                style={{ backgroundColor: 'rgb(27 122 112 / 0.85)' }}
-              >
-                <svg viewBox="0 0 24 24" className="h-6 w-6 fill-white">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </span>
-            </span>
-          </div>
-        </Link>
       </div>
     </section>
   )
 }
 
 /**
- * Hero when there is no message to feature. Keeps the same plate, height
- * and "Browse the library" way down, so the page doesn't jump when data
+ * Hero when there is no message to feature. Same ground and height, and the
+ * same "Browse the library" way down, so the page doesn't jump when data
  * arrives and never reads as broken.
  */
 function HeroWithoutMessage({ state }: { state: 'loading' | 'error' | 'empty' }) {
   const line =
     state === 'loading'
-      ? '\u00a0'
+      ? ' '
       : state === 'error'
         ? 'Messages couldn’t be loaded right now. Please try again in a moment.'
         : 'New messages appear here as soon as they’re published.'
@@ -207,34 +163,32 @@ function HeroWithoutMessage({ state }: { state: 'loading' | 'error' | 'empty' })
       data-plate="dark"
       aria-labelledby="media-hero-heading"
       aria-busy={state === 'loading'}
-      className="relative overflow-hidden bg-black text-white"
+      className="relative isolate flex min-h-[92svh] items-end overflow-hidden bg-abyss text-bone"
     >
-      <div aria-hidden="true" className={riverGlow} />
-      <div className="relative z-10 mx-auto max-w-[86rem] px-6 pt-32 pb-24 sm:pt-40 sm:pb-28">
-        <span
-          className="inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase"
-          style={{
-            color: '#8FD4C9',
-            backgroundColor: 'rgb(27 122 112 / 0.18)',
-            boxShadow: 'inset 0 0 0 1px rgb(143 212 201 / 0.25)',
-          }}
-        >
-          Media
-        </span>
+      <div aria-hidden="true" className="absolute inset-0 -z-10">
+        <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_40%_45%_at_20%_30%,rgb(14_95_104/0.7),transparent_70%),radial-gradient(ellipse_30%_30%_at_85%_80%,rgb(242_118_28/0.2),transparent_70%)]" />
+        <WaveMark
+          draw={state === 'loading'}
+          className="absolute -right-[8%] top-[14%] h-auto w-[70vw] max-w-[1100px] text-bone/[0.05]"
+          strokeWidth={3}
+        />
+      </div>
+      <div className={`${container} pt-36 pb-16 sm:pb-24`}>
+        <Eyebrow>Media</Eyebrow>
         <h1
           id="media-hero-heading"
-          className="mt-5 text-balance font-heading text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl"
-          style={{ letterSpacing: '-0.035em' }}
+          className="mt-6 font-shout text-[clamp(3.5rem,11vw,10.5rem)] font-extrabold uppercase leading-[0.86]"
         >
           Messages
         </h1>
-        <p className="mt-5 max-w-[46ch] text-sm text-[#a6a6a6]">{line}</p>
-        <a
-          href="#media-library"
-          className="mt-8 inline-flex h-12 items-center gap-2 text-sm font-semibold text-white/70 transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white"
-        >
-          Browse the library
-        </a>
+        <p className="mt-8 max-w-[46ch] font-whisper text-[clamp(1.2rem,1.8vw,1.6rem)] italic leading-[1.4] text-bone/80">
+          {line}
+        </p>
+        <div className="mt-10">
+          <Button href="#media-library" variant="ghost">
+            Browse the library
+          </Button>
+        </div>
       </div>
     </section>
   )

@@ -1,43 +1,51 @@
 import { HeroSection } from './HeroSection'
-import { UpcomingEventsSection } from './UpcomingEventsSection'
-import { WatchOrListenSection } from './WatchOrListenSection'
-import { LiveServicesSection } from './LiveServicesSection'
 import { ServicesMainCenterSection } from './ServicesMainCenterSection'
+import { WatchOrListenSection } from './WatchOrListenSection'
+import { FiveCrossingsSection } from './FiveCrossingsSection'
+import { UpcomingEventsSection } from './UpcomingEventsSection'
+import { LiveServicesSection } from './LiveServicesSection'
+import { Marquee } from '../../../shared/components/ui/River'
+import { site } from '../../../shared/config/site'
 
 /**
- * Home — View layer only.
+ * Home — View layer only. REVAMP 2026-09-25 ("Textured Editorial", ROG 11).
  *
- * Per Doc 4 §3.2 a View never fetches. When a later section needs live data
- * it will call `useHomeViewModel()` from ../viewModels/ and pass plain
- * props down; nothing below this file will ever import the API client.
+ * Every section is a different shape, and the grounds alternate so the page
+ * has rhythm instead of one long black plate:
  *
- * REVISED 2026-09-22, following Jude's Figma handoff (artifact
- * 3680dbd7-…, board "01 — Home"). Explicit instruction: keep the navbar and
- * HeroSection exactly as they are — only the body below the hero changes.
- * The four sections below replace ServiceTimesSection, LatestSermonSection,
- * MinistriesGrid, EventsStrip and NextStepsSection wholesale, matching the
- * approved design 1:1 in content and order:
+ *   Hero (poster, abyss + liquid texture) → River Marquee (ember band) →
+ *   The Current (weekly rhythm + Main Center, river ground) → Watch or
+ *   Listen (editorial split + index rows, abyss) → Five crossings (5Es,
+ *   bone) → What's on (poster shelf, abyss) → Follow along (typographic
+ *   links, river) → Footer.
  *
- *   Hero (unchanged) → Upcoming Events → Watch or Listen →
- *   Watch Our Live Services → Our Services & Main Center → Footer (App.tsx)
- *
- * MinistriesGrid's "Find Your Place" tiles and NextStepsSection's Life
- * Group / Give panel have no equivalent in this design — they're not
- * deleted from disk (still in this folder, just unused), in case a later
- * page needs them. The five now-orphaned files (ServiceTimesSection,
- * LatestSermonSection, MinistriesGrid, EventsStrip, NextStepsSection) are
- * left in place for the same reason: nothing currently imports them, but
- * they're real, working components if a future page wants to reuse the
- * pattern.
+ * The marquee text is derived from site.ts so service times never drift.
  */
 export default function Home() {
+  const sunday = site.services
+    .filter((s) => s.day === 'Sunday')
+    .map((s) => s.time.replace(':00', '').replace(' ', ''))
+    .join(' · ')
+  const midweek = site.services.filter((s) => s.day !== 'Sunday')
+
   return (
     <>
       <HeroSection />
-      <UpcomingEventsSection />
-      <WatchOrListenSection />
-      <LiveServicesSection />
+      <Marquee
+        label="Service times"
+        items={[
+          'Love God & make disciples',
+          `Sunday ${sunday}`,
+          ...midweek.map((s) => `${s.day} ${s.time.replace(':00', '')} ${s.label ?? ''}`.trim()),
+          'Shangri-La Plaza · Lower Ground',
+          site.motto,
+        ]}
+      />
       <ServicesMainCenterSection />
+      <WatchOrListenSection />
+      <FiveCrossingsSection />
+      <UpcomingEventsSection />
+      <LiveServicesSection />
     </>
   )
 }

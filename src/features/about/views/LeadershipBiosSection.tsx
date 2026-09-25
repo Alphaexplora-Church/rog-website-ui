@@ -1,106 +1,91 @@
 import { founders } from '../../../shared/data/people'
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealDelay1, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { Reveal, SectionHead } from '../../../shared/components/ui/River'
+import { container } from '../../../shared/styles/tokens'
+import { Portrait } from './TeamRosterRow'
 
 /**
- * About, section 3 — Leadership bios. Matches the Figma "Bios" board shape
- * (alternating left/right layout, blob-shaped portrait frame) but the
- * copy is now the REAL text from riverofgod.ph, pasted in full by Jude
- * 2026-09-22 — replacing the earlier short paraphrased bios. Kept close to
- * verbatim rather than re-summarized, same principle as doctrinal copy:
- * this is the church's own account of its founders, not something to
- * paraphrase freely.
+ * About — Leadership bios (Bishop Chito + Pastor Rachel). REVAMP
+ * 2026-09-25: the bone light plate, so the page's first people section
+ * breaks from the dark timeline above.
  *
- * SINGLE-SOURCED 2026-09-23. Both names, titles and biographies used to be
- * typed out below. The same two people were also typed out in
- * FoundersSection and a third time in ApostolicTeamSection, each with a
- * different title — three records for two people. All three now read
- * `shared/data/people.ts`; this file renders the two flagged `founder`
- * there, in that order.
+ * Shape: two long editorial spreads, alternating sides — a tall poster
+ * portrait (Portrait: generic placeholder until real headshots exist,
+ * Colour Bloom once a photo is passed) with the name set huge in shout
+ * across it, and the biography beside it. Bios are the church's own text
+ * from riverofgod.ph (Jude, 2026-09-22), kept verbatim — the first
+ * paragraph is only set larger, never rewritten.
  *
-
- * ⚠ PLACEHOLDER AVATARS — same generic circle-glyph placeholder introduced
- * in TeamRosterRow.tsx (per Jude's direct feedback there), reused here at
- * blob-frame size instead of a real photo. Duplicated locally rather than
- * imported from TeamRosterRow since that component's version is sized and
- * exported only for its own grid cards; extract to a shared file if a
- * third place ends up needing it.
+ * SINGLE-SOURCED 2026-09-23: names, titles and bios come from
+ * `shared/data/people.ts` (the two records flagged `founder`, in order).
  */
-function AvatarPlaceholder({ className }: { className: string }) {
-  return (
-    <div
-      aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-[60%_40%_55%_45%/45%_55%_40%_60%] bg-[#2a2a2a] ring-1 ring-white/10 ${className}`}
-    >
-      <svg viewBox="0 0 24 24" className="h-24 w-24 text-[#454545] sm:h-28 sm:w-28" fill="currentColor">
-        <circle cx="12" cy="8.5" r="4" />
-        <path d="M4 20.2C4 16.2 7.6 13.5 12 13.5s8 2.7 8 6.7c0 .4-.3.8-.8.8H4.8c-.5 0-.8-.4-.8-.8Z" />
-      </svg>
-    </div>
-  )
-}
-
 const leaders = founders()
 
 export function LeadershipBiosSection() {
-  const { ref, shown } = useInView<HTMLElement>()
-
   return (
     <section
-      ref={ref}
       id="leadership"
-      data-plate="dark"
+      data-plate="light"
       aria-labelledby="leadership-heading"
-      className="relative bg-[#161616] text-white"
+      className="relative scroll-mt-32 bg-bone py-24 text-abyss sm:py-32"
     >
-      <div className="mx-auto max-w-[80rem] px-6 py-24 sm:py-32">
-        <h2 id="leadership-heading" className="sr-only">
-          Leadership
-        </h2>
+      <div className={container}>
+        <SectionHead
+          id="leadership-heading"
+          tone="light"
+          eyebrow="Leadership"
+          title="Our founders"
+          className="text-river"
+        />
 
-        <div className="flex flex-col gap-20">
-          {leaders.map((leader, i) => (
-            <div
-              key={leader.name}
-              className={`flex flex-col items-center gap-10 sm:gap-14 ${
-                i % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'
-              } ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-            >
-              <AvatarPlaceholder className="h-64 w-64 sm:h-80 sm:w-80" />
-              <div className="max-w-[52ch]">
-                <p className="font-heading text-2xl font-bold text-white sm:text-3xl">
-                  {leader.name}
-                </p>
-                <p className="mt-1 text-sm font-semibold text-[#1b7a70]">{leader.shortTitle}</p>
-                {(leader.bio ?? '').split('\n\n').map((para, pi) => (
-                  <p key={pi} className="mt-5 leading-relaxed text-[#a6a6a6]">
-                    {para}
-                  </p>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="mt-16 grid gap-24 sm:mt-20 sm:gap-32">
+          {leaders.map((leader, i) => {
+            const [first, ...rest] = (leader.bio ?? '').split('\n\n')
+            const flip = i % 2 === 1
+            return (
+              <article
+                key={leader.slug}
+                aria-labelledby={`leader-${leader.slug}`}
+                className="group grid gap-10 lg:grid-cols-12 lg:gap-12"
+              >
+                <Reveal className={`lg:col-span-5 ${flip ? 'lg:order-2 lg:col-start-8' : ''}`}>
+                  <div className="relative">
+                    <Portrait photo={leader.photo} alt={`Portrait of ${leader.name}`} className="aspect-[4/5] w-full max-w-md" />
+                    <p className="mt-4 text-[0.72rem] font-semibold tracking-[0.22em] text-abyss/60 uppercase">
+                      {leader.shortTitle}
+                    </p>
+                  </div>
+                </Reveal>
+                <Reveal delay={120} className={`lg:col-span-7 ${flip ? 'lg:order-1 lg:col-start-1' : ''}`}>
+                  <h3
+                    id={`leader-${leader.slug}`}
+                    className="font-shout text-[clamp(2.6rem,5.6vw,5rem)] font-extrabold uppercase leading-[0.88] text-balance"
+                  >
+                    {leader.name}
+                  </h3>
+                  <span aria-hidden="true" className="mt-6 block h-1 w-20 bg-ember" />
+                  {first && (
+                    <p className="mt-8 max-w-[44ch] font-whisper text-[clamp(1.2rem,1.7vw,1.45rem)] italic leading-[1.45] text-abyss/85">
+                      {first}
+                    </p>
+                  )}
+                  {rest.map((para, pi) => (
+                    <p key={pi} className="mt-5 max-w-[62ch] leading-relaxed text-abyss/75">
+                      {para}
+                    </p>
+                  ))}
+                </Reveal>
+              </article>
+            )
+          })}
         </div>
 
-        <p
-          className={`mx-auto mt-20 max-w-[52ch] border-t border-white/10 pt-8 text-center text-sm text-[#a6a6a6] ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-        >
-          Bishop Chito and Pastor Rachel have 6 children and 7 grandchildren. They reside in Pasig
-          City, Metro Manila, Philippines.
-        </p>
+        <Reveal className="mt-24 border-t border-abyss/15 pt-10">
+          <p className="mx-auto max-w-[40ch] text-center font-whisper text-[clamp(1.25rem,2vw,1.7rem)] italic leading-snug text-abyss/80">
+            Bishop Chito and Pastor Rachel have 6 children and 7 grandchildren. They reside in Pasig
+            City, Metro Manila, Philippines.
+          </p>
+        </Reveal>
       </div>
-
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1440 130"
-        preserveAspectRatio="none"
-        className="absolute bottom-0 left-0 h-[70px] w-full sm:h-[100px]"
-      >
-        <path
-          d="M0,60 C360,10 720,120 1080,55 C1260,25 1350,45 1440,60 L1440,130 L0,130 Z"
-          fill="#232323"
-        />
-      </svg>
     </section>
   )
 }
