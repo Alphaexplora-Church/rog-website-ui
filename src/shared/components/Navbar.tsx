@@ -120,7 +120,9 @@ export function Navbar() {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
-  }, [])
+    // Re-read on every route change too: when the new page also starts at the
+    // top no scroll event fires, and the bar would keep the old page's tone.
+  }, [pathname])
 
   /* Escape closes whatever is open. */
   useEffect(() => {
@@ -294,24 +296,17 @@ export function Navbar() {
 
           {/* ---------------------------------------------------- ACTIONS */}
           <div className="ml-auto flex items-center gap-2 lg:ml-4">
-            <Button
-              to={navActions.planAVisit.to}
-              variant="ghost"
-              tone={tone}
-              className="hidden xl:inline-flex"
-            >
-              {navActions.planAVisit.label}
-            </Button>
+            <div className="hidden xl:flex">
+              <Button to={navActions.planAVisit.to} variant="ghost" tone={tone}>
+                {navActions.planAVisit.label}
+              </Button>
+            </div>
 
-            <Button
-              to={navActions.watchLive.to}
-              variant="outline"
-              tone={tone}
-              live
-              className="hidden sm:inline-flex"
-            >
-              {navActions.watchLive.label}
-            </Button>
+            <div className="hidden sm:flex">
+              <Button to={navActions.watchLive.to} variant="outline" tone={tone} live>
+                {navActions.watchLive.label}
+              </Button>
+            </div>
 
             <Button to={navActions.give.to} variant="solid" tone={tone}>
               {navActions.give.label}

@@ -107,7 +107,7 @@ export const plate: Record<'dark' | 'light', PlateTokens> = {
 
 /** Scroll-triggered fade-up, was `.reveal` / `[data-shown='true'] .reveal`. */
 export const revealBase =
-  'transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
+  'transition-[opacity,transform] duration-[600ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
 export const revealHidden = 'opacity-0 translate-y-4'
 export const revealShown = 'opacity-100 translate-y-0'
 /** Was `.reveal--delay-1` (140ms). */

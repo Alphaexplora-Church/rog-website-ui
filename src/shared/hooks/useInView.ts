@@ -37,8 +37,12 @@ export interface UseInViewOptions {
 }
 
 export function useInView<T extends HTMLElement = HTMLDivElement>({
-  threshold = 0.15,
-  rootMargin = '0px 0px -12% 0px',
+  // Start as soon as the element's top edge is ~10% above the bottom of the
+  // screen. The old default (15% of the element visible) meant a tall section
+  // had to scroll several hundred pixels into view before it began to fade in,
+  // which read as empty space and lag while scrolling. Changed 2026-09-24.
+  threshold = 0,
+  rootMargin = '0px 0px -10% 0px',
 }: UseInViewOptions = {}) {
   const [el, setEl] = useState<T | null>(null)
   const ref = useCallback((node: T | null) => setEl(node), [])
