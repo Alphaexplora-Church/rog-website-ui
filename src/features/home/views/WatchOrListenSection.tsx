@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
-import { sermonsBySeries, sermonThumbnail } from '../../media/data/mediaData'
-
-/** A teaser shows a taste, not the shelf. Three is the taste. */
-const TEASER_COUNT = 3
+import { ErrorBlock, LoadingBlock } from '../../../shared/components/ui/LoadState'
+import { sermonThumbnail } from '../../media/data/mediaData'
+import { useWatchOrListenViewModel } from '../viewModels/useWatchOrListenViewModel'
 
 /**
  * Home — "Watch or Listen." A teaser for the Media tab, not a copy of it.
@@ -46,9 +45,14 @@ const TEASER_COUNT = 3
  * into ordinary text with no change here.
  *
  * ORDER IS ARRAY ORDER, NOT RECENCY. `mediaData` does not track upload date
- * yet, so this takes the first three of the Sunday Service series and calls
+ * yet, so this takes the first three of the Sermons category (Sunday and
+ * Midweek messages — see mediaData's 2026-09-23 Category note) and calls
  * them "a few", never "the latest" — same reason MediaHero says "Featured
  * Message" rather than "Most Recent".
+ *
+ * CMS-CONNECTED 2026-09-23: the three messages now come from Strapi via
+ * useWatchOrListenViewModel — the three newest in the Sermons category, so
+ * whatever was published last Sunday or Midweek shows here automatically.
  *
  * The four browse modes still appear at the bottom, but as plain text now:
  * they tell you what is waiting on the Media tab without pretending to be
@@ -57,7 +61,7 @@ const TEASER_COUNT = 3
 export function WatchOrListenSection() {
   const { ref, shown } = useInView<HTMLElement>()
   const reveal = `${revealBase} ${shown ? revealShown : revealHidden}`
-  const teasers = sermonsBySeries('sunday-service').slice(0, TEASER_COUNT)
+  const { teasers, isLoading, error } = useWatchOrListenViewModel()
 
   return (
     <section
@@ -112,6 +116,17 @@ export function WatchOrListenSection() {
           </Link>
         </div>
 
+        {isLoading ? (
+          <div className="mt-10">
+            <LoadingBlock tone="dark" />
+          </div>
+        ) : error ? (
+          <div className="mt-10">
+            <ErrorBlock tone="dark" error={error} />
+          </div>
+        ) : teasers.length === 0 ? (
+          <p className="mt-10 text-sm text-white/45 italic">New messages will appear here soon.</p>
+        ) : (
         <ul className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {teasers.map((s, i) => (
             <li key={s.slug} className={reveal} style={{ transitionDelay: `${120 + i * 70}ms` }}>
@@ -154,13 +169,14 @@ export function WatchOrListenSection() {
                       {s.date}
                     </span>
                   )}
-                  {s.date ? ' · ' : ''}
+                  {s.date && s.speakerName ? ' · ' : ''}
                   {s.speakerName}
                 </p>
               </Link>
             </li>
           ))}
         </ul>
+        )}
 
         {/* What's actually on the Media tab. Plain text, not controls — the
             point is to send people there, not to re-implement it here. */}

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealHidden, revealShown, riverGlow } from '../../../shared/styles/tokens'
-import { events } from '../../events/data/eventsData'
+import { ErrorBlock, LoadingBlock } from '../../../shared/components/ui/LoadState'
+import { useEventsViewModel } from '../../events/viewModels/useEventsViewModel'
 import { EventCard } from '../../events/views/EventCard'
 
 /**
@@ -9,8 +10,6 @@ import { EventCard } from '../../events/views/EventCard'
  *
  * Soaking in the River, Women Arise Retreat, Activate12 Conference and the
  * Christmas Eve service are all real ROG programs (see the IA handoff doc).
- * Everything scheduling-related about them is not yet confirmed — see the
- * data warning below.
  *
  * ── RE-LAID OUT 2026-09-23 ───────────────────────────────────────────────
  * Jude: "okay na yung design but change the layout, dapat maayos tsaka
@@ -26,16 +25,19 @@ import { EventCard } from '../../events/views/EventCard'
  * read down the page in order, which is how anyone scans a "what's coming
  * up" list in the first place.
  *
- * ⚠ THE EVENTS THEMSELVES NOW LIVE IN `features/events/data/eventsData.ts`
- * and are shared with the Events page, which used to carry three unrelated
- * cards literally titled "Sample Event — …". The data caveats (unconfirmed
- * dates, two missing times, assumed locations) are documented there, next to
- * the values they apply to, rather than repeated here.
+ * ── LIVE-WIRED 2026-09-24 ────────────────────────────────────────────────
+ * Events used to live in `features/events/data/eventsData.ts`, a
+ * hand-written array shared with the Events page. Both now read
+ * `useEventsViewModel`, which fetches rog-cms's Event content type — one
+ * request shared between this section and the Events page via
+ * `EVENTS_QUERY_KEY`, same as the Media Library's sermons. Loading and
+ * error states are new for the same reason the Media Library's are.
  */
 
 export function UpcomingEventsSection() {
   const { ref, shown } = useInView<HTMLElement>()
   const reveal = `${revealBase} ${shown ? revealShown : revealHidden}`
+  const { events, isLoading, error, retry } = useEventsViewModel()
 
   return (
     <section
@@ -107,17 +109,31 @@ export function UpcomingEventsSection() {
           </Link>
         </div>
 
-        <ul className="mt-12 flex flex-col gap-4">
-          {events.map((event, i) => (
-            <li
-              key={event.title}
-              className={reveal}
-              style={{ transitionDelay: `${120 + i * 70}ms` }}
-            >
-              <EventCard event={event} />
-            </li>
-          ))}
-        </ul>
+        {isLoading ? (
+          <div className="mt-12">
+            <LoadingBlock tone="dark" label="Events" />
+          </div>
+        ) : error ? (
+          <div className="mt-12">
+            <ErrorBlock tone="dark" error={error} onRetry={retry} label="Events" />
+          </div>
+        ) : events.length === 0 ? (
+          <div className="mt-12 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-12 text-center">
+            <p className="text-sm text-white/50">Nothing on the calendar right now — check back soon.</p>
+          </div>
+        ) : (
+          <ul className="mt-12 flex flex-col gap-4">
+            {events.map((event, i) => (
+              <li
+                key={event.slug}
+                className={reveal}
+                style={{ transitionDelay: `${120 + i * 70}ms` }}
+              >
+                <EventCard event={event} />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Wave divider into Watch or Listen (#232323) — straight from the

@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
-import { sermonsBySeries, sermonThumbnail } from '../../media/data/mediaData'
+import { ErrorBlock, LoadingBlock } from '../../../shared/components/ui/LoadState'
+import { sermonThumbnail } from '../../media/data/mediaData'
+import { usePreviousMessagesViewModel } from '../viewModels/usePreviousMessagesViewModel'
 
 /** Stagger between card entrances, capped so a long library doesn't cascade
  *  for a second and a half before the last row lands. */
@@ -12,7 +14,8 @@ const STAGGER_CAP = 5
  * Watch Live, section 2 — "Previous Messages". Jude's reference used a fake
  * two-language archive with fabricated titles/speakers; that's exactly the
  * kind of invented content this project avoids (see mediaData.ts's own
- * history). This pulls the REAL Sunday Service sermons already seeded there,
+ * history). This pulls the REAL Sermons-category messages seeded there
+ * (Sunday + Midweek; they were a "Sunday Service" series until 2026-09-23),
  * newest-first is not tracked yet so this is array order (same convention
  * SeriesDetail/BrowseDetail use elsewhere) — which is also why this does NOT
  * mark any card "Latest": that would claim an ordering the data doesn't
@@ -46,8 +49,9 @@ const STAGGER_CAP = 5
  * puts two competing motions in the same 288px box and reads as wobble.
  */
 export function PreviousMessagesSection() {
-  const { ref, shown } = useInView<HTMLElement>()
-  const sermons = sermonsBySeries('sunday-service')
+  const { ref, shown } = useInView<HTMLDivElement>()
+  // From the CMS (2026-09-23) — the newest Sermons-category messages.
+  const { sermons, isLoading, error } = usePreviousMessagesViewModel()
   const reveal = `${revealBase} ${shown ? revealShown : revealHidden}`
 
   return (
@@ -64,7 +68,7 @@ export function PreviousMessagesSection() {
             <h2 className="mt-3 font-heading text-3xl font-bold sm:text-4xl">Previous Messages</h2>
           </div>
           <Link
-            to="/media/series/sunday-service"
+            to="/media?category=sermon"
             className="group inline-flex items-center gap-1 text-xs font-bold tracking-[0.15em] text-white/60 uppercase transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white"
           >
             Browse full library
@@ -82,7 +86,15 @@ export function PreviousMessagesSection() {
           </Link>
         </div>
 
-        {sermons.length === 0 ? (
+        {isLoading ? (
+          <div className="mt-10">
+            <LoadingBlock tone="dark" rows={2} />
+          </div>
+        ) : error ? (
+          <div className="mt-10">
+            <ErrorBlock tone="dark" error={error} />
+          </div>
+        ) : sermons.length === 0 ? (
           <div
             className={`mt-10 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center ${reveal}`}
             style={{ transitionDelay: '80ms' }}
@@ -129,7 +141,7 @@ export function PreviousMessagesSection() {
                           {s.date}
                         </span>
                       )}
-                      {s.date ? ' · ' : ''}
+                      {s.date && s.speakerName ? ' · ' : ''}
                       {s.speakerName}
                     </p>
                   </div>

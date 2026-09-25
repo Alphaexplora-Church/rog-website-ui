@@ -1,99 +1,158 @@
-import { useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { ErrorBlock, LoadingBlock } from '../../../shared/components/ui/LoadState'
 import {
-  scripture,
-  scriptureCount,
-  series,
-  seriesCount,
-  seriesCardThumbnail,
-  speakerSummaries,
-  topics,
-  topicCount,
+  CATEGORY_FILTERS,
+  categoryLabel,
+  categoryQuery,
+  parseCategory,
+  sermonThumbnail,
+  type CategoryFilter,
+  type Sermon,
 } from '../data/mediaData'
+import { useMediaLibraryViewModel } from '../viewModels/useMediaLibraryViewModel'
 
-type TabKey = 'series' | 'topics' | 'speakers' | 'scripture'
+type TabKey = 'messages' | 'series' | 'topics' | 'speakers' | 'scripture'
 
-const TABS: { key: TabKey; label: string }[] = [
+const ALL_TABS: { key: TabKey; label: string }[] = [
+  { key: 'messages', label: 'Messages' },
   { key: 'series', label: 'Series' },
   { key: 'topics', label: 'Topics' },
   { key: 'speakers', label: 'Speakers' },
   { key: 'scripture', label: 'Scripture' },
 ]
 
+/**
+ * Which lenses each category offers (Jude, 2026-09-23):
+ *   Series  → Series, Topics, Speakers, Scripture. No Messages tab — the
+ *             series cards ARE the way in; episodes live inside each series.
+ *   Sermons → Messages, Topics, Speakers, Scripture. Sermons never belong to
+ *             a series, so that tab would only ever be empty.
+ *   All     → every lens.
+ * The first tab listed is the one a category opens on.
+ */
+function tabsFor(category: CategoryFilter) {
+  if (category === 'series') return ALL_TABS.filter((t) => t.key !== 'messages')
+  if (category === 'sermon') return ALL_TABS.filter((t) => t.key !== 'series')
+  return ALL_TABS
+}
+
 const TEAL = '#1b7a70'
+const INK = '#0B0F14'
 
 /**
- * Media, section 2 — "Media Library". Reproduces the real site's filtering
- * logic Jude asked to keep (Series / Topics / Speakers / Scripture tabs,
- * each a term list that drills into a filtered sermon grid) — just against
- * our seven-sermon sample set instead of the real site's full archive.
- * Search is a real client-side substring match, not a visual placeholder —
- * cheap and correct since all the sample data already lives in memory.
+ * Media, section 2 — "Media Library".
  *
- * ── REDESIGNED 2026-09-23 ────────────────────────────────────────────────
- * Jude: "while keeping the filtering of the Media tab, enhance also the UI…
- * fix also the design of… the Media Library Section."
+ * ── CATEGORY + CASCADING FILTERS, 2026-09-23 ─────────────────────────────
+ * Jude: the category filter "reflects to everything — pag clinick ko yung
+ * series category, tas pumunta ko sa topics na tab, lahat lang ng existing
+ * topics sa series na tab ay yun lang makikita ko."
  *
- * THE FILTERING IS UNTOUCHED. `q`, the four `.filter()` expressions, the
- * `speakerSummaries()` memo, every drill-down path and every count helper
- * are character-for-character what they were. Only presentation changed,
- * plus three things that were missing rather than wrong:
+ * Two layers now, and the order matters:
  *
- *   - AN EMPTY STATE. Searching for something with no matches rendered a
- *     silently blank area — the user could not tell the search had worked,
- *     failed, or broken. Doc 9's own checklist lists empty states as
- *     non-negotiable. There is now one, and it echoes the query back and
- *     offers a way out.
- *   - A RESULT COUNT, so a filter that narrows 12 down to 3 says so.
- *   - REAL TAB SEMANTICS. The tabs were `<button aria-pressed>`, which
- *     announces a toggle, not a tab set. They are now a proper
- *     `role="tablist"` with `aria-selected` and left/right arrow-key
- *     movement, which is what a screen reader and a keyboard both expect.
+ *   1. CATEGORY (All / Series / Sermons) picks the POOL of messages. It is a
+ *      filter, so it is a radio group, not tabs.
+ *   2. The TABS are lenses on that pool. Every list and every count is
+ *      computed from the pool, so choosing "Sermons" and opening Topics shows
+ *      only topics that Sermons actually use, with Sermon-only counts. A term
+ *      with nothing in the chosen category is hidden rather than shown as a
+ *      dead end. Under "All" the old behaviour stands, placeholder terms
+ *      included, since that is the full index.
  *
- * WHY IT LOOKED PALE. The section was `bg-white`, the cards were white, and
- * the `isPlaceholder` tiles were `bg-black/[0.02]` with `border-black/15`
- * text at `black/40` — near-invisible on the ground they sat on, which is
- * why the library read as washed out next to the hero. It now has three
- * tones instead of one: an `#f4f4f4` ground, white cards, and teal as the
- * live accent. Placeholder tiles finally have enough contrast to be read as
- * deliberate rather than broken.
+ * The category also carries THROUGH the drill-down: term links append
+ * `?category=…`, and BrowseDetail scopes its list the same way.
  *
- * Teal-with-alpha goes through inline `style`, not Tailwind classes:
- * Tailwind only emits utilities whose exact class string already exists in
- * the project, so a new `bg-[#1b7a70]/10` would render as nothing until the
- * dev server restarts. Same escape hatch tokens.ts uses for textH1.
+ * "Messages" is a new tab: the videos themselves. Without it, Sunday and
+ * Midweek messages — which have no series — could only be reached by
+ * guessing a topic or speaker. It is offered under Sermons and All, not
+ * under Series (see `tabsFor`).
+ *
+ * WHY THE URL IS UPDATED WITH history.replaceState, NOT setSearchParams:
+ * ScrollToTop re-runs when the navigation type changes, and a router
+ * `replace` flips it from PUSH to REPLACE — so every category click would
+ * have thrown the page back to the top. Writing the URL directly keeps the
+ * browser's Back button returning to the same category, without the router
+ * treating a filter click as a navigation. `history.state` is passed through
+ * untouched because React Router keeps its own bookkeeping there.
+ *
+ * DATA FROM THE CMS (2026-09-23): everything here is computed from
+ * `media`, the library the ViewModel fetched from Strapi. While it loads the
+ * results area shows a shimmer (the controls stay usable), and if the CMS
+ * can't be reached it shows a retry instead of an empty library that would
+ * look like "no messages".
+ *
+ * Everything from the 2026-09-23 redesign still holds: the empty states,
+ * the result count, the real tablist semantics with arrow-key movement, and
+ * teal-with-alpha through inline `style` (Tailwind only emits classes that
+ * already exist in the project, so a new `bg-[#1b7a70]/10` would render as
+ * nothing until the dev server restarts).
  */
 export function MediaLibrarySection() {
   const { ref, shown } = useInView<HTMLElement>()
-  const [tab, setTab] = useState<TabKey>('series')
+  const { media, isLoading, error, retry } = useMediaLibraryViewModel()
+  const [searchParams] = useSearchParams()
+  const [category, setCategoryState] = useState<CategoryFilter>(() =>
+    parseCategory(searchParams.get('category')),
+  )
+  const [tab, setTab] = useState<TabKey>(() => tabsFor(category)[0].key)
   const [query, setQuery] = useState('')
   const tablistRef = useRef<HTMLDivElement>(null)
+  const categoryRef = useRef<HTMLDivElement>(null)
 
-  const speakers = useMemo(() => speakerSummaries(), [])
+  const tabs = tabsFor(category)
+  const label = categoryLabel(category)
+  const scoped = category !== 'all'
+
+  function setCategory(next: CategoryFilter) {
+    setCategoryState(next)
+    const nextTabs = tabsFor(next)
+    if (!nextTabs.some((t) => t.key === tab)) setTab(nextTabs[0].key)
+    const url = new URL(window.location.href)
+    if (next === 'all') url.searchParams.delete('category')
+    else url.searchParams.set('category', next)
+    window.history.replaceState(window.history.state, '', url)
+  }
+
+  /* ── The pool, and every lens computed from it ───────────────────────── */
+  const pool = media.sermonsInCategory(category)
   const q = query.trim().toLowerCase()
 
-  /* ── FILTERING — unchanged from the original ─────────────────────────── */
-  const filteredSeries = series.filter((s) => s.title.toLowerCase().includes(q))
-  const filteredTopics = topics.filter((t) => t.title.toLowerCase().includes(q))
-  const filteredSpeakers = speakers.filter((s) => s.name.toLowerCase().includes(q))
-  const filteredScripture = scripture.filter((s) => s.title.toLowerCase().includes(q))
+  const poolSeries = media.seriesInCategory(category)
+  const poolTopics = media.topics
+    .map((t) => ({ ...t, count: media.topicCount(t.slug, pool) }))
+    .filter((t) => !scoped || t.count > 0)
+  const poolScripture = media.scripture
+    .map((s) => ({ ...s, count: media.scriptureCount(s.slug, pool) }))
+    .filter((s) => !scoped || s.count > 0)
+  const poolSpeakers = media.speakerSummaries(pool)
+
+  const filteredMessages = pool.filter(
+    (s) => s.title.toLowerCase().includes(q) || (s.speakerName ?? '').toLowerCase().includes(q),
+  )
+  const filteredSeries = poolSeries.filter((s) => s.title.toLowerCase().includes(q))
+  const filteredTopics = poolTopics.filter((t) => t.title.toLowerCase().includes(q))
+  const filteredSpeakers = poolSpeakers.filter((s) => s.name.toLowerCase().includes(q))
+  const filteredScripture = poolScripture.filter((s) => s.title.toLowerCase().includes(q))
   /* ────────────────────────────────────────────────────────────────────── */
 
   const totals: Record<TabKey, number> = {
-    series: series.length,
-    topics: topics.length,
-    speakers: speakers.length,
-    scripture: scripture.length,
+    messages: pool.length,
+    series: poolSeries.length,
+    topics: poolTopics.length,
+    speakers: poolSpeakers.length,
+    scripture: poolScripture.length,
   }
   const shownCounts: Record<TabKey, number> = {
+    messages: filteredMessages.length,
     series: filteredSeries.length,
     topics: filteredTopics.length,
     speakers: filteredSpeakers.length,
     scripture: filteredScripture.length,
   }
   const noun: Record<TabKey, [string, string]> = {
+    messages: ['message', 'messages'],
     series: ['series', 'series'],
     topics: ['topic', 'topics'],
     speakers: ['speaker', 'speakers'],
@@ -104,17 +163,29 @@ export function MediaLibrarySection() {
   const total = totals[tab]
   const [one, many] = noun[tab]
   const isEmpty = count === 0
+  const suffix = scoped ? ` in ${label}` : ''
+  const qs = categoryQuery(category)
 
   /* Left/right arrows move between tabs, which is what the tablist role
      promises. Without it the role is a lie to anyone on a keyboard. */
   function onTabKeyDown(e: React.KeyboardEvent) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
     e.preventDefault()
-    const i = TABS.findIndex((t) => t.key === tab)
-    const next = e.key === 'ArrowRight' ? (i + 1) % TABS.length : (i - 1 + TABS.length) % TABS.length
-    setTab(TABS[next].key)
-    const buttons = tablistRef.current?.querySelectorAll('button')
-    buttons?.[next]?.focus()
+    const i = tabs.findIndex((t) => t.key === tab)
+    const next = e.key === 'ArrowRight' ? (i + 1) % tabs.length : (i - 1 + tabs.length) % tabs.length
+    setTab(tabs[next].key)
+    tablistRef.current?.querySelectorAll('button')?.[next]?.focus()
+  }
+
+  /* Same arrow-key contract for the category radio group. */
+  function onCategoryKeyDown(e: React.KeyboardEvent) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+    e.preventDefault()
+    const i = CATEGORY_FILTERS.findIndex((c) => c.key === category)
+    const n = CATEGORY_FILTERS.length
+    const next = e.key === 'ArrowRight' ? (i + 1) % n : (i - 1 + n) % n
+    setCategory(CATEGORY_FILTERS[next].key)
+    categoryRef.current?.querySelectorAll('button')?.[next]?.focus()
   }
 
   return (
@@ -145,25 +216,65 @@ export function MediaLibrarySection() {
             Media Library
           </h2>
           <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-black/55 sm:text-base">
-            Every message, sorted four ways. Pick a lens, or search across all of them.
+            Pick a category, then a lens. Everything below follows the category you choose.
           </p>
         </div>
 
-        {/* Controls */}
+        {/* Category — the filter every lens below is scoped to. */}
         <div
-          className={`mt-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between ${revealBase} ${shown ? revealShown : revealHidden}`}
+          className={`mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 ${revealBase} ${shown ? revealShown : revealHidden}`}
+          style={{ transitionDelay: '80ms' }}
+        >
+          <p
+            id="media-category-label"
+            className="text-[10px] font-bold tracking-[0.2em] text-black/45 uppercase"
+          >
+            Category
+          </p>
+          <div
+            ref={categoryRef}
+            role="radiogroup"
+            aria-labelledby="media-category-label"
+            onKeyDown={onCategoryKeyDown}
+            className="flex flex-wrap gap-2"
+          >
+            {CATEGORY_FILTERS.map((c) => {
+              const active = category === c.key
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  onClick={() => setCategory(c.key)}
+                  className="h-11 min-w-24 rounded-full border px-5 text-sm font-semibold transition-[background-color,border-color,color,transform] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100"
+                  style={
+                    active
+                      ? { backgroundColor: INK, borderColor: INK, color: '#ffffff' }
+                      : { backgroundColor: '#ffffff', borderColor: 'rgb(0 0 0 / 0.14)', color: 'rgb(0 0 0 / 0.7)' }
+                  }
+                >
+                  {c.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Lenses + search */}
+        <div
+          className={`mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between ${revealBase} ${shown ? revealShown : revealHidden}`}
           style={{ transitionDelay: '100ms' }}
         >
-          {/* Segmented control — was four bare text links with a hairline
-              underline; at 12px on white they barely registered as controls. */}
           <div
             ref={tablistRef}
             role="tablist"
             aria-label="Browse the media library by"
             onKeyDown={onTabKeyDown}
-            className="inline-flex flex-wrap gap-1 rounded-full border border-black/10 bg-white p-1"
+            className="inline-flex flex-wrap gap-1 self-start rounded-full border border-black/10 bg-white p-1"
           >
-            {TABS.map((t) => {
+            {tabs.map((t) => {
               const active = tab === t.key
               return (
                 <button
@@ -204,7 +315,7 @@ export function MediaLibrarySection() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search the library"
+              placeholder={scoped ? `Search ${label}` : 'Search the library'}
               aria-label="Search the media library"
               className="h-12 w-full rounded-full border border-black/10 bg-white pr-11 pl-11 text-sm text-[#0B0F14] transition-shadow duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] placeholder:text-black/35 focus:border-transparent focus:ring-2 focus:outline-none"
               style={{ ['--tw-ring-color' as string]: 'rgb(27 122 112 / 0.5)' }}
@@ -232,27 +343,54 @@ export function MediaLibrarySection() {
           </div>
         </div>
 
-        {/* Result count — silence here was the reason a filter felt broken. */}
+        {/* Result count — says what the category did, not just the search. */}
         <p
           aria-live="polite"
           className={`mt-6 text-xs font-bold tracking-[0.12em] text-black/45 uppercase ${revealBase} ${shown ? revealShown : revealHidden}`}
           style={{ transitionDelay: '140ms' }}
         >
-          {/* In the "X of Y" form the noun agrees with Y, not X — "1 of 7
-              topic" is wrong, "1 of 7 topics" is right. */}
-          {q
-            ? `${count} of ${total} ${total === 1 ? one : many}`
-            : `${total} ${total === 1 ? one : many}`}
+          {/* In the "X of Y" form the noun agrees with Y, not X. */}
+          {isLoading || error
+            ? '\u00a0'
+            : q
+              ? `${count} of ${total} ${total === 1 ? one : many}${suffix}`
+              : `${total} ${total === 1 ? one : many}${suffix}`}
         </p>
 
         <div
           className={`mt-6 ${revealBase} ${shown ? revealShown : revealHidden}`}
           style={{ transitionDelay: '180ms' }}
         >
-          {isEmpty ? (
-            <EmptyState query={query} noun={many} onClear={() => setQuery('')} />
+          {isLoading ? (
+            <LoadingBlock tone="light" />
+          ) : error ? (
+            <ErrorBlock tone="light" error={error} onRetry={retry} />
+          ) : isEmpty ? (
+            q ? (
+              <EmptyState
+                title={`No ${many} match “${query}”${suffix}`}
+                body="Try a shorter word, or clear the search to see everything in this tab."
+                action="Clear search"
+                onAction={() => setQuery('')}
+              />
+            ) : (
+              <EmptyState
+                title={scoped ? `No ${many} in ${label} yet` : `No ${many} yet`}
+                body={
+                  scoped
+                    ? 'Nothing in this category uses this lens yet. It fills in on its own as messages are added.'
+                    : 'This fills in on its own as messages are added.'
+                }
+                action={scoped ? 'Show all categories' : undefined}
+                onAction={scoped ? () => setCategory('all') : undefined}
+              />
+            )
           ) : (
             <>
+              {tab === 'messages' && (
+                <MessageGrid items={filteredMessages} showCategory={!scoped} />
+              )}
+
               {tab === 'series' && (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredSeries.map((s, i) => (
@@ -261,7 +399,8 @@ export function MediaLibrarySection() {
                       slug={s.slug}
                       title={s.title}
                       isPlaceholder={s.isPlaceholder}
-                      count={seriesCount(s.slug)}
+                      count={media.seriesCount(s.slug)}
+                      cover={media.seriesCardThumbnail(s.slug)}
                       index={i}
                     />
                   ))}
@@ -274,9 +413,10 @@ export function MediaLibrarySection() {
                     slug: t.slug,
                     title: t.title,
                     isPlaceholder: t.isPlaceholder,
-                    count: topicCount(t.slug),
+                    count: t.count,
                   }))}
                   basePath="/media/browse/topic"
+                  query={qs}
                 />
               )}
 
@@ -288,6 +428,7 @@ export function MediaLibrarySection() {
                     count: s.count,
                   }))}
                   basePath="/media/browse/speaker"
+                  query={qs}
                 />
               )}
 
@@ -297,9 +438,10 @@ export function MediaLibrarySection() {
                     slug: s.slug,
                     title: s.title,
                     isPlaceholder: s.isPlaceholder,
-                    count: scriptureCount(s.slug),
+                    count: s.count,
                   }))}
                   basePath="/media/browse/scripture"
+                  query={qs}
                 />
               )}
             </>
@@ -311,13 +453,15 @@ export function MediaLibrarySection() {
 }
 
 function EmptyState({
-  query,
-  noun,
-  onClear,
+  title,
+  body,
+  action,
+  onAction,
 }: {
-  query: string
-  noun: string
-  onClear: () => void
+  title: string
+  body: string
+  action?: string
+  onAction?: () => void
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-black/15 bg-white px-6 py-16 text-center">
@@ -339,19 +483,79 @@ function EmptyState({
           <path d="M13.5 13.5L17 17" />
         </svg>
       </span>
-      <p className="mt-4 font-heading text-lg font-bold">No {noun} match “{query}”</p>
-      <p className="mt-1 max-w-[38ch] text-sm text-black/50">
-        Try a shorter word, or clear the search to see everything in this tab.
-      </p>
-      <button
-        type="button"
-        onClick={onClear}
-        className="mt-6 inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100"
-        style={{ backgroundColor: TEAL }}
-      >
-        Clear search
-      </button>
+      <p className="mt-4 font-heading text-lg font-bold">{title}</p>
+      <p className="mt-1 max-w-[40ch] text-sm text-black/50">{body}</p>
+      {action && onAction && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="mt-6 inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100"
+          style={{ backgroundColor: TEAL }}
+        >
+          {action}
+        </button>
+      )}
     </div>
+  )
+}
+
+/**
+ * The videos themselves. Under "All" each card says which category it is in,
+ * since that is the one thing a mixed grid otherwise hides; inside a single
+ * category the label would just repeat the filter.
+ */
+function MessageGrid({ items, showCategory }: { items: Sermon[]; showCategory: boolean }) {
+  return (
+    <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {items.map((s, i) => (
+        <li key={s.slug}>
+          <Link
+            to={`/media/watch/${s.slug}`}
+            className="group block rounded-3xl bg-white p-3 ring-1 ring-black/5 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100"
+            style={{ transitionDelay: `${Math.min(i, 8) * 30}ms` }}
+          >
+            <div className="relative aspect-video overflow-hidden rounded-2xl bg-[#0B0F14]">
+              <img
+                src={sermonThumbnail(s)}
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105 motion-reduce:transition-none"
+              />
+              {showCategory && (
+                <span
+                  className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-[10px] font-black tracking-[0.14em] text-white uppercase backdrop-blur-sm"
+                  style={{ backgroundColor: 'rgb(11 15 20 / 0.7)' }}
+                >
+                  {categoryLabel(s.category)}
+                </span>
+              )}
+              <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center">
+                <span
+                  className="flex h-11 w-11 items-center justify-center rounded-full ring-1 ring-white/25 backdrop-blur-sm transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-110 motion-reduce:transition-none"
+                  style={{ backgroundColor: 'rgb(27 122 112 / 0.85)' }}
+                >
+                  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+              </span>
+            </div>
+            <div className="px-2 pt-4 pb-2">
+              <p className="font-heading text-base leading-snug font-bold">{s.title}</p>
+              <p className="mt-1 text-[13px] text-black/50">
+                {s.date && (
+                  <span className={s.dateIsPlaceholder ? 'text-black/35 italic' : undefined}>
+                    {s.date}
+                  </span>
+                )}
+                {s.date && s.speakerName ? ' · ' : ''}
+                {s.speakerName}
+              </p>
+            </div>
+          </Link>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -359,12 +563,14 @@ function SeriesCard({
   slug,
   title,
   count,
+  cover,
   isPlaceholder,
   index,
 }: {
   slug: string
   title: string
   count: number
+  cover?: string
   isPlaceholder?: boolean
   index: number
 }) {
@@ -397,8 +603,6 @@ function SeriesCard({
     )
   }
 
-  const cover = seriesCardThumbnail(slug)
-
   return (
     <Link
       to={`/media/series/${slug}`}
@@ -418,8 +622,6 @@ function SeriesCard({
         className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"
       />
 
-      {/* Count as a badge rather than a grey sub-line — it is the one piece
-          of data that tells you whether the series is worth opening. */}
       <span
         className="absolute top-4 right-4 rounded-full px-2.5 py-1 text-[10px] font-black tracking-[0.14em] text-white uppercase backdrop-blur-sm"
         style={{ backgroundColor: 'rgb(27 122 112 / 0.85)' }}
@@ -451,17 +653,17 @@ function SeriesCard({
 }
 
 /**
- * Terms were thin text rows on hairline borders — legible, but the palest
- * thing on an already-pale plate, and a 3px-tall hover target's worth of
- * affordance. They are cards now: white on the grey ground, teal count
- * badge, whole row tappable.
+ * Term cards: white on the grey ground, teal count badge, whole row
+ * tappable. `query` carries the active category into the drill-down.
  */
 function TermList({
   items,
   basePath,
+  query,
 }: {
   items: { slug: string; title: string; count: number; isPlaceholder?: boolean }[]
   basePath: string
+  query: string
 }) {
   return (
     <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -477,7 +679,7 @@ function TermList({
         ) : (
           <li key={item.slug}>
             <Link
-              to={`${basePath}/${item.slug}`}
+              to={`${basePath}/${item.slug}${query}`}
               className="group flex min-h-14 items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white px-5 py-4 transition-[border-color,transform] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100"
               style={{ transitionDelay: `${Math.min(i, 8) * 30}ms` }}
             >

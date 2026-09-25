@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealHidden, revealShown, riverGlow } from '../../../shared/styles/tokens'
-import { findSermon, sermonThumbnail } from '../data/mediaData'
+import { sermonThumbnail, type Sermon } from '../data/mediaData'
+import { useMediaLibraryViewModel } from '../viewModels/useMediaLibraryViewModel'
 
 /**
  * Media, section 1 — hero spotlight. Modeled on the real site's "Most
@@ -37,6 +38,23 @@ import { findSermon, sermonThumbnail } from '../data/mediaData'
  * same play badge LatestSermonSection already uses, and a second link down
  * to `#media-library`. Section padding is `py-24`+ per Doc 9.
  *
+ * ── CMS-CONNECTED, 2026-09-23 ────────────────────────────────────────────
+ * The hero now features the NEWEST message from the CMS, so the eyebrow
+ * says "Latest Message" — a claim the data can now back. The old hardcoded
+ * `findSermon('redemption…')!` would have crashed the page the moment that
+ * entry didn't exist; there are now honest states for loading, a CMS that
+ * can't be reached, and a library with nothing published yet.
+ *
+ * ── PICKED BY DATE, NOT ARRAY ORDER, 2026-09-24 ──────────────────────────
+ * This used to be `media.sermons.find((s) => s.date && !s.dateIsPlaceholder)
+ * ?? media.sermons[0]` — "the first message with a confirmed date," which
+ * only equalled the latest one because it trusted Strapi to keep handing
+ * the list back newest-first. Jude asked for the real thing: whichever
+ * message actually has the latest upload date, compared explicitly. That
+ * logic now lives once, in `mediaData.ts`'s `latestSermon()`, so every
+ * "latest message" spot on the site can share it rather than re-deriving
+ * its own array-order assumption.
+ *
  * ⚠ THE SAMPLE THUMBNAIL IS ANOTHER CHURCH'S ARTWORK. The frame this pulls
  * reads "DESTINYC3 SERMONS" across the top — the same class of problem as
  * the Spirit of Elijah videoId noted above. It is sample data, not ROG's,
@@ -44,9 +62,14 @@ import { findSermon, sermonThumbnail } from '../data/mediaData'
  * one.
  */
 export function MediaHero() {
-  const { ref, shown } = useInView<HTMLElement>()
-  const sermon = findSermon('redemption-reconciliation-and-restoration')!
+  const { ref, shown } = useInView<HTMLDivElement>()
+  const { media, isLoading, error } = useMediaLibraryViewModel()
+  const sermon: Sermon | undefined = media.latestSermon()
   const reveal = `${revealBase} ${shown ? revealShown : revealHidden}`
+
+  if (!sermon) {
+    return <HeroWithoutMessage state={isLoading ? 'loading' : error ? 'error' : 'empty'} />
+  }
 
   return (
     <section
@@ -71,7 +94,7 @@ export function MediaHero() {
               boxShadow: 'inset 0 0 0 1px rgb(143 212 201 / 0.25)',
             }}
           >
-            Featured Message
+            Latest Message
           </span>
 
           <h1
@@ -88,12 +111,12 @@ export function MediaHero() {
                 {sermon.date}
               </span>
             )}
-            {sermon.date && (
+            {sermon.date && sermon.speakerName && (
               <span aria-hidden="true" className="text-white/25">
                 ·
               </span>
             )}
-            <span>{sermon.speakerName}</span>
+            {sermon.speakerName && <span>{sermon.speakerName}</span>}
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -161,6 +184,57 @@ export function MediaHero() {
             </span>
           </div>
         </Link>
+      </div>
+    </section>
+  )
+}
+
+/**
+ * Hero when there is no message to feature. Keeps the same plate, height
+ * and "Browse the library" way down, so the page doesn't jump when data
+ * arrives and never reads as broken.
+ */
+function HeroWithoutMessage({ state }: { state: 'loading' | 'error' | 'empty' }) {
+  const line =
+    state === 'loading'
+      ? '\u00a0'
+      : state === 'error'
+        ? 'Messages couldn’t be loaded right now. Please try again in a moment.'
+        : 'New messages appear here as soon as they’re published.'
+
+  return (
+    <section
+      data-plate="dark"
+      aria-labelledby="media-hero-heading"
+      aria-busy={state === 'loading'}
+      className="relative overflow-hidden bg-black text-white"
+    >
+      <div aria-hidden="true" className={riverGlow} />
+      <div className="relative z-10 mx-auto max-w-[86rem] px-6 pt-32 pb-24 sm:pt-40 sm:pb-28">
+        <span
+          className="inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase"
+          style={{
+            color: '#8FD4C9',
+            backgroundColor: 'rgb(27 122 112 / 0.18)',
+            boxShadow: 'inset 0 0 0 1px rgb(143 212 201 / 0.25)',
+          }}
+        >
+          Media
+        </span>
+        <h1
+          id="media-hero-heading"
+          className="mt-5 text-balance font-heading text-4xl leading-[1.05] font-bold sm:text-5xl lg:text-6xl"
+          style={{ letterSpacing: '-0.035em' }}
+        >
+          Messages
+        </h1>
+        <p className="mt-5 max-w-[46ch] text-sm text-[#a6a6a6]">{line}</p>
+        <a
+          href="#media-library"
+          className="mt-8 inline-flex h-12 items-center gap-2 text-sm font-semibold text-white/70 transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white"
+        >
+          Browse the library
+        </a>
       </div>
     </section>
   )

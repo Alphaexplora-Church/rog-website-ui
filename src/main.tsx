@@ -14,9 +14,28 @@ import App from './App'
 // file still has to exist and still has to be imported for Tailwind itself
 // to work.
 import './index.css'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+/**
+ * TanStack Query (Doc 3 §1, Doc 5 §4.5) — added 2026-09-23 with the CMS
+ * connection. It was already a dependency but never mounted, because
+ * nothing fetched until now. One client for the app, so every ViewModel
+ * reading the same query key shares one request and one cache.
+ *
+ * `retry: 1` — one quiet retry for a network blip, then show the error
+ * state. The default (3, with backoff) leaves a visitor staring at a
+ * loading shimmer for several seconds when the CMS is simply down.
+ */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, refetchOnWindowFocus: false },
+  },
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
   </StrictMode>,
 )

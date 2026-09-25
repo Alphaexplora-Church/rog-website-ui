@@ -1,14 +1,18 @@
 import { useState } from 'react'
-import type { EventItem } from '../data/eventsData'
+import type { EventItem } from '../../../shared/models/types/event'
 
 /**
  * One event as a wide row: image, then the event, then its schedule.
  *
  * SHARED BY BOTH TABS, 2026-09-23. Home and the Events page each used to
  * render their own card markup from their own array, so they could drift in
- * two ways at once — different events *and* a different look. The data moved
- * to `data/eventsData.ts` and the markup moved here, so "the same" holds for
- * both without anyone having to remember to update two files.
+ * two ways at once — different events *and* a different look. The data
+ * moved to `shared/models/types/event.ts` and the markup moved here, so
+ * "the same" holds for both without anyone having to remember to update two
+ * files. Live-wired to the CMS 2026-09-24 (was `data/eventsData.ts`, a
+ * hand-written placeholder array) — `location` and `note` are optional now
+ * because the CMS's Event model has neither field, so both render
+ * conditionally rather than showing placeholder text.
  *
  * The three scheduling facts sit on one line with their own icons, so date,
  * time and location are each findable at a glance instead of being run
@@ -16,15 +20,19 @@ import type { EventItem } from '../data/eventsData'
  *
  * The image falls back to a tinted panel rather than a broken frame — three
  * separate dead Unsplash URLs have turned up in this codebase already, and a
- * card that fails should still look deliberate.
+ * card that fails should still look deliberate. An event with no header
+ * photo at all (`event.photo === ''`) goes straight to that fallback rather
+ * than pointing an `<img>` at an empty `src`, which some browsers resolve
+ * to the current page itself.
  */
 export function EventCard({ event }: { event: EventItem }) {
   const [imageFailed, setImageFailed] = useState(false)
+  const showImage = !!event.photo && !imageFailed
 
   return (
     <article className="flex h-full flex-col gap-5 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:flex-row sm:items-center sm:p-5">
       <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl sm:aspect-[4/3] sm:w-44">
-        {imageFailed ? (
+        {!showImage ? (
           <div
             aria-hidden="true"
             className="h-full w-full"
@@ -80,22 +88,24 @@ export function EventCard({ event }: { event: EventItem }) {
             {event.time}
           </span>
 
-          <span className="inline-flex items-center gap-2">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 20 20"
-              className="h-4 w-4 shrink-0 text-[#8FD4C9]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M10 18s6-5 6-9a6 6 0 10-12 0c0 4 6 9 6 9z" />
-              <circle cx="10" cy="9" r="2.25" />
-            </svg>
-            {event.location}
-          </span>
+          {event.location ? (
+            <span className="inline-flex items-center gap-2">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                className="h-4 w-4 shrink-0 text-[#8FD4C9]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M10 18s6-5 6-9a6 6 0 10-12 0c0 4 6 9 6 9z" />
+                <circle cx="10" cy="9" r="2.25" />
+              </svg>
+              {event.location}
+            </span>
+          ) : null}
         </div>
       </div>
     </article>

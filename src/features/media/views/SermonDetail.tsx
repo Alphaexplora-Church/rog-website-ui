@@ -1,8 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
-import { findSermon, sermonsBySpeaker, sermonThumbnail } from '../data/mediaData'
+import { sermonThumbnail } from '../data/mediaData'
 import { youtubeEmbedUrl } from '../../../shared/lib/youtube'
+import { useMediaLibraryViewModel } from '../viewModels/useMediaLibraryViewModel'
+import { MediaPageStatus } from './MediaPageStatus'
 
 /**
  * Media — single message page (`/media/watch/:slug`). Real embedded
@@ -11,11 +13,18 @@ import { youtubeEmbedUrl } from '../../../shared/lib/youtube'
  * pattern (its own "More From Sunday Service" carousel in the screenshots
  * Jude shared, here scoped to speaker since that's the grouping our
  * seven-sermon sample set actually supports).
+ *
+ * CMS-CONNECTED 2026-09-23: the message comes from Strapi via the Media
+ * ViewModel. Plays either kind the CMS allows — a YouTube embed, or the
+ * uploaded MP4 in a native <video> with its uploaded thumbnail as poster.
  */
 export default function SermonDetail() {
   const { slug = '' } = useParams()
   const { ref, shown } = useInView<HTMLElement>()
-  const sermon = findSermon(slug)
+  const { media, isLoading, error, retry } = useMediaLibraryViewModel()
+  const sermon = media.findSermon(slug)
+
+  if (isLoading || error) return <MediaPageStatus error={error} onRetry={retry} />
 
   if (!sermon) {
     return (
@@ -30,7 +39,10 @@ export default function SermonDetail() {
     )
   }
 
-  const more = sermonsBySpeaker(sermon.speakerSlug).filter((s) => s.slug !== sermon.slug)
+  // No speaker, no "More from…" strip — there is nobody to group by.
+  const more = sermon.speakerSlug
+    ? media.sermonsBySpeaker(sermon.speakerSlug).filter((s) => s.slug !== sermon.slug)
+    : []
 
   return (
     <>
@@ -42,14 +54,32 @@ export default function SermonDetail() {
             ← Media Library
           </Link>
 
-          <div className="mt-6 aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
-            <iframe
-              src={youtubeEmbedUrl(sermon.videoId)}
-              title={sermon.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="h-full w-full"
-            />
+          <div className="mt-6 aspect-video w-full overflow-hidden rounded-2xl bg-[#0B0F14] ring-1 ring-white/10">
+            {sermon.mediaType === 'upload' ? (
+              sermon.videoUrl ? (
+                <video
+                  src={sermon.videoUrl}
+                  poster={sermonThumbnail(sermon)}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  aria-label={sermon.title}
+                  className="h-full w-full"
+                />
+              ) : (
+                <p className="flex h-full items-center justify-center text-sm text-white/50">
+                  This video isn’t available yet.
+                </p>
+              )
+            ) : (
+              <iframe
+                src={youtubeEmbedUrl(sermon.videoId)}
+                title={sermon.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="h-full w-full"
+              />
+            )}
           </div>
 
           <h1 className="mt-6 font-heading text-2xl font-bold sm:text-3xl">{sermon.title}</h1>
@@ -59,7 +89,7 @@ export default function SermonDetail() {
                 {sermon.date}
               </span>
             )}
-            {sermon.date ? ' · ' : ''}
+            {sermon.date && sermon.speakerName ? ' · ' : ''}
             {sermon.speakerName}
           </p>
         </div>

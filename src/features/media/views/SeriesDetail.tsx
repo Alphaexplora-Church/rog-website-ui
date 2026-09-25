@@ -1,7 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
 import { useInView } from '../../../shared/hooks/useInView'
 import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
-import { findSeries, sermonsBySeries, seriesBannerImage, sermonThumbnail } from '../data/mediaData'
+import { sermonThumbnail } from '../data/mediaData'
+import { useMediaLibraryViewModel } from '../viewModels/useMediaLibraryViewModel'
+import { MediaPageStatus } from './MediaPageStatus'
 
 /**
  * Media — series detail page (`/media/series/:slug`). Banner + grid of the
@@ -21,9 +23,12 @@ import { findSeries, sermonsBySeries, seriesBannerImage, sermonThumbnail } from 
 export default function SeriesDetail() {
   const { slug = '' } = useParams()
   const { ref, shown } = useInView<HTMLElement>()
-  const item = findSeries(slug)
-  const list = sermonsBySeries(slug)
-  const banner = item ? seriesBannerImage(slug) : undefined
+  const { media, isLoading, error, retry } = useMediaLibraryViewModel()
+  const item = media.findSeries(slug)
+  const list = media.sermonsBySeries(slug)
+  const banner = item ? media.seriesBannerImage(slug) : undefined
+
+  if (isLoading || error) return <MediaPageStatus error={error} onRetry={retry} backTo="/media?category=series" />
 
   if (!item) {
     return (
@@ -91,7 +96,7 @@ export default function SeriesDetail() {
                         {s.date}
                       </span>
                     )}
-                    {s.date ? ' · ' : ''}
+                    {s.date && s.speakerName ? ' · ' : ''}
                     {s.speakerName}
                   </p>
                 </Link>

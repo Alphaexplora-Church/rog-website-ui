@@ -1,6 +1,7 @@
 import { site } from '../../../shared/config/site'
 import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealDelay1, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { Spotlight, useSpotlight } from '../../../shared/components/ui/Spotlight'
 
 /**
  * Events, section 2 — "Weekly Gatherings": the recurring schedule, as
@@ -73,38 +74,114 @@ function weeklyGatherings(): Gathering[] {
 
 const STREAMING_NOTE = 'also live on Facebook and YouTube.'
 
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+/**
+ * "Today" / "Tomorrow" / "In 3 days" for a weekday name, counted in
+ * Philippine time (UTC+8) so the answer matches the church's own calendar
+ * wherever the visitor is. Added in the 2026-09-24 motion pass — a small
+ * live fact that makes a static schedule feel current.
+ */
+function nextLabel(day: string): string | null {
+  const target = DAYS.indexOf(day)
+  if (target < 0) return null
+  const today = new Date(Date.now() + 8 * 3600 * 1000).getUTCDay()
+  const diff = (target - today + 7) % 7
+  return diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `In ${diff} days`
+}
+
+const EASE = 'ease-[cubic-bezier(0.23,1,0.32,1)]'
+
+/**
+ * ── MOTION PASS 2026-09-24 ───────────────────────────────────────────────
+ * Jude: "lagyan mo ng animation… hovering effects… para hindi siya mukang
+ * pale and boring." Each card now lifts on hover with a teal border, a
+ * mouse-following glow and its time slots brightening; the two cards
+ * arrive one after the other; and each carries a "Today / In N days" chip.
+ * Hover only on devices that can hover; movement off under reduced motion.
+ */
+function GatheringCard({ g, reveal, delay }: { g: Gathering; reveal: string; delay: number }) {
+  const spot = useSpotlight<HTMLDivElement>()
+  const next = nextLabel(g.day)
+  const isToday = next === 'Today'
+
+  return (
+    <div className={reveal} style={{ transitionDelay: `${delay}ms` }}>
+      <div
+        {...spot}
+        className={`group relative h-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 transition-[transform,border-color,background-color,box-shadow] duration-500 ${EASE} hover:-translate-y-1 hover:border-[#8FD4C9]/35 hover:bg-white/[0.07] hover:shadow-[0_24px_60px_-28px_rgb(27_122_112/0.6)] motion-reduce:hover:translate-y-0`}
+      >
+        <Spotlight size={380} strength={0.12} />
+
+        <div className="relative z-[2]">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs font-bold tracking-[0.1em] text-[#1b7a70] uppercase transition-colors duration-300 group-hover:text-[#8FD4C9]">
+              {g.cadence}
+            </p>
+            {next ? (
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] uppercase ${
+                  isToday
+                    ? 'bg-[#8FD4C9] text-[#0b1f1d]'
+                    : 'border border-white/10 text-white/55 transition-colors duration-300 group-hover:border-[#8FD4C9]/30 group-hover:text-[#8FD4C9]'
+                }`}
+              >
+                {isToday ? (
+                  <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#0b1f1d] opacity-50 motion-safe:animate-ping" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#0b1f1d]" />
+                  </span>
+                ) : null}
+                {next}
+              </span>
+            ) : null}
+          </div>
+
+          <p className="mt-2 font-heading text-xl font-bold">{g.title}</p>
+
+          <ul className="mt-4 space-y-1.5">
+            {g.slots.map((slot, i) => (
+              <li
+                key={slot}
+                className={`flex items-center gap-2.5 text-sm text-white/70 transition-[color,transform] duration-300 ${EASE} group-hover:translate-x-1 group-hover:text-white motion-reduce:group-hover:translate-x-0`}
+                style={{ transitionDelay: `${i * 40}ms` }}
+              >
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/25 transition-colors duration-300 group-hover:bg-[#8FD4C9]"
+                />
+                {slot}
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-4 border-t border-white/10 pt-4 text-xs text-white/45">
+            {site.location.venue} — {STREAMING_NOTE}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function WeeklyGatheringsSection() {
   const { ref, shown } = useInView<HTMLElement>()
   const gatherings = weeklyGatherings()
+  const reveal = `${revealBase} ${shown ? revealShown : revealHidden}`
 
   return (
     <section ref={ref} data-plate="dark" className="bg-[#232323] text-white">
       <div className="mx-auto max-w-[86rem] px-6 py-20 sm:py-24">
-        <h2 className="font-heading text-2xl font-bold sm:text-3xl">Weekly Gatherings</h2>
-        <p className="mt-2 max-w-[52ch] text-sm text-white/55">
-          The rhythm you can count on, every single week.
-        </p>
+        <div className={reveal}>
+          <h2 className="font-heading text-2xl font-bold sm:text-3xl">Weekly Gatherings</h2>
+          <p className="mt-2 max-w-[52ch] text-sm text-white/55">
+            The rhythm you can count on, every single week.
+          </p>
+        </div>
 
-        <div
-          className={`mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-        >
-          {gatherings.map((g) => (
-            <div key={g.day} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-              <p className="text-xs font-bold tracking-[0.1em] text-[#1b7a70] uppercase">
-                {g.cadence}
-              </p>
-              <p className="mt-2 font-heading text-xl font-bold">{g.title}</p>
-              <ul className="mt-4 space-y-1.5">
-                {g.slots.map((slot) => (
-                  <li key={slot} className="text-sm text-white/70">
-                    {slot}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-4 border-t border-white/10 pt-4 text-xs text-white/45">
-                {site.location.venue} — {STREAMING_NOTE}
-              </p>
-            </div>
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {gatherings.map((g, i) => (
+            <GatheringCard key={g.day} g={g} reveal={reveal} delay={140 + i * 90} />
           ))}
         </div>
       </div>
