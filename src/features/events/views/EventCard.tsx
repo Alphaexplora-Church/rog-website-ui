@@ -1,3 +1,4 @@
+import { Button } from '../../../shared/components/ui/Button'
 import type { EventItem } from '../../../shared/models/types/event'
 import { eventStamp } from './eventDateParts'
 import { DateStamp, EventMeta, PosterImage } from './EventsCalendarItems'
@@ -55,6 +56,13 @@ export function EventCard({
           <p className={`mt-3 max-w-[42ch] text-[0.95rem] leading-relaxed ${dark ? 'text-bone/70' : 'text-abyss/70'}`}>
             {event.blurb}
           </p>
+        ) : null}
+        {event.registrationLink ? (
+          <div className="mt-5">
+            <Button href={event.registrationLink} variant="ghost" tone={tone} arrow>
+              Click here to register
+            </Button>
+          </div>
         ) : null}
       </div>
     </article>

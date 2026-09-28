@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { EventItem } from '../../../shared/models/types/event'
+import { Button } from '../../../shared/components/ui/Button'
 import { Pill, WaveMark } from '../../../shared/components/ui/River'
 import { useCenterBloom } from '../../../shared/hooks/useCenterBloom'
 import { lead } from '../../../shared/styles/tokens'
@@ -156,7 +157,7 @@ export function EventMeta({
         <span className={icon}>
           <ClockIcon />
         </span>
-        {event.time}
+        {event.endTime ? `${event.time} – ${event.endTime}` : event.time}
       </span>
       {event.location ? (
         <span className="inline-flex items-center gap-2">
@@ -261,6 +262,14 @@ export function FeaturedEvent({ event }: { event: EventItem }) {
         <CountdownStrip event={event} />
 
         <EventMeta event={event} className="mt-10 border-t border-bone/15 pt-6" />
+
+        {event.registrationLink ? (
+          <div className="mt-8">
+            <Button href={event.registrationLink} variant="ember" tone="dark" arrow>
+              Click here to register
+            </Button>
+          </div>
+        ) : null}
       </div>
     </article>
   )

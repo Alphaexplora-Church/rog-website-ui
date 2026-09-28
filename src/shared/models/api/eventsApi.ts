@@ -23,6 +23,8 @@ interface StrapiEvent {
   eventName: string
   eventDate: string | null
   eventTime: string | null
+  eventEndTime?: string | null
+  registrationLink?: string | null
   eventLocation?: string | null
   eventDescription: string | null
   headerPhoto?: StrapiMedia | null
@@ -43,6 +45,9 @@ function toEventItem(e: StrapiEvent): EventItem {
     isoDate: e.eventDate ?? undefined,
     time: formatEventTime(e.eventTime) ?? 'Time to be announced',
     isoTime: e.eventTime ? e.eventTime.slice(0, 5) : undefined,
+    endTime: formatEventTime(e.eventEndTime),
+    isoEndTime: e.eventEndTime ? e.eventEndTime.slice(0, 5) : undefined,
+    registrationLink: e.registrationLink?.trim() || undefined,
     location: e.eventLocation?.trim() || undefined,
     title: e.eventName,
     blurb: e.eventDescription ?? '',

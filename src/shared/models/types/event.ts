@@ -23,6 +23,14 @@ export interface EventItem {
   /** 24-hour HH:mm, for anything that needs the real clock time (the
    *  Events page's countdown). Absent when the CMS has no time set. */
   isoTime?: string
+  /** Human-readable end time, e.g. "4:00 PM". Optional (added 2026-09-28);
+   *  when present the site shows a duration, "2:30 PM – 4:00 PM". */
+  endTime?: string
+  /** 24-hour HH:mm end time. */
+  isoEndTime?: string
+  /** External sign-up URL. When present the site shows a
+   *  "Click here to register" button. Added 2026-09-28. */
+  registrationLink?: string
   /** From the CMS's Event Location field (2026-09-25). Optional: events
    *  saved before the field existed have none. */
   location?: string
