@@ -1,511 +1,445 @@
-import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealHidden, revealShown } from '../../../shared/styles/tokens'
-import {
-  scripture,
-  scriptureCount,
-  series,
-  seriesCount,
-  seriesCardThumbnail,
-  speakerSummaries,
-  topics,
-  topicCount,
-} from '../data/mediaData'
-
-type TabKey = 'series' | 'topics' | 'speakers' | 'scripture'
-
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'series', label: 'Series' },
-  { key: 'topics', label: 'Topics' },
-  { key: 'speakers', label: 'Speakers' },
-  { key: 'scripture', label: 'Scripture' },
-]
-
-const TEAL = '#1b7a70'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { Button } from '../../../shared/components/ui/Button'
+import { ErrorBlock } from '../../../shared/components/ui/LoadState'
+import { Reveal, WaveMark } from '../../../shared/components/ui/River'
+import { container } from '../../../shared/styles/tokens'
+import { CATEGORY_FILTERS, categoryLabel, sermonThumbnail, type Sermon } from '../data/mediaData'
+import { FACETS, useMediaBrowseViewModel } from '../viewModels/useMediaBrowseViewModel'
+import { FilterMenu } from './FilterMenu'
+import { Cover, MetaLine, PlayGlyph } from './MediaParts'
+import { markCover } from './mediaViewHelpers'
+import { MediaRail, MessageCard, RAIL_CARD, RAIL_POSTER, RailSkeleton, SeriesPoster } from './MediaRail'
 
 /**
- * Media, section 2 — "Media Library". Reproduces the real site's filtering
- * logic Jude asked to keep (Series / Topics / Speakers / Scripture tabs,
- * each a term list that drills into a filtered sermon grid) — just against
- * our seven-sermon sample set instead of the real site's full archive.
- * Search is a real client-side substring match, not a visual placeholder —
- * cheap and correct since all the sample data already lives in memory.
+ * Media, section 2 — the library, rebuilt Netflix-style (2026-09-27).
  *
- * ── REDESIGNED 2026-09-23 ────────────────────────────────────────────────
- * Jude: "while keeping the filtering of the Media tab, enhance also the UI…
- * fix also the design of… the Media Library Section."
+ * Jude: "make it like the UI of Netflix … it still matches the theme and
+ * the identity of our revamped website. Para lang maayos yung filtering."
  *
- * THE FILTERING IS UNTOUCHED. `q`, the four `.filter()` expressions, the
- * `speakerSummaries()` memo, every drill-down path and every count helper
- * are character-for-character what they were. Only presentation changed,
- * plus three things that were missing rather than wrong:
+ * What was borrowed from Netflix, and how it was made ROG's:
+ *   - ROWS of side-scrolling shelves under a billboard. The first row rides
+ *     up over the hero's fade (Media.tsx), the next card always peeks at the
+ *     right edge, desktop gets paging arrows on hover. Titles are shout
+ *     caps, cards are hard-edged River duotone with Colour Bloom, and the
+ *     hover cue is an ember "current" line filling along the bottom.
+ *   - A FILTER BAR modelled on Netflix's chip nav: category pills (All /
+ *     Series / Sermons, the active one filled bone like "My Netflix"),
+ *     facet dropdowns (Topic ▾ Speaker ▾ Scripture ▾ — like "Genres ▾"),
+ *     search, and a rows/grid toggle. It's a glass pill like the Navbar and
+ *     sticks under it while you scroll the rows.
+ *   - Filtering switches the page from rows to a RESULTS GRID, newest
+ *     first, with removable chips for every active filter and a live count.
+ *     Menus are faceted (see useMediaBrowseViewModel) so they never offer
+ *     an option that leads to zero results.
  *
- *   - AN EMPTY STATE. Searching for something with no matches rendered a
- *     silently blank area — the user could not tell the search had worked,
- *     failed, or broken. Doc 9's own checklist lists empty states as
- *     non-negotiable. There is now one, and it echoes the query back and
- *     offers a way out.
- *   - A RESULT COUNT, so a filter that narrows 12 down to 3 says so.
- *   - REAL TAB SEMANTICS. The tabs were `<button aria-pressed>`, which
- *     announces a toggle, not a tab set. They are now a proper
- *     `role="tablist"` with `aria-selected` and left/right arrow-key
- *     movement, which is what a screen reader and a keyboard both expect.
- *
- * WHY IT LOOKED PALE. The section was `bg-white`, the cards were white, and
- * the `isPlaceholder` tiles were `bg-black/[0.02]` with `border-black/15`
- * text at `black/40` — near-invisible on the ground they sat on, which is
- * why the library read as washed out next to the hero. It now has three
- * tones instead of one: an `#f4f4f4` ground, white cards, and teal as the
- * live accent. Placeholder tiles finally have enough contrast to be read as
- * deliberate rather than broken.
- *
- * Teal-with-alpha goes through inline `style`, not Tailwind classes:
- * Tailwind only emits utilities whose exact class string already exists in
- * the project, so a new `bg-[#1b7a70]/10` would render as nothing until the
- * dev server restarts. Same escape hatch tokens.ts uses for textH1.
+ * `id="media-library"` stays — the hero's "Browse the library" and
+ * ScrollToTop's hash handling point at it. The drill-down pages
+ * (/media/series/…, /media/browse/…, /media/watch/…) are unchanged; each
+ * row's "See all" goes to them.
  */
 export function MediaLibrarySection() {
-  const { ref, shown } = useInView<HTMLElement>()
-  const [tab, setTab] = useState<TabKey>('series')
-  const [query, setQuery] = useState('')
-  const tablistRef = useRef<HTMLDivElement>(null)
+  const vm = useMediaBrowseViewModel()
+  const sectionRef = useRef<HTMLElement>(null)
+  const categoryRef = useRef<HTMLDivElement>(null)
+  const [searchOpen, setSearchOpen] = useState(() => Boolean(vm.query))
+  const scoped = vm.category !== 'all'
 
-  const speakers = useMemo(() => speakerSummaries(), [])
-  const q = query.trim().toLowerCase()
+  /* When the filters change while the user is deep in the rows, bring the
+     top of the results back into view — otherwise a filter chosen from the
+     sticky bar changes content they can't see. */
+  const filterKey = `${vm.category}|${vm.selected.topic}|${vm.selected.speaker}|${vm.selected.scripture}|${vm.mode}`
+  const lastKey = useRef(filterKey)
+  useEffect(() => {
+    if (lastKey.current === filterKey) return
+    lastKey.current = filterKey
+    const el = sectionRef.current
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY - 24
+    if (window.scrollY > top) {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' })
+    }
+  }, [filterKey])
 
-  /* ── FILTERING — unchanged from the original ─────────────────────────── */
-  const filteredSeries = series.filter((s) => s.title.toLowerCase().includes(q))
-  const filteredTopics = topics.filter((t) => t.title.toLowerCase().includes(q))
-  const filteredSpeakers = speakers.filter((s) => s.name.toLowerCase().includes(q))
-  const filteredScripture = scripture.filter((s) => s.title.toLowerCase().includes(q))
-  /* ────────────────────────────────────────────────────────────────────── */
-
-  const totals: Record<TabKey, number> = {
-    series: series.length,
-    topics: topics.length,
-    speakers: speakers.length,
-    scripture: scripture.length,
-  }
-  const shownCounts: Record<TabKey, number> = {
-    series: filteredSeries.length,
-    topics: filteredTopics.length,
-    speakers: filteredSpeakers.length,
-    scripture: filteredScripture.length,
-  }
-  const noun: Record<TabKey, [string, string]> = {
-    series: ['series', 'series'],
-    topics: ['topic', 'topics'],
-    speakers: ['speaker', 'speakers'],
-    scripture: ['passage', 'passages'],
-  }
-
-  const count = shownCounts[tab]
-  const total = totals[tab]
-  const [one, many] = noun[tab]
-  const isEmpty = count === 0
-
-  /* Left/right arrows move between tabs, which is what the tablist role
-     promises. Without it the role is a lie to anyone on a keyboard. */
-  function onTabKeyDown(e: React.KeyboardEvent) {
+  function onCategoryKey(e: KeyboardEvent) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
     e.preventDefault()
-    const i = TABS.findIndex((t) => t.key === tab)
-    const next = e.key === 'ArrowRight' ? (i + 1) % TABS.length : (i - 1 + TABS.length) % TABS.length
-    setTab(TABS[next].key)
-    const buttons = tablistRef.current?.querySelectorAll('button')
-    buttons?.[next]?.focus()
+    const n = CATEGORY_FILTERS.length
+    const i = CATEGORY_FILTERS.findIndex((c) => c.key === vm.category)
+    const next = e.key === 'ArrowRight' ? (i + 1) % n : (i - 1 + n) % n
+    vm.setCategory(CATEGORY_FILTERS[next].key)
+    categoryRef.current?.querySelectorAll('button')[next]?.focus()
   }
+
+  const searchInput = (
+    <div className="relative w-full">
+      <SearchGlyph className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-bone/50" />
+      <input
+        type="search"
+        value={vm.query}
+        onChange={(e) => vm.setQuery(e.target.value)}
+        placeholder={scoped ? `Search ${categoryLabel(vm.category)}` : 'Titles, speakers, topics'}
+        aria-label="Search messages"
+        className="h-10 w-full rounded-full border border-bone/20 bg-bone/[0.06] pr-10 pl-10 text-[0.9rem] text-bone transition-[border-color,background-color] duration-300 ease-current placeholder:text-bone/45 hover:border-bone/40 focus:border-bone/70 focus:bg-bone/[0.1] focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
+      />
+      {vm.query && (
+        <button
+          type="button"
+          onClick={() => vm.setQuery('')}
+          aria-label="Clear search"
+          className="absolute top-1/2 right-1 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-bone/60 transition-colors hover:bg-bone/10 hover:text-bone"
+        >
+          <CloseGlyph />
+        </button>
+      )}
+    </div>
+  )
 
   return (
     <section
-      ref={ref}
+      ref={sectionRef}
       id="media-library"
-      data-plate="light"
+      data-plate="dark"
       aria-labelledby="media-library-heading"
-      className="bg-[#f4f4f4] text-[#0B0F14]"
+      className="relative z-10 scroll-mt-24 bg-abyss pt-[4.6rem] pb-24 text-bone sm:-mt-40 sm:bg-transparent sm:bg-[linear-gradient(to_bottom,transparent,var(--color-abyss)_8rem)] sm:pt-0 sm:pb-36"
     >
-      <div className="mx-auto max-w-[86rem] px-6 py-24 sm:py-28">
-        <div className={`${revealBase} ${shown ? revealShown : revealHidden}`}>
-          {/* Doc 9 §4C eyebrow pill. */}
-          <span
-            className="inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase"
-            style={{
-              color: TEAL,
-              backgroundColor: 'rgb(27 122 112 / 0.12)',
-              boxShadow: 'inset 0 0 0 1px rgb(27 122 112 / 0.22)',
-            }}
-          >
-            Browse Everything
-          </span>
-          <h2
-            id="media-library-heading"
-            className="mt-5 font-heading text-3xl font-bold sm:text-5xl"
-          >
-            Media Library
-          </h2>
-          <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-black/55 sm:text-base">
-            Every message, sorted four ways. Pick a lens, or search across all of them.
-          </p>
-        </div>
+      {/* Phones hide MediaHero (the billboard moves below the chips, Netflix-
+          style), so the page's h1 moves here for them. Only one is ever shown. */}
+      <h1 className="sr-only sm:hidden">Media</h1>
+      <h2 id="media-library-heading" className="sr-only">
+        Media Library
+      </h2>
 
-        {/* Controls */}
-        <div
-          className={`mt-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between ${revealBase} ${shown ? revealShown : revealHidden}`}
-          style={{ transitionDelay: '100ms' }}
-        >
-          {/* Segmented control — was four bare text links with a hairline
-              underline; at 12px on white they barely registered as controls. */}
-          <div
-            ref={tablistRef}
-            role="tablist"
-            aria-label="Browse the media library by"
-            onKeyDown={onTabKeyDown}
-            className="inline-flex flex-wrap gap-1 rounded-full border border-black/10 bg-white p-1"
-          >
-            {TABS.map((t) => {
-              const active = tab === t.key
-              return (
-                <button
-                  key={t.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  tabIndex={active ? 0 : -1}
-                  onClick={() => setTab(t.key)}
-                  className="rounded-full px-4 py-2.5 text-sm font-semibold transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none"
-                  style={
-                    active
-                      ? { backgroundColor: TEAL, color: '#ffffff' }
-                      : { color: 'rgb(0 0 0 / 0.55)' }
-                  }
-                >
-                  {t.label}
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="relative w-full lg:w-80">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 20 20"
-              className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-black/35"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="9" cy="9" r="5.5" />
-              <path d="M13.5 13.5L17 17" />
-            </svg>
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search the library"
-              aria-label="Search the media library"
-              className="h-12 w-full rounded-full border border-black/10 bg-white pr-11 pl-11 text-sm text-[#0B0F14] transition-shadow duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] placeholder:text-black/35 focus:border-transparent focus:ring-2 focus:outline-none"
-              style={{ ['--tw-ring-color' as string]: 'rgb(27 122 112 / 0.5)' }}
-            />
-            {query && (
-              <button
-                type="button"
-                onClick={() => setQuery('')}
-                aria-label="Clear search"
-                className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-black/40 transition-colors duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-black/5 hover:text-black/70"
+      {/* ── Filter bar (sticky) ─────────────────────────────────────────── */}
+      <div className="sticky top-[4.6rem] z-30 max-sm:bg-abyss/92 max-sm:py-2 max-sm:backdrop-blur-xl sm:top-[5.6rem]">
+        <div className={container}>
+          <div className="flex items-center gap-2 rounded-full border-bone/12 sm:border sm:bg-abyss/90 sm:p-1.5 sm:shadow-[0_18px_40px_-24px_rgb(0_0_0/0.9)] sm:backdrop-blur-xl sm:backdrop-saturate-150">
+            <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pr-6 max-md:[mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] md:pr-0">
+              <div
+                ref={categoryRef}
+                role="radiogroup"
+                aria-label="Category"
+                onKeyDown={onCategoryKey}
+                className="flex flex-none items-center gap-2 sm:gap-1"
               >
-                <svg
-                  viewBox="0 0 20 20"
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 5l10 10M15 5L5 15" />
-                </svg>
-              </button>
+                {CATEGORY_FILTERS.map((c) => {
+                  const on = vm.category === c.key
+                  return (
+                    <button
+                      key={c.key}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      tabIndex={on ? 0 : -1}
+                      onClick={() => vm.setCategory(c.key)}
+                      className={`h-9 rounded-full border px-4 text-[0.8rem] font-semibold whitespace-nowrap transition-[background-color,border-color,color] duration-300 ease-current sm:h-10 sm:border-transparent sm:px-5 sm:text-[0.85rem] ${
+                        on ? 'border-bone bg-bone text-abyss' : 'border-bone/25 text-bone/80 hover:bg-bone/[0.08] hover:text-bone'
+                      }`}
+                    >
+                      {c.label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <span aria-hidden="true" className="h-6 w-px flex-none bg-bone/15 sm:mx-1" />
+
+              {FACETS.map((f) => (
+                <FilterMenu
+                  key={f.key}
+                  label={f.label}
+                  plural={f.plural}
+                  options={vm.facetOptions[f.key]}
+                  selected={vm.selected[f.key]}
+                  selectedLabel={vm.selectedLabel(f.key)}
+                  onSelect={(slug) => vm.setFacet(f.key, slug)}
+                />
+              ))}
+            </div>
+
+            {/* Search: inline on desktop, a toggle on phones */}
+            <div className="hidden w-64 flex-none md:block">{searchInput}</div>
+            <button
+              type="button"
+              onClick={() => setSearchOpen((o) => !o)}
+              aria-label={searchOpen ? 'Hide search' : 'Search messages'}
+              aria-expanded={searchOpen}
+              className={`flex h-9 w-9 flex-none items-center justify-center rounded-full border transition-colors sm:h-10 sm:w-10 md:hidden ${
+                searchOpen || vm.query ? 'border-bone/60 bg-bone/10 text-bone' : 'border-bone/20 text-bone/80'
+              }`}
+            >
+              <SearchGlyph className="h-4 w-4" />
+            </button>
+
+            {/* Hidden (not removed) while filtering — results are always a grid — so the bar doesn't shift. */}
+            {(
+              <div role="group" aria-label="Layout" aria-hidden={vm.filtering || undefined} className={`hidden flex-none items-center rounded-full border border-bone/15 p-0.5 sm:flex ${vm.filtering ? 'invisible' : ''}`}>
+                {(['rows', 'grid'] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    aria-pressed={vm.view === v}
+                    aria-label={v === 'rows' ? 'Show as rows' : 'Show every message as a grid'}
+                    onClick={() => vm.setView(v)}
+                    className={`flex h-8 w-9 items-center justify-center rounded-full transition-colors duration-300 ${
+                      vm.view === v ? 'bg-bone text-abyss' : 'text-bone/65 hover:text-bone'
+                    }`}
+                  >
+                    {v === 'rows' ? <RowsGlyph /> : <GridGlyph />}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
-        </div>
 
-        {/* Result count — silence here was the reason a filter felt broken. */}
-        <p
-          aria-live="polite"
-          className={`mt-6 text-xs font-bold tracking-[0.12em] text-black/45 uppercase ${revealBase} ${shown ? revealShown : revealHidden}`}
-          style={{ transitionDelay: '140ms' }}
-        >
-          {/* In the "X of Y" form the noun agrees with Y, not X — "1 of 7
-              topic" is wrong, "1 of 7 topics" is right. */}
-          {q
-            ? `${count} of ${total} ${total === 1 ? one : many}`
-            : `${total} ${total === 1 ? one : many}`}
+          {searchOpen && <div className="mt-2 md:hidden">{searchInput}</div>}
+        </div>
+      </div>
+
+      {/* ── Active filters + count ──────────────────────────────────────── */}
+      <div className={`${container} mt-3 flex min-h-8 flex-wrap items-center gap-2 sm:mt-6 ${vm.mode === 'rows' ? 'max-sm:hidden' : ''}`}>
+        <p aria-live="polite" className="mr-2 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-bone/55 sm:text-[0.72rem] sm:tracking-[0.22em]">
+          {vm.isLoading || vm.error
+            ? ' '
+            : vm.mode === 'grid'
+              ? `${vm.results.length} ${vm.results.length === 1 ? 'message' : 'messages'}${scoped ? ` in ${categoryLabel(vm.category)}` : ''}`
+              : `${vm.pool.length} ${vm.pool.length === 1 ? 'message' : 'messages'}${scoped ? ` in ${categoryLabel(vm.category)}` : ''}`}
         </p>
+        {vm.chips.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            onClick={() => vm.clearChip(c.key)}
+            aria-label={`Remove filter ${c.label}`}
+            className="inline-flex h-8 items-center gap-1.5 rounded-full border border-ember/60 bg-ember/10 pr-2 pl-3.5 text-[0.8rem] font-medium italic text-bone transition-colors hover:border-ember hover:bg-ember hover:text-abyss"
+          >
+            {c.label}
+            <CloseGlyph className="h-3.5 w-3.5" />
+          </button>
+        ))}
+        {vm.chips.length > 1 && (
+          <button
+            type="button"
+            onClick={vm.clearAll}
+            className="ml-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-bone/60 underline-offset-4 transition-colors hover:text-ember hover:underline"
+          >
+            Clear all
+          </button>
+        )}
+      </div>
 
-        <div
-          className={`mt-6 ${revealBase} ${shown ? revealShown : revealHidden}`}
-          style={{ transitionDelay: '180ms' }}
-        >
-          {isEmpty ? (
-            <EmptyState query={query} noun={many} onClear={() => setQuery('')} />
+      {/* ── Content ─────────────────────────────────────────────────────── */}
+      <div className="mt-4 sm:mt-8">
+        {vm.isLoading ? (
+          <RailSkeleton />
+        ) : vm.error ? (
+          <div className={container}>
+            <ErrorBlock tone="dark" error={vm.error} onRetry={vm.retry} />
+          </div>
+        ) : vm.mode === 'rows' ? (
+          vm.rows.length === 0 ? (
+            <div className={container}>
+              <Empty
+                title={scoped ? `Nothing in ${categoryLabel(vm.category)} yet` : 'No messages yet'}
+                body="This fills in on its own as messages are published."
+                action={scoped ? 'Show all categories' : undefined}
+                onAction={scoped ? () => vm.setCategory('all') : undefined}
+              />
+            </div>
           ) : (
-            <>
-              {tab === 'series' && (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredSeries.map((s, i) => (
-                    <SeriesCard
-                      key={s.slug}
-                      slug={s.slug}
-                      title={s.title}
-                      isPlaceholder={s.isPlaceholder}
-                      count={seriesCount(s.slug)}
-                      index={i}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {tab === 'topics' && (
-                <TermList
-                  items={filteredTopics.map((t) => ({
-                    slug: t.slug,
-                    title: t.title,
-                    isPlaceholder: t.isPlaceholder,
-                    count: topicCount(t.slug),
-                  }))}
-                  basePath="/media/browse/topic"
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-8 sm:gap-16">
+              {vm.featured && <MobileBillboard s={vm.featured} tags={vm.featuredTags} />}
+              {vm.rows.map((row, i) => (
+                <Reveal key={row.key} delay={i < 3 ? i * 60 : 0}>
+                  {row.kind === 'series' ? (
+                    <MediaRail id={`rail-${row.key}`} eyebrow={row.eyebrow} title={row.title} count={row.series.length}>
+                      {row.series.map((s) => (
+                        <SeriesPoster key={s.slug} card={s} className={RAIL_POSTER} />
+                      ))}
+                    </MediaRail>
+                  ) : (
+                    <MediaRail id={`rail-${row.key}`} eyebrow={row.eyebrow} title={row.title} seeAll={row.seeAll}>
+                      {row.items.map((s) => (
+                        <MessageCard
+                          key={s.slug}
+                          s={s}
+                          isNew={s.slug === vm.newestSlug}
+                          showCategory={!scoped && row.key === 'latest'}
+                          className={RAIL_CARD}
+                        />
+                      ))}
+                    </MediaRail>
+                  )}
+                </Reveal>
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-14">
+            {vm.matchingSeries.length > 0 && (
+              <MediaRail id="rail-matching-series" eyebrow="Series" title="Matching series" count={vm.matchingSeries.length}>
+                {vm.matchingSeries.map((s) => (
+                  <SeriesPoster key={s.slug} card={s} className={RAIL_POSTER} />
+                ))}
+              </MediaRail>
+            )}
+            <div className={container}>
+              {vm.results.length === 0 ? (
+                <Empty
+                  title={vm.query.trim() ? `Nothing matches “${vm.query.trim()}”` : 'No messages match these filters'}
+                  body="Try removing a filter, or a shorter search word."
+                  action="Clear filters"
+                  onAction={vm.clearAll}
+                />
+              ) : (
+                <ResultsGrid
+                  key={`${filterKey}|${vm.query}`}
+                  items={vm.results}
+                  newestSlug={vm.newestSlug}
+                  showCategory={!scoped}
                 />
               )}
-
-              {tab === 'speakers' && (
-                <TermList
-                  items={filteredSpeakers.map((s) => ({
-                    slug: s.slug,
-                    title: s.name,
-                    count: s.count,
-                  }))}
-                  basePath="/media/browse/speaker"
-                />
-              )}
-
-              {tab === 'scripture' && (
-                <TermList
-                  items={filteredScripture.map((s) => ({
-                    slug: s.slug,
-                    title: s.title,
-                    isPlaceholder: s.isPlaceholder,
-                    count: scriptureCount(s.slug),
-                  }))}
-                  basePath="/media/browse/scripture"
-                />
-              )}
-            </>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )
 }
 
-function EmptyState({
-  query,
-  noun,
-  onClear,
-}: {
-  query: string
-  noun: string
-  onClear: () => void
-}) {
+/**
+ * Phones only (2026-09-27, Jude: "sa mobile view … parang ganito", Netflix
+ * app): the billboard as a CARD under the category chips — newest message in
+ * the current category, title centred, a "Sermon • Hope • Restoration" tag
+ * line, one full-width Watch Now (no "My List" — there are no accounts).
+ * The card is filled by the thumbnail blown up and blurred, with the real
+ * 16:9 thumbnail on top, so sermon art is never cropped to a portrait.
+ */
+function MobileBillboard({ s, tags }: { s: Sermon; tags: string[] }) {
+  const thumb = sermonThumbnail(s)
+  const to = `/media/watch/${s.slug}`
   return (
-    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-black/15 bg-white px-6 py-16 text-center">
-      <span
-        aria-hidden="true"
-        className="flex h-12 w-12 items-center justify-center rounded-full"
-        style={{ backgroundColor: 'rgb(27 122 112 / 0.1)', color: TEAL }}
-      >
-        <svg
-          viewBox="0 0 20 20"
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="9" cy="9" r="5.5" />
-          <path d="M13.5 13.5L17 17" />
-        </svg>
-      </span>
-      <p className="mt-4 font-heading text-lg font-bold">No {noun} match “{query}”</p>
-      <p className="mt-1 max-w-[38ch] text-sm text-black/50">
-        Try a shorter word, or clear the search to see everything in this tab.
-      </p>
-      <button
-        type="button"
-        onClick={onClear}
-        className="mt-6 inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100"
-        style={{ backgroundColor: TEAL }}
-      >
-        Clear search
-      </button>
+    <div className={`${container} sm:hidden`}>
+      <article className="grain relative isolate overflow-hidden border border-bone/12 bg-abyss-2">
+        <div aria-hidden="true" className="absolute inset-0 -z-10">
+          <img src={thumb} alt="" className="h-full w-full scale-150 object-cover opacity-55 blur-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-b from-river/25 via-abyss/45 to-abyss" />
+        </div>
+        <Link to={to} viewTransition onClick={(e) => markCover(e, s.slug)} className="block" tabIndex={-1} aria-hidden="true">
+          <Cover src={thumb} title={s.title} bloom="always" priority className="aspect-video w-full" />
+        </Link>
+        <div className="px-5 pt-5 pb-5 text-center">
+          <p className="text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-shallows">Latest message</p>
+          <h2 className="mt-2 text-balance font-shout text-[2.1rem] font-extrabold uppercase leading-[0.9]">{s.title}</h2>
+          {tags.length > 0 && (
+            <p className="mt-3 text-[0.78rem] text-bone/75">
+              {tags.map((t, i) => (
+                <span key={t}>
+                  {i > 0 && <span aria-hidden="true" className="px-1.5 text-bone/40">•</span>}
+                  <span className={i === 0 ? 'font-semibold text-bone' : undefined}>{t}</span>
+                </span>
+              ))}
+            </p>
+          )}
+          <MetaLine s={s} className="mt-1 text-[0.7rem] text-sand" />
+          <Button to={to} variant="ember" className="mt-5 w-full">
+            <span className="flex items-center gap-2">
+              <PlayGlyph className="h-4 w-4" />
+              Watch Now
+            </span>
+          </Button>
+        </div>
+      </article>
     </div>
   )
 }
 
-function SeriesCard({
-  slug,
-  title,
-  count,
-  isPlaceholder,
-  index,
-}: {
-  slug: string
-  title: string
-  count: number
-  isPlaceholder?: boolean
-  index: number
-}) {
-  if (isPlaceholder) {
-    return (
-      <div
-        className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-3xl border border-dashed p-6 text-center"
-        style={{ borderColor: 'rgb(27 122 112 / 0.3)', backgroundColor: 'rgb(27 122 112 / 0.05)' }}
-      >
-        <span
-          aria-hidden="true"
-          className="flex h-10 w-10 items-center justify-center rounded-full"
-          style={{ backgroundColor: 'rgb(27 122 112 / 0.12)', color: TEAL }}
-        >
-          <svg
-            viewBox="0 0 20 20"
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M10 5v10M5 10h10" />
-          </svg>
-        </span>
-        <p className="font-heading text-lg font-bold text-black/70">{title}</p>
-        <p className="text-xs text-black/45">Coming soon &mdash; episodes pending</p>
-      </div>
-    )
-  }
-
-  const cover = seriesCardThumbnail(slug)
-
+/** The results grid, 48 at a time. Keyed by the filters in the parent, so a
+ *  new filter starts again from the first page without an effect. */
+const PAGE = 48
+function ResultsGrid({ items, newestSlug, showCategory }: { items: Sermon[]; newestSlug?: string; showCategory: boolean }) {
+  const [limit, setLimit] = useState(PAGE)
+  const left = items.length - limit
   return (
-    <Link
-      to={`/media/series/${slug}`}
-      className="group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-3xl bg-[#0B0F14] text-white transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100"
-      style={{ transitionDelay: `${index * 40}ms` }}
-    >
-      {cover && (
-        <img
-          src={cover}
-          alt=""
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105 motion-reduce:transition-none"
-        />
+    <>
+      <ul className="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-10 lg:grid-cols-3 xl:grid-cols-4">
+        {items.slice(0, limit).map((s) => (
+          <MessageCard key={s.slug} s={s} isNew={s.slug === newestSlug} showCategory={showCategory} />
+        ))}
+      </ul>
+      {left > 0 && (
+        <div className="mt-14 flex flex-col items-center gap-3">
+          <Button onClick={() => setLimit((l) => l + PAGE)} variant="outline" size="lg">
+            Show more
+          </Button>
+          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-bone/50">
+            Showing {limit} of {items.length}
+          </p>
+        </div>
       )}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"
-      />
-
-      {/* Count as a badge rather than a grey sub-line — it is the one piece
-          of data that tells you whether the series is worth opening. */}
-      <span
-        className="absolute top-4 right-4 rounded-full px-2.5 py-1 text-[10px] font-black tracking-[0.14em] text-white uppercase backdrop-blur-sm"
-        style={{ backgroundColor: 'rgb(27 122 112 / 0.85)' }}
-      >
-        {count} {count === 1 ? 'message' : 'messages'}
-      </span>
-
-      <div className="relative flex items-end justify-between gap-3 p-6">
-        <p className="font-heading text-xl leading-tight font-bold">{title}</p>
-        <span
-          aria-hidden="true"
-          className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1 motion-reduce:transition-none"
-        >
-          <svg
-            viewBox="0 0 20 20"
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4 10h12M11 5l5 5-5 5" />
-          </svg>
-        </span>
-      </div>
-    </Link>
+    </>
   )
 }
 
-/**
- * Terms were thin text rows on hairline borders — legible, but the palest
- * thing on an already-pale plate, and a 3px-tall hover target's worth of
- * affordance. They are cards now: white on the grey ground, teal count
- * badge, whole row tappable.
- */
-function TermList({
-  items,
-  basePath,
-}: {
-  items: { slug: string; title: string; count: number; isPlaceholder?: boolean }[]
-  basePath: string
-}) {
+function Empty({ title, body, action, onAction }: { title: string; body: string; action?: string; onAction?: () => void }) {
   return (
-    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((item, i) =>
-        item.isPlaceholder ? (
-          <li
-            key={item.slug}
-            className="flex items-center justify-between rounded-2xl border border-dashed border-black/15 bg-white/60 px-5 py-4"
-          >
-            <span className="font-medium text-black/45 italic">{item.title}</span>
-            <span className="text-xs text-black/35">pending</span>
-          </li>
-        ) : (
-          <li key={item.slug}>
-            <Link
-              to={`${basePath}/${item.slug}`}
-              className="group flex min-h-14 items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white px-5 py-4 transition-[border-color,transform] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100"
-              style={{ transitionDelay: `${Math.min(i, 8) * 30}ms` }}
-            >
-              <span className="font-semibold">{item.title}</span>
-              <span className="flex items-center gap-2">
-                <span
-                  className="rounded-full px-2.5 py-1 text-xs font-bold"
-                  style={{ backgroundColor: 'rgb(27 122 112 / 0.1)', color: TEAL }}
-                >
-                  {item.count}
-                </span>
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 20 20"
-                  className="h-4 w-4 text-black/25 transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1 motion-reduce:transition-none"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 10h12M11 5l5 5-5 5" />
-                </svg>
-              </span>
-            </Link>
-          </li>
-        ),
+    <div className="border border-dashed border-bone/20 px-6 py-16 text-center sm:py-20">
+      <WaveMark className="mx-auto h-6 w-16 text-shallows" strokeWidth={6} />
+      <p className="mx-auto mt-6 max-w-[22ch] text-balance font-shout text-[clamp(1.9rem,4vw,3rem)] font-extrabold uppercase leading-[0.92]">
+        {title}
+      </p>
+      <p className="mx-auto mt-4 max-w-[40ch] font-whisper text-lg italic text-bone/70">{body}</p>
+      {action && onAction && (
+        <div className="mt-8">
+          <Button onClick={onAction} variant="solid">
+            {action}
+          </Button>
+        </div>
       )}
-    </ul>
+    </div>
+  )
+}
+
+/* ── Glyphs ───────────────────────────────────────────────────────────── */
+
+function SearchGlyph({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+      <circle cx="9" cy="9" r="5.5" />
+      <path d="M13.5 13.5L17 17" />
+    </svg>
+  )
+}
+
+function CloseGlyph({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <path d="M5.5 5.5l9 9M14.5 5.5l-9 9" />
+    </svg>
+  )
+}
+
+function RowsGlyph() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <rect x="2.5" y="3.5" width="4.5" height="4.5" />
+      <rect x="8.5" y="3.5" width="4.5" height="4.5" />
+      <path d="M14.5 3.5h3v4.5h-3" />
+      <rect x="2.5" y="12" width="4.5" height="4.5" />
+      <rect x="8.5" y="12" width="4.5" height="4.5" />
+      <path d="M14.5 12h3v4.5h-3" />
+    </svg>
+  )
+}
+
+function GridGlyph() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <rect x="2.5" y="2.5" width="6.5" height="6.5" />
+      <rect x="11" y="2.5" width="6.5" height="6.5" />
+      <rect x="2.5" y="11" width="6.5" height="6.5" />
+      <rect x="11" y="11" width="6.5" height="6.5" />
+    </svg>
   )
 }

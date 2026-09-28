@@ -1,37 +1,48 @@
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { MinistriesHero } from './MinistriesHero'
 import { LifeSeasonsSection } from './LifeSeasonsSection'
 import { BodyOfChristMinistriesSection } from './BodyOfChristMinistriesSection'
 import { ServiceMinistriesSection } from './ServiceMinistriesSection'
 
 /**
- * Ministries — View layer only, page container for `/ministries`.
+ * Ministries — page container for `/ministries` and
+ * `/ministries/body-of-christ`. REVAMP 2026-09-25 ("Textured Editorial").
  *
- * Built 2026-09-22 from the Figma Ministries.dc.html board (Hero → Life
- * Seasons carousel → Body of Christ Ministries carousel), same tab-by-tab
- * workflow as Home and About.
+ * Content history: built 2026-09-22 from the Figma Ministries board; the
+ * #SAVEDTOSERVE volunteer-recruitment section (real riverofgod.ph copy) was
+ * added the same day. Body of Christ Ministries (cross-church programmes)
+ * and Service Ministries (internal serving teams) are different things —
+ * see each file.
  *
- * `navigation.ts` also lists `/ministries/body-of-christ` as its own nav
- * child ("Serving teams across the house"). Rather than a second route
- * duplicating this section, `BodyOfChristMinistriesSection` carries
- * `id="body-of-christ"` so that link can anchor-jump straight to it —
- * same pattern as About's sub-nav pills.
+ * Shape — every band a different form, alternating grounds:
+ *   Hero (abyss, light-pool)      → PageHero with a section index aside
+ *   Ages of the River (abyss)     → tall portrait panels on a snap rail
+ *   #SavedToServe (river band)    → editorial index list, row → dialog
+ *   Body of Christ (bone plate)   → numbered two-column index
  *
- * ADDED same day: `ServiceMinistriesSection` — real volunteer-recruitment
- * content Jude confirmed belongs on this page, from riverofgod.ph's own
- * "#SAVEDTOSERVE" page. Distinct from Body of Christ Ministries above
- * (cross-church programs) — this is internal ROG serving teams recruiting
- * volunteers, each with a contact person and phone number. Two of the
- * eight ministries Jude listed (Discipleship, Cross Cultural) still need
- * their description/contact confirmed — see that file's own flag.
+ * `/ministries/body-of-christ` renders this same page (one source, no
+ * duplicate route). It used to land at the top like `/ministries`; now it
+ * scrolls to the `#body-of-christ` section once the page has mounted, so
+ * the nav child actually goes where it says.
  */
 export default function Ministries() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    if (pathname !== '/ministries/body-of-christ') return
+    const id = requestAnimationFrame(() => {
+      document.getElementById('body-of-christ')?.scrollIntoView({ block: 'start' })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [pathname])
+
   return (
     <>
       <MinistriesHero />
       <LifeSeasonsSection />
-       <ServiceMinistriesSection />
+      <ServiceMinistriesSection />
       <BodyOfChristMinistriesSection />
-     
     </>
   )
 }

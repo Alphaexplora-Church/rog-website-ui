@@ -1,22 +1,21 @@
-import { useInView } from '../../../shared/hooks/useInView'
-import {
-  maskLineBase,
-  maskLineHidden,
-  maskLineShown,
-  revealBase,
-  revealDelay1,
-  revealHidden,
-  revealShown,
-} from '../../../shared/styles/tokens'
+import { useRef } from 'react'
+import { Reveal, SectionHead } from '../../../shared/components/ui/River'
+import { useScrollProgress } from '../../../shared/hooks/useScrollProgress'
+import { container } from '../../../shared/styles/tokens'
 
 /**
- * About, section 2 — Founders' Story timeline. Matches the Figma
- * WhoWeAre.dc.html "Founders' Story" board shape (left column heading +
- * prose, right column a 2x2 milestone grid). Milestone copy UPDATED
- * 2026-09-22 with the real narrative Jude pasted from riverofgod.ph —
- * the intro paragraph is now their own "Drinking Well" framing, and the
- * 477-churches milestone now names the international reach (Beijing,
- * Ulaanbaatar, London) the real site includes.
+ * About — Founders' Story. REVAMP 2026-09-25: a real timeline.
+ *
+ * Shape: the heading and the church's "Drinking Well" framing pin on the
+ * left; on the right four milestones hang off one vertical line that fills
+ * with ember as you scroll (the Current Fill). Each milestone is led by a
+ * huge shout year. 1998 — the founding — is the only SOLID ember year; the
+ * rest are outlined, so the eye lands on the seed first and the others
+ * read as what grew from it. Rows step in and out on desktop for an
+ * editorial, not-a-grid rhythm.
+ *
+ * Copy: real narrative from riverofgod.ph (pasted by Jude 2026-09-22),
+ * including the international reach on the 477-churches milestone.
  */
 const milestones = [
   {
@@ -42,69 +41,76 @@ const milestones = [
 ]
 
 export function FoundersStorySection() {
-  const { ref, shown } = useInView<HTMLElement>()
+  const fill = useRef<HTMLDivElement>(null)
+  const track = useScrollProgress<HTMLOListElement>((p) => {
+    if (fill.current) fill.current.style.transform = `scaleY(${p})`
+  })
 
   return (
     <section
-      ref={ref}
       id="founders-story"
       data-plate="dark"
       aria-labelledby="founders-story-heading"
-      className="relative bg-[#232323] text-white"
+      className="relative scroll-mt-32 overflow-hidden bg-abyss pt-32 pb-24 text-bone sm:pt-40 sm:pb-32"
     >
-      <div className="mx-auto max-w-[86rem] px-6 py-24 sm:py-32">
-        <div className="grid grid-cols-1 gap-14 lg:grid-cols-[minmax(0,26rem)_1fr] lg:gap-20">
-          <div>
-            <h2
-              id="founders-story-heading"
-              className="text-balance font-heading text-3xl leading-[1.1] font-bold sm:text-4xl"
-            >
-              <span className="block overflow-hidden pb-[0.1em]">
-                <span className={`${maskLineBase} ${shown ? maskLineShown : maskLineHidden}`}>
-                  Founders&rsquo; Story
-                </span>
-              </span>
-            </h2>
-            <p
-              className={`mt-6 max-w-[42ch] leading-relaxed text-[#a6a6a6] ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-            >
-              The church is a &ldquo;Drinking Well&rdquo; for those who are weary, hungry and
-              thirsty for God, and to experience the manifest presence of the Holy Spirit — a
-              calling that started with one children&rsquo;s home and grew, year by year, into
-              the family it is today.
-            </p>
-          </div>
+      <div aria-hidden="true" className="pointer-events-none absolute -top-[10%] -left-[20%] h-[70%] w-[70%] bg-[radial-gradient(ellipse_at_center,rgb(14_95_104/0.45),transparent_65%)] blur-[40px]" />
+      <div className={`${container} relative grid gap-16 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20`}>
+        <div className="lg:sticky lg:top-44 lg:self-start">
+          <SectionHead
+            id="founders-story-heading"
+            eyebrow="Since 1998"
+            title={
+              <>
+                Founders&rsquo;
+                <br />
+                Story
+              </>
+            }
+            lead={
+              <>
+                The church is a &ldquo;Drinking Well&rdquo; for those who are weary, hungry and
+                thirsty for God, and to experience the manifest presence of the Holy Spirit — a
+                calling that started with one children&rsquo;s home and grew, year by year, into
+                the family it is today.
+              </>
+            }
+          />
+        </div>
 
-          <div
-            className={`grid grid-cols-1 gap-5 sm:grid-cols-2 ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-          >
-            {milestones.map((m) => (
-              <div
+        <ol ref={track} className="relative">
+          <div aria-hidden="true" className="absolute top-3 bottom-3 left-0 w-px bg-bone/15">
+            <div ref={fill} className="h-full w-full origin-top scale-y-0 bg-ember" />
+          </div>
+          {milestones.map((m, i) => {
+            const founding = i === 0
+            return (
+              <Reveal
+                as="li"
                 key={m.title}
-                className="rounded-2xl border border-white/10 bg-[#161616] p-7"
+                className={`relative pb-16 pl-8 last:pb-0 sm:pl-14 ${i % 2 === 1 ? 'lg:ml-[14%]' : ''}`}
               >
-                <p className="text-xs font-bold tracking-[0.14em] text-[#1b7a70] uppercase">
+                <span
+                  aria-hidden="true"
+                  className={`absolute top-[0.9em] -left-[5px] h-[11px] w-[11px] rounded-full ${founding ? 'bg-ember' : 'border border-bone/50 bg-abyss'}`}
+                />
+                <p
+                  className={`font-shout text-[clamp(4.5rem,13vw,10rem)] font-black uppercase leading-[0.8] tracking-[-0.01em] ${
+                    founding
+                      ? 'text-ember'
+                      : 'text-transparent [-webkit-text-stroke:1.5px_rgb(244_237_226/0.55)]'
+                  }`}
+                >
                   {m.year}
                 </p>
-                <p className="mt-3 font-heading text-lg font-bold text-white">{m.title}</p>
-                <p className="mt-2 text-sm leading-relaxed text-[#a6a6a6]">{m.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+                <h3 className="mt-5 max-w-[22ch] font-shout text-[clamp(1.6rem,2.6vw,2.25rem)] font-bold uppercase leading-[0.98]">
+                  {m.title}
+                </h3>
+                <p className="mt-4 max-w-[52ch] leading-relaxed text-bone/75">{m.body}</p>
+              </Reveal>
+            )
+          })}
+        </ol>
       </div>
-
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1440 130"
-        preserveAspectRatio="none"
-        className="absolute bottom-0 left-0 h-[70px] w-full sm:h-[100px]"
-      >
-        <path
-          d="M0,55 C360,120 720,5 1080,60 C1260,90 1350,78 1440,60 L1440,130 L0,130 Z"
-          fill="#161616"
-        />
-      </svg>
     </section>
   )
 }

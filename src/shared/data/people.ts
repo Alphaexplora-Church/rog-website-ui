@@ -55,6 +55,10 @@ export interface Person {
   phone?: string
   /** Named as a founder of River of God. */
   founder?: boolean
+  /** Portrait under public/assets. ADDED 2026-09-25 — the three headshots
+   *  that already ship with the H.I.M. Philippines page are reused here, so
+   *  the same person has one photo everywhere. */
+  photo?: string
 }
 
 export const people: Person[] = [
@@ -62,6 +66,7 @@ export const people: Person[] = [
   // Roles verbatim from riverofgod.ph, confirmed 2026-09-22.
   {
     slug: 'chito-sanchez',
+    photo: '/assets/him-philippines/chito-sanchez.webp',
     name: 'Bishop Augusto "Chito" Sanchez Jr.',
     founder: true,
     shortTitle: 'Founder & Senior Pastor',
@@ -75,6 +80,7 @@ export const people: Person[] = [
   },
   {
     slug: 'rachel-sanchez',
+    photo: '/assets/him-philippines/rachel-sanchez.webp',
     name: 'Pastor Rachel Sanchez',
     founder: true,
     shortTitle: 'Senior Pastor, River of God Ortigas',
@@ -88,6 +94,7 @@ export const people: Person[] = [
   },
   {
     slug: 'greeko-villanueva',
+    photo: '/assets/him-philippines/greeko-villanueva.webp',
     name: 'Pastor Greeko Villanueva',
     roles: [
       'Discipleship and Connect Pastor',

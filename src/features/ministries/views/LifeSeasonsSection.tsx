@@ -1,169 +1,249 @@
-import { useState } from 'react'
-import { cardAgeLabel, lifeStageCards } from '../../../shared/data/lifeStages'
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealDelay1, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import type { AgeMinistry } from '../../../shared/models/types/ministry'
+import { useMinistriesViewModel } from '../viewModels/useMinistriesViewModel'
+import { SectionHead, WaveMark } from '../../../shared/components/ui/River'
+import { useCenterBloom } from '../../../shared/hooks/useCenterBloom'
+import { container } from '../../../shared/styles/tokens'
 
 /**
- * Ministries, section 2 — "Life Seasons" carousel. From the Figma
- * Ministries.dc.html board: age-stage cards with alternating themes
- * (white / navy #0E2A3F / teal #1B7A70), same carousel pattern as the
- * other pages on this site (page/maxPage/STEP state).
+ * Ministries, section 2 — "Ages of the River" (was the "Life Seasons"
+ * carousel). REVAMP 2026-09-25.
  *
- * ── SINGLE-SOURCED 2026-09-23 ────────────────────────────────────────────
- * Jude: "make sure that the data placeholders are all the same… para pag
- * inimplement tsaka inintegrate natin yung cms, we wont encounter any
- * issue."
+ * Shape: a horizontal strip of TALL portrait panels, each dominated by its
+ * age band set as a huge shout numeral ("3–12", "13–19"…), over River
+ * duotone imagery that blooms to true colour on hover/focus (and at screen
+ * centre on touch, via useCenterBloom). The rail is native scroll-snap —
+ * swipe on touch, drag with a mouse, arrow keys when focused, plus
+ * prev/next buttons — so it replaces the old page/STEP transform carousel
+ * without hiding anything behind pagination.
  *
- * ⚠ THESE CARDS AND ABOUT'S LIFE STAGE COORDINATORS DESCRIBED THE SAME
- * MINISTRIES WITH DIFFERENT AGE BANDS. This file's Figma-sourced numbers
- * said River Kids 4–12, Young Adults 20–30 and River Men & Women 31–50;
- * About's riverofgod.ph-sourced roster said 3–12, 20–35 and 36–50. The
- * official site won, per Jude's standing instruction on this project, so
- * THE AGE LABELS ON THESE CARDS HAVE CHANGED. The cards themselves,
- * their copy, their photos and their themes are untouched.
+ * DATA (2026-09-28): from rog-cms (Manage Contents → Ministries, type
+ * "Ages of the River") through useMinistriesViewModel, bundled copy as the
+ * fallback. Before that it was single-sourced in `shared/data/lifeStages.ts`: six
+ * cards over seven canonical stages, and `cardAgeLabel` derives each age
+ * line from the stages a card covers (riverofgod.ph's bands win over the
+ * Figma board's — see that file). The cards' old `card` / `ageColor` /
+ * `bodyColor` class strings belong to the retired white/navy/teal look and
+ * are no longer read here.
  *
- * Card data now lives in `shared/data/lifeStages.ts` — the seven canonical
- * stages that About lists, plus the six-card grouping this carousel shows
- * (River Men and River Women share one card; that decision is written down
- * exactly once, there). `cardAgeLabel` derives a card's age line from the
- * stages it covers, so no age is stored twice.
- *
- * `card` / `ageColor` / `bodyColor` are literal, complete Tailwind class
- * strings in that file — never assembled at runtime, same JIT constraint
- * documented throughout this codebase.
+ * NEVER AN EMPTY BOX. The photos are remote stock placeholders; if one
+ * fails to load, the panel's own textured ground (per-panel river
+ * gradient + grain + a giant wave mark) is what shows, and it still blooms.
  */
-const VISIBLE = 4
-const STEP = 272
+
+/* Per-panel grounds — token hexes only, as inline style (Tailwind can't
+   see runtime-chosen gradients). Each rests under the River duotone and
+   warms on bloom, so even a panel with no photo visibly changes colour. */
+const grounds = [
+  'linear-gradient(165deg, #0e5f68 0%, #06131b 78%)',
+  'linear-gradient(200deg, #f2761c 0%, #0b2a33 55%, #06131b 100%)',
+  'linear-gradient(170deg, #7fc2b8 0%, #0e5f68 45%, #06131b 100%)',
+  'linear-gradient(190deg, #cdb892 0%, #0b2a33 60%, #06131b 100%)',
+  'linear-gradient(160deg, #0b2a33 0%, #0e5f68 50%, #06131b 100%)',
+  'linear-gradient(205deg, #a3420b 0%, #0b2a33 55%, #06131b 100%)',
+]
 
 export function LifeSeasonsSection() {
-  const { ref, shown } = useInView<HTMLElement>()
-  const [page, setPage] = useState(0)
-  const maxPage = Math.max(0, lifeStageCards.length - VISIBLE)
+  const { ages } = useMinistriesViewModel()
+  const rail = useRef<HTMLUListElement>(null)
+  const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null)
+
+  function step(dir: 1 | -1) {
+    const el = rail.current
+    if (!el) return
+    const panel = el.querySelector('li')
+    const w = panel ? panel.getBoundingClientRect().width + 16 : el.clientWidth * 0.8
+    el.scrollBy({ left: dir * w, behavior: 'smooth' })
+  }
+
+  /* Mouse drag — touch and pens already scroll natively. */
+  function onPointerDown(e: ReactPointerEvent<HTMLUListElement>) {
+    if (e.pointerType !== 'mouse' || !rail.current) return
+    drag.current = { x: e.clientX, left: rail.current.scrollLeft, moved: false }
+  }
+  function onPointerMove(e: ReactPointerEvent<HTMLUListElement>) {
+    const d = drag.current
+    const el = rail.current
+    if (!d || !el) return
+    const dx = e.clientX - d.x
+    if (!d.moved && Math.abs(dx) > 4) {
+      d.moved = true
+      el.style.scrollSnapType = 'none'
+      el.setPointerCapture(e.pointerId)
+    }
+    if (d.moved) el.scrollLeft = d.left - dx
+  }
+  function onPointerUp() {
+    const el = rail.current
+    drag.current = null
+    if (el) el.style.scrollSnapType = ''
+  }
 
   return (
     <section
+      id="life-seasons"
       data-plate="dark"
       aria-labelledby="life-seasons-heading"
-      className="relative bg-[#232323] text-white"
+      className="relative isolate overflow-hidden bg-abyss py-24 text-bone sm:py-32"
     >
-      <div ref={ref} className="mx-auto max-w-[86rem] px-6 pt-14 pb-36 sm:pt-20 sm:pb-44">
-        <h2
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-[15%] -z-10 blur-[70px] [background-image:radial-gradient(ellipse_40%_35%_at_80%_20%,rgb(14_95_104/0.45),transparent_70%)]"
+      />
+
+      <div className={`${container} flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between`}>
+        <SectionHead
           id="life-seasons-heading"
-          className="max-w-[52ch] text-balance font-heading text-2xl font-bold sm:text-3xl"
-        >
-          We&rsquo;ve created new ministries to encourage growth in your journey with the Lord,
-          at every stage of life.
-        </h2>
-
-        <div className="relative mt-10">
-          <div
-            className={`overflow-hidden ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-          >
-            <div
-              className="flex gap-5 transition-transform duration-500 ease-out"
-              style={{ transform: `translateX(-${page * STEP}px)` }}
-            >
-              {lifeStageCards.map((stage) => (
-                <div
-                  key={stage.slug}
-                  className={`w-64 shrink-0 overflow-hidden rounded-[26px_8px_26px_8px] ${stage.card}`}
-                >
-                  <img
-                    src={stage.photo}
-                    alt=""
-                    aria-hidden="true"
-                    loading="lazy"
-                    className="h-32 w-full object-cover"
-                  />
-                  <div className="flex flex-col gap-2.5 p-5">
-                    <p className={`text-xs font-bold tracking-[0.06em] ${stage.ageColor}`}>
-                      {cardAgeLabel(stage)}
-                    </p>
-                    <p className="font-heading text-lg font-semibold">{stage.title}</p>
-                    <p className={`text-sm leading-relaxed ${stage.bodyColor}`}>{stage.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            aria-label="Previous life seasons"
-            className="absolute top-1/2 left-[-22px] hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#0B0F14] shadow-lg disabled:opacity-30 sm:flex"
-          >
-            {/* Was the literal character "‹". Doc 9 bans unicode glyphs as
-                icons — they inherit the font's own metrics, so they sit
-                off-centre and change shape between platforms. */}
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M15 5l-7 7 7 7" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => setPage((p) => Math.min(maxPage, p + 1))}
-            disabled={page === maxPage}
-            aria-label="Next life seasons"
-            className="absolute top-1/2 right-[-22px] hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#0B0F14] shadow-lg disabled:opacity-30 sm:flex"
-          >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="mt-6 flex justify-center gap-2">
-          {Array.from({ length: maxPage + 1 }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setPage(i)}
-              aria-label={`Go to page ${i + 1}`}
-              className={`h-2 rounded-full transition-all ${
-                i === page ? 'w-[22px] bg-[#1b7a70]' : 'w-2 bg-white/30'
-              }`}
-            />
-          ))}
+          eyebrow="Life stages"
+          title={
+            <>
+              Ages of
+              <br />
+              the river
+            </>
+          }
+          lead={
+            <>
+              We&rsquo;ve created new ministries to encourage growth in your journey with the Lord,
+              at every stage of life.
+            </>
+          }
+        />
+        <div className="hidden gap-3 lg:flex">
+          <RailButton dir={-1} onClick={() => step(-1)} />
+          <RailButton dir={1} onClick={() => step(1)} />
         </div>
       </div>
 
-      {/* Wave divider into whatever section follows — its fill has to MATCH
-          that section's plate, or the wave paints a differently-coloured band
-          across the top of it. It was #161616 because Body of Christ used to
-          come next; the page order changed to put Service Ministries (#0d0d0d)
-          there instead, which left a visible lighter strip. Change this fill
-          whenever the section below it changes. */}
+      <ul
+        ref={rail}
+        tabIndex={0}
+        aria-label="Life stage ministries — scroll sideways for more"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onClickCapture={(e) => {
+          if (drag.current?.moved) e.preventDefault()
+        }}
+        className="no-scrollbar mt-14 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 select-none focus-visible:outline-offset-[-2px] sm:scroll-px-8 sm:px-8 lg:cursor-grab lg:active:cursor-grabbing min-[88rem]:scroll-px-[calc((100vw_-_88rem)/2_+_2rem)] min-[88rem]:px-[calc((100vw_-_88rem)/2_+_2rem)]"
+      >
+        {ages.map((card, i) => (
+          <li key={card.slug} className="flex-none snap-start">
+            <AgePanel card={card} index={i} />
+          </li>
+        ))}
+        {/* trailing spacer so the last panel can snap flush */}
+        <li aria-hidden="true" className="w-px flex-none" />
+      </ul>
+
+      <div className={`${container} mt-8 flex items-center justify-between gap-6`}>
+        <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-bone/50 uppercase">
+          <span className="lg:hidden">Swipe</span>
+          <span className="hidden lg:inline">Drag or scroll</span> · {ages.length} {ages.length === 1 ? 'stage' : 'stages'}
+        </p>
+        <div className="flex gap-3 lg:hidden">
+          <RailButton dir={-1} onClick={() => step(-1)} />
+          <RailButton dir={1} onClick={() => step(1)} />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function AgePanel({ card, index }: { card: AgeMinistry; index: number }) {
+  const bloom = useCenterBloom<HTMLDivElement>()
+  const [failed, setFailed] = useState(false)
+  const label = card.ageLabel
+  const isAges = label.startsWith('Ages ')
+  const numeral = isAges ? label.slice(5) : label
+
+  return (
+    <article
+      aria-labelledby={`age-${card.slug}`}
+      className="group relative isolate flex h-[32rem] w-[78vw] max-w-[22rem] flex-col justify-between overflow-hidden sm:h-[36rem] sm:w-[22rem] lg:h-[38rem] lg:w-[24rem] lg:max-w-none"
+    >
+      {/* Ground: textured gradient under a duotone photo */}
+      <div
+        ref={bloom}
+        aria-hidden="true"
+        className="duotone absolute inset-0 -z-10 overflow-hidden"
+        style={{ background: grounds[index % grounds.length] }}
+      >
+        {!failed && card.photo && (
+          <img
+            src={card.photo}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            onError={() => setFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover group-hover:scale-[1.05] motion-reduce:group-hover:scale-100"
+          />
+        )}
+      </div>
+      <WaveMark
+        className="pointer-events-none absolute -right-[30%] top-[38%] -z-10 h-auto w-[150%] text-bone/[0.07] transition-transform duration-[1600ms] ease-current group-hover:-translate-x-6 motion-reduce:transition-none"
+        strokeWidth={3}
+      />
+      <div aria-hidden="true" className="grain pointer-events-none absolute inset-0 -z-10" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-t from-abyss via-abyss/40 to-abyss/20"
+      />
+
+      {/* Top: the age band, shouted */}
+      <div className="p-6 pt-7">
+        <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-bone/70 uppercase">
+          {String(index + 1).padStart(2, '0')} · {isAges ? 'Ages' : 'For'}
+        </p>
+        <p
+          aria-hidden="true"
+          className={`mt-2 font-shout font-black uppercase leading-[0.8] tracking-[-0.02em] text-bone tabular-nums ${
+            isAges ? 'text-[clamp(5.5rem,24vw,8.5rem)]' : 'text-[clamp(3.5rem,15vw,5rem)]'
+          }`}
+        >
+          {numeral}
+        </p>
+      </div>
+
+      {/* Bottom: name + line */}
+      <div className="p-6 pb-7">
+        <span
+          aria-hidden="true"
+          className="mb-5 block h-[3px] w-10 origin-left bg-ember transition-transform duration-[700ms] ease-current group-hover:scale-x-[2.4] motion-reduce:transition-none"
+        />
+        <h3 id={`age-${card.slug}`} className="font-shout text-[2.4rem] font-extrabold uppercase leading-[0.9]">
+          {card.title}
+          <span className="sr-only"> — {label}</span>
+        </h3>
+        <p className="mt-3 max-w-[30ch] font-whisper text-[1.08rem] italic leading-snug text-bone/85">
+          {card.body}
+        </p>
+      </div>
+    </article>
+  )
+}
+
+function RailButton({ dir, onClick }: { dir: 1 | -1; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={dir === 1 ? 'Next life stages' : 'Previous life stages'}
+      className="flex h-12 w-12 items-center justify-center rounded-full border border-bone/30 text-bone transition-colors duration-[400ms] ease-current hover:border-ember hover:text-ember"
+    >
       <svg
         aria-hidden="true"
-        viewBox="0 0 1440 140"
-        preserveAspectRatio="none"
-        className="absolute bottom-0 left-0 h-[80px] w-full sm:h-[110px]"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
-        <path
-          d="M0,60 C360,130 720,0 1080,65 C1260,100 1350,85 1440,65 L1440,140 L0,140 Z"
-          fill="#0d0d0d"
-        />
+        {dir === 1 ? <path d="M5 12h14M13 6l6 6-6 6" /> : <path d="M19 12H5M11 6l-6 6 6 6" />}
       </svg>
-    </section>
+    </button>
   )
 }

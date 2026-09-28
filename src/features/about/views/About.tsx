@@ -6,29 +6,37 @@ import { ApostolicTeamSection } from './ApostolicTeamSection'
 import { OrtigasPastorsSection } from './OrtigasPastorsSection'
 import { ServingMinistryHeadsSection } from './ServingMinistryHeadsSection'
 import { LifeStageCoordinatorsSection } from './LifeStageCoordinatorsSection'
+import { CoreValuesSection } from './CoreValuesSection'
 import { StatementOfFaithSection } from './StatementOfFaithSection'
+import { DiscipleshipSection } from './DiscipleshipSection'
+import { WaveRule } from '../../../shared/components/ui/River'
+import { container } from '../../../shared/styles/tokens'
 
 /**
  * About — View layer only, page container for `/about/who-we-are`.
  *
- * REBUILT 2026-09-22 from the Figma "Who We Are" design (artifact
- * 3680dbd7-…, board WhoWeAre.dc.html), same handoff and same tab-by-tab
- * workflow as the Home page rebuild earlier in this project. Replaces
- * the previous 5-section placeholder page (AboutHero w/ count-up,
- * OurStorySection, MissionVisionSection, BeliefsSection, FoundersSection)
- * wholesale, mirroring the "Replace them" decision made for Home's old
- * sections — those files are left orphaned, unused, on disk.
+ * REBUILT 2026-09-22 from the Figma "Who We Are" board (replacing the old
+ * 5-section placeholder page, whose files are left orphaned on disk).
+ * Core Values + Discipleship added 2026-09-25 from the slide decks Jude
+ * sent: identity → values → beliefs → process reads as one arc.
  *
- * Section order matches the Figma board exactly: mini-hero → sticky
- * sub-nav (4 pills, in-page anchors) → Founders' Story timeline → Leadership
- * bios (Chito + Rachel) → Apostolic Team → River of God Ortigas Pastors →
- * Serving Ministry Heads → Life Stage Coordinators carousel → Statement of
- * Faith accordion (10 articles). Footer.tsx (bg-black) closes the page, same
- * as every other route.
+ * REVAMP 2026-09-25 ("Textured Editorial", DESIGN.md). Section order is
+ * unchanged; every section now has its own shape and the grounds alternate
+ * for rhythm instead of chaining flat greys with wave-fill SVGs (those
+ * assumed the old #161616/#232323 plates and are gone — a change of ground
+ * is the divider now):
  *
- * Wave-divider SVGs chain background colors between sections, same motif
- * added to Home per Jude's "the background is too static" request —
- * applied here from the start rather than retrofitted.
+ *   PageHero (photo)            abyss
+ *   sticky pill sub-nav         floats under the Navbar
+ *   Founders' Story timeline    abyss   — shout years on an ember fill line
+ *   Leadership bios             bone    — alternating poster spreads
+ *   Apostolic Team              river   — numbered roster rows
+ *   Ortigas Pastors             abyss   — stepped portrait rail
+ *   Serving Ministry Heads      bone    — two-column credits index
+ *   Life Stage Coordinators     abyss   — photo-led index
+ *   Core Values                 abyss   — interactive slide posters
+ *   Statement of Faith          bone    — numbered accordion
+ *   Discipleship teaser         river   — five stages → /discipleship
  */
 export default function About() {
   return (
@@ -41,7 +49,13 @@ export default function About() {
       <OrtigasPastorsSection />
       <ServingMinistryHeadsSection />
       <LifeStageCoordinatorsSection />
+      {/* two abyss sections meet here — the wave hairline marks the turn */}
+      <div aria-hidden="true" className={`${container} bg-abyss`}>
+        <WaveRule className="text-bone/15" />
+      </div>
+      <CoreValuesSection />
       <StatementOfFaithSection />
+      <DiscipleshipSection />
     </>
   )
 }

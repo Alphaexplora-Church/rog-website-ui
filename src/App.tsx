@@ -3,10 +3,13 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Navbar } from './shared/components/Navbar'
 import { Footer } from './shared/components/Footer'
 import { ScrollToTop } from './shared/components/ScrollToTop'
+import { PageTransition } from './shared/components/PageTransition'
 import Home from './features/home/views/Home'
-import { fontFamily, textH1 } from './shared/styles/tokens'
+import { container, displayL } from './shared/styles/tokens'
+import { Button } from './shared/components/ui/Button'
 
 const About = lazy(() => import('./features/about/views/About'))
+const HimPhilippines = lazy(() => import('./features/about/views/HimPhilippines'))
 const Ministries = lazy(() => import('./features/ministries/views/Ministries'))
 const Media = lazy(() => import('./features/media/views/Media'))
 const SeriesDetail = lazy(() => import('./features/media/views/SeriesDetail'))
@@ -16,6 +19,7 @@ const Events = lazy(() => import('./features/events/views/Events'))
 const PlanAVisit = lazy(() => import('./features/plan-a-visit/views/PlanAVisit'))
 const WatchLive = lazy(() => import('./features/watch-live/views/WatchLive'))
 const Give = lazy(() => import('./features/give/views/Give'))
+const Discipleship = lazy(() => import('./features/discipleship/views/Discipleship'))
 
 /**
  * Minimal shell for the restart — Navbar plus the home route.
@@ -98,20 +102,27 @@ const Give = lazy(() => import('./features/give/views/Give'))
  *
  * GIVE ROUTE, 2026-09-23. `navigation.ts` has shipped a `/give` pill in the
  * top-right since the nav was built; until now it fell through to the Stub
- * below. Built from a reference component Jude sent, re-paletted to this
- * site's teal — see features/give/views/Give.tsx.
- */
+* below. Built from a reference component Jude sent, re-paletted to this
+* site's teal — see features/give/views/Give.tsx.
+ *
+ * REVAMP, 2026-09-25 ("Textured Editorial", ROG 11). Type, colour and the
+ * grain layer now come from `index.css` (@theme + body), so the root no
+ * longer carries an inline font stack. `/discipleship` — already in the
+ * Ministries dropdown — gets its own page (the 5-stage process Jude sent).
+ *
+ * PAGE TRANSITIONS, 2026-09-24. `<PageTransition>` fades each new page in
+ * over the root's black background instead of hard-cutting between routes;
+ * see the component's own comment. The root is `bg-black` so that fade never
+ * flashes the browser's white page background.
+*/
 export default function App() {
   return (
-    <div
-      className="selection:bg-black selection:text-white"
-      style={{ fontFamily, lineHeight: 1.6, letterSpacing: '-0.015em' }}
-    >
+    <div className="bg-abyss text-bone">
       <BrowserRouter>
         <ScrollToTop />
         <a
           href="#main"
-          className="absolute top-0 -left-[9999px] z-[100] bg-black px-4 py-3 text-white focus:left-0"
+          className="absolute top-0 -left-[9999px] z-[100] rounded-br-2xl bg-ember px-4 py-3 font-semibold text-abyss focus:left-0"
         >
           Skip to content
         </a>
@@ -120,21 +131,25 @@ export default function App() {
 
         <main id="main">
           <Suspense fallback={null}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about/who-we-are" element={<About />} />
-              <Route path="/ministries" element={<Ministries />} />
-              <Route path="/ministries/body-of-christ" element={<Ministries />} />
-              <Route path="/media" element={<Media />} />
-              <Route path="/media/series/:slug" element={<SeriesDetail />} />
-              <Route path="/media/browse/:type/:slug" element={<BrowseDetail />} />
-              <Route path="/media/watch/:slug" element={<SermonDetail />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/plan-a-visit" element={<PlanAVisit />} />
-              <Route path="/watch-live" element={<WatchLive />} />
-              <Route path="/give" element={<Give />} />
-              <Route path="*" element={<Stub />} />
-            </Routes>
+            <PageTransition>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about/who-we-are" element={<About />} />
+                <Route path="/about/him-ph" element={<HimPhilippines />} />
+                <Route path="/ministries" element={<Ministries />} />
+                <Route path="/ministries/body-of-christ" element={<Ministries />} />
+                <Route path="/media" element={<Media />} />
+                <Route path="/media/series/:slug" element={<SeriesDetail />} />
+                <Route path="/media/browse/:type/:slug" element={<BrowseDetail />} />
+                <Route path="/media/watch/:slug" element={<SermonDetail />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/plan-a-visit" element={<PlanAVisit />} />
+                <Route path="/watch-live" element={<WatchLive />} />
+                <Route path="/give" element={<Give />} />
+                <Route path="/discipleship" element={<Discipleship />} />
+                <Route path="*" element={<Stub />} />
+              </Routes>
+            </PageTransition>
           </Suspense>
         </main>
 
@@ -146,17 +161,23 @@ export default function App() {
 
 function Stub() {
   return (
-    <section data-plate="dark" className="bg-black text-white">
-      <div className="mx-auto max-w-[86rem] px-6 pt-48 pb-40">
-        <p className="text-xs font-bold tracking-[0.22em] text-[#737373] uppercase">
-          Not built yet
-        </p>
-        <h1
-          className="mt-8 text-balance font-heading leading-[1.05] font-bold"
-          style={{ fontSize: textH1, letterSpacing: '-0.045em' }}
-        >
-          Coming next.
+    <section data-plate="dark" className="relative isolate flex min-h-[80svh] items-end overflow-hidden bg-abyss text-bone">
+      <div aria-hidden="true" className="absolute -inset-[20%] -z-10 blur-[70px] [background-image:radial-gradient(ellipse_40%_45%_at_20%_30%,rgb(14_95_104/0.7),transparent_70%)]" />
+      <div className={`${container} pt-40 pb-24`}>
+        <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-shallows uppercase">Not built yet</p>
+        <h1 className={`mt-6 ${displayL}`}>
+          Coming
+          <br />
+          next.
         </h1>
+        <p className="mt-6 max-w-[40ch] font-whisper text-xl italic text-bone/75">
+          This part of the river is still being dug. Meanwhile, come find us on a Sunday.
+        </p>
+        <div className="mt-10">
+          <Button to="/" variant="ember" arrow>
+            Back home
+          </Button>
+        </div>
       </div>
     </section>
   )

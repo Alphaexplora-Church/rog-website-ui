@@ -2,144 +2,154 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 /**
- * One button, four variants, no colour.
+ * Shared call-to-action. REVAMP 2026-09-25 (ROG 11).
  *
- * In a true monochrome system a button cannot signal importance with hue, so
- * it signals with FILL: solid = primary, hairline ring = secondary, bare =
- * tertiary. All three read correctly on a black plate and on a white one.
+ * Variants:
+ *  - `ember`   the ONE primary action per view (Plan a Visit, Watch Live,
+ *              Give). Abyss label on ember = 6.6:1. Carries the only glow.
+ *  - `solid`   bone fill — secondary action on dark grounds (abyss on light).
+ *  - `outline` hairline pill — tertiary.
+ *  - `ghost`   text link with the ember underline that flows in on hover.
  *
- * The hover is the authored bit. `solid` does not change colour on hover — it
- * grows a sheen that sweeps across once, which is the one moment of movement a
- * flat black pill can afford without looking like it broke.
- *
- * TONE PROP, added 2026-09-17 (tailwind-design-system migration). Every
- * variant used to be written once, in terms of `var(--color-accent)` /
- * `var(--color-ink)` etc. — CSS custom properties that `.plate-dark` /
- * `.plate-light` silently re-pointed, so this component never had to know
- * which plate it was rendered on. With index.css gone there is no more
- * re-pointing, so the caller now says so explicitly: `tone="dark"` on a
- * black section, `tone="light"` on a white one (Navbar passes its own
- * dynamic `tone` state through, since the bar itself flips per scroll
- * position — see Navbar.tsx). There is no default; every call site was
- * audited and updated rather than risk one silently rendering black-on-black.
+ * Every variant with `arrow` gets the ripple: the arrow slides and the pill
+ * keeps its shape. No shadows (ROG 11 §4.5).
  */
 
-type Variant = 'solid' | 'outline' | 'ghost'
-type Size = 'sm' | 'md'
+type Variant = 'ember' | 'solid' | 'outline' | 'ghost'
+type Size = 'sm' | 'md' | 'lg'
 type Tone = 'dark' | 'light'
 
 export interface ButtonProps {
   children: ReactNode
-  /** Internal route. Renders a <Link>. */
   to?: string
-  /** External URL. Renders an <a> with rel/target set. */
   href?: string
+  download?: boolean
   onClick?: () => void
   variant?: Variant
   size?: Size
-  /** Which plate this button sits on — picks the literal colour set. */
-  tone: Tone
-  /** Renders the pulsing live dot before the label. */
+  tone?: Tone
   live?: boolean
+  arrow?: boolean
   className?: string
   'aria-label'?: string
+  type?: 'button' | 'submit'
+  disabled?: boolean
 }
 
 const base =
-  'group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full ' +
-  'font-heading font-semibold whitespace-nowrap ' +
-  'transition-[transform,background-color,color,box-shadow] duration-[400ms] ' +
-  'ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97] motion-reduce:transition-none ' +
-  'motion-reduce:active:scale-100'
+  'group/btn relative isolate inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-full font-semibold ' +
+  'transition-[transform,background-color,color,border-color,opacity] duration-[400ms] ease-current ' +
+  'active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 disabled:pointer-events-none disabled:opacity-40'
 
 const sizes: Record<Size, string> = {
-  sm: 'h-10 px-4 text-[0.78rem] tracking-[0.06em] uppercase',
-  md: 'h-12 px-6 text-sm tracking-[0.04em]',
+  sm: 'h-10 px-5 text-[0.8rem] tracking-[0.02em]',
+  md: 'h-12 px-6 text-[0.9rem] tracking-[0.01em]',
+  lg: 'h-14 px-8 text-base',
 }
 
-/* Each variant is written out per tone rather than composed from a shared
-   "accent" token at runtime — see tokens.ts's own warning: Tailwind's JIT
-   scanner needs every class string to appear complete and literal in source,
-   so `bg-${accent}` would silently generate nothing. */
 const variants: Record<Tone, Record<Variant, string>> = {
   dark: {
-    solid: 'bg-white text-black hover:shadow-[0_10px_30px_-10px_rgb(0_0_0/0.45)]',
-    outline:
-      'bg-white/5 ring-1 ring-white/40 text-white hover:ring-white hover:bg-white/10',
-    ghost: 'text-[#a6a6a6] hover:text-white hover:bg-white/10',
+    ember: 'bg-ember text-abyss hover:bg-[#ff8a33]',
+    solid: 'bg-bone text-abyss hover:bg-white',
+    outline: 'border border-bone/35 text-bone hover:border-bone hover:bg-bone/5',
+    ghost: 'h-auto px-0 text-bone',
   },
   light: {
-    solid: 'bg-black text-white hover:shadow-[0_10px_30px_-10px_rgb(0_0_0/0.45)]',
-    outline:
-      'bg-black/5 ring-1 ring-black/40 text-black hover:ring-black hover:bg-black/10',
-    ghost: 'text-[#5c5c5c] hover:text-black hover:bg-black/10',
+    ember: 'bg-ember text-abyss hover:bg-[#ff8a33]',
+    solid: 'bg-abyss text-bone hover:bg-deep',
+    outline: 'border border-abyss/30 text-abyss hover:border-abyss hover:bg-abyss/5',
+    ghost: 'h-auto px-0 text-abyss',
   },
-}
-
-/* The one-time sweep on `solid`. Tint is whatever `solid`'s own text colour
-   is (black on a dark-tone button's white fill, white on a light-tone
-   button's black fill) — always contrasts against the fill it sweeps over. */
-const sheen: Record<Tone, string> = {
-  dark: '[background:linear-gradient(100deg,transparent_30%,rgb(0_0_0/0.26)_50%,transparent_70%)]',
-  light: '[background:linear-gradient(100deg,transparent_30%,rgb(255_255_255/0.26)_50%,transparent_70%)]',
 }
 
 export function Button({
   children,
   to,
   href,
+  download = false,
   onClick,
   variant = 'solid',
-  size = 'sm',
-  tone,
+  size = 'md',
+  tone = 'dark',
   live = false,
+  arrow = false,
   className = '',
+  type = 'button',
+  disabled,
   ...rest
 }: ButtonProps) {
-  const cls = [base, sizes[size], variants[tone][variant], className].join(' ')
+  const isGhost = variant === 'ghost'
+  const cls = [base, isGhost ? '' : sizes[size], variants[tone][variant], className].join(' ')
 
   const inner = (
     <>
-      {live && (
-        <span aria-hidden="true" className="relative flex h-[7px] w-[7px] flex-none">
-          <span className="absolute inset-0 animate-ping rounded-full bg-current motion-reduce:hidden" />
-          <span className="relative h-[7px] w-[7px] rounded-full bg-current" />
-        </span>
-      )}
-      <span className="relative z-10">{children}</span>
-      {variant === 'solid' && (
+      {variant === 'ember' && (
         <span
           aria-hidden="true"
-          className={`pointer-events-none absolute inset-0 -translate-x-[120%] rounded-[inherit] transition-transform duration-[900ms] ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-[120%] ${sheen[tone]}`}
+          className="pointer-events-none absolute -inset-2 -z-10 rounded-full bg-ember/35 opacity-70 blur-xl transition-opacity duration-500 group-hover/btn:opacity-100"
         />
+      )}
+      {live && (
+        <span aria-hidden="true" className="relative flex h-2 w-2 flex-none">
+          <span className="absolute inset-0 animate-live rounded-full bg-current" />
+          <span className="relative h-2 w-2 rounded-full bg-current" />
+        </span>
+      )}
+      <span className="relative">
+        {children}
+        {isGhost && (
+          <span
+            aria-hidden="true"
+            className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-[0.35] bg-ember transition-transform duration-[600ms] ease-current group-hover/btn:scale-x-100"
+          />
+        )}
+      </span>
+      {arrow && (
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="h-4 w-4 flex-none transition-transform duration-[400ms] ease-current group-hover/btn:translate-x-1"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
       )}
     </>
   )
 
+  if (href && download) {
+    return (
+      <a href={href} download className={cls} {...rest}>
+        {inner}
+      </a>
+    )
+  }
   if (href) {
+    const external = /^https?:\/\//.test(href)
     return (
       <a
         href={href}
-        target="_blank"
-        rel="noopener noreferrer"
         className={cls}
+        {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
         {...rest}
       >
         {inner}
       </a>
     )
   }
-
   if (to) {
     return (
-      <Link to={to} className={cls} {...rest}>
+      <Link to={to} viewTransition className={cls} {...rest}>
         {inner}
       </Link>
     )
   }
-
   return (
-    <button type="button" onClick={onClick} className={cls} {...rest}>
+    <button type={type} onClick={onClick} disabled={disabled} className={cls} {...rest}>
       {inner}
     </button>
   )

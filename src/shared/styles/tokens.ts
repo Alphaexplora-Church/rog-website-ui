@@ -1,59 +1,53 @@
 /**
- * Design tokens as literal Tailwind-compatible strings, replacing the
- * @theme-based CSS custom properties that used to live in `index.css`.
+ * Shared class-string tokens. REVAMP 2026-09-25 ("Textured Editorial",
+ * ROG 11).
  *
- * WHY THIS FILE EXISTS (2026-09-17, tailwind-design-system pass, confirmed
- * by Jude: "change all to tailwindcss" — full site-wide migration off a
- * shared stylesheet). `index.css` is gone. Its `@theme` block auto-generated
- * utilities like `text-ink` / `bg-surface` / `border-line`, and its
- * `.plate-dark` / `.plate-light` classes re-pointed those same custom
- * properties per section so a component never had to know which plate it
- * was on. Inline Tailwind utilities can't re-point themselves off an
- * ancestor class the way a CSS custom property can, so every section now
- * has to pick its own literal color set depending on which plate it's on —
- * that's what `plate.dark` / `plate.light` below are for. Centralizing the
- * two literal palettes here (instead of retyping hex codes in eighteen
- * files) means there's exactly one source of truth for "ink-muted on a dark
- * plate," and a future palette change is one edit instead of a
- * grep-and-replace across the whole codebase.
+ * The palette itself now lives in `src/index.css` `@theme` — that generates
+ * named utilities (`bg-abyss`, `text-bone`, `text-ember`, `font-shout`,
+ * `font-whisper`, `ease-tide`…). This file keeps only COMPLETE class strings
+ * that several components share, so a type step or reveal timing is one
+ * edit.
  *
- * ⚠ CRITICAL — READ BEFORE ADDING A NEW CLASS STRING HERE: Tailwind v4's
- * JIT compiler scans literal source text for complete class name tokens; it
- * does not evaluate JavaScript. A dynamically-interpolated string like
- * `` `ease-[${ease}]` `` NEVER appears as literal text anywhere on disk, so
- * Tailwind never generates CSS for it — this is exactly the bug that broke
- * the About page's padding earlier this session (see About.tsx's own doc
- * comment), just in a more permanent form. Every export below is a
- * complete, literal, already-resolved class string. Components choose
- * BETWEEN whole strings (ternaries, template literals with no expressions
- * inside the bracket syntax) — they never build a new arbitrary value out
- * of pieces at runtime.
- *
- * EASE/DURATION: `--ease-fluid` / `--dur-hover` / `--dur-reveal` were plain
- * CSS custom properties (not Tailwind theme tokens), referenced elsewhere in
- * the old codebase as `ease-[var(--ease-fluid)]`. With index.css gone that
- * var() resolves to nothing. The literal value is baked into every class
- * string below instead.
+ * ⚠ Tailwind's scanner reads literal source text. Every export below is a
+ * complete class string; never build one by interpolating a fragment
+ * (`text-${x}`) at runtime — it will silently generate no CSS.
  */
 
-export const ease = 'cubic-bezier(0.32,0.72,0,1)' // --ease-fluid, literal
+export const ease = 'cubic-bezier(0.32,0.72,0,1)'
 
-/** Fluid heading sizes — literal copies of index.css's old --text-h1 /
- *  --text-h2 custom properties. Used via inline `style={{ fontSize: ... }}`
- *  at call sites (a font-size clamp() isn't expressible as a static Tailwind
- *  utility without a lot of custom breakpoint duplication, and this was
- *  already how the old code consumed --text-h1/h2 — only the source of the
- *  value changed, not the pattern). */
-export const textH1 = 'clamp(2.25rem, 6vw, 4.5rem)'
-export const textH2 = 'clamp(1.75rem, 4vw, 3rem)'
+/* ── Type scale (ROG 11 §4.2) ─────────────────────────────────────────── */
 
-/** Both --font-heading and --font-body pointed at the identical stack in
- *  index.css (Proxima Nova first — takes over the moment ROG's Adobe kit is
- *  on the domain — Figtree as the interim stand-in), so one export covers
- *  both. Applied via inline style at the App.tsx root rather than a
- *  `font-heading`/`font-body` utility class, since those utilities no
- *  longer exist without index.css's @theme block generating them. */
-export const fontFamily = "'proxima-nova', 'Figtree', ui-sans-serif, system-ui, sans-serif"
+/** Shout — tall condensed, uppercase. Keep lines to 2–4 words. */
+export const displayXL =
+  'font-shout font-extrabold uppercase leading-[0.86] tracking-[-0.01em] text-[clamp(4.25rem,13vw,12rem)]'
+export const displayL =
+  'font-shout font-extrabold uppercase leading-[0.9] tracking-[-0.005em] text-[clamp(3.25rem,8.5vw,8rem)]'
+export const displayM =
+  'font-shout font-bold uppercase leading-[0.92] text-[clamp(2.5rem,5.4vw,4.5rem)]'
+export const displayS =
+  'font-shout font-bold uppercase leading-[0.95] text-[clamp(1.75rem,3vw,2.5rem)]'
+export const numeral =
+  'font-shout font-bold leading-none tabular-nums text-[clamp(3.5rem,9vw,9rem)]'
+
+/** Whisper — italic didone for scripture, leads, pull quotes. */
+export const whisperL =
+  'font-whisper italic font-medium leading-[1.1] text-[clamp(1.75rem,3.6vw,3.5rem)]'
+export const lead =
+  'font-whisper italic leading-[1.45] text-[clamp(1.2rem,1.7vw,1.5rem)]'
+
+/** Body / UI. */
+export const meta = 'text-[0.8125rem] font-medium tracking-[0.02em] tabular-nums'
+export const eyebrow = 'text-[0.72rem] font-semibold uppercase tracking-[0.22em]'
+
+/** The page container every section uses. */
+export const container = 'mx-auto w-full max-w-[88rem] px-4 sm:px-8'
+
+/** Legacy aliases — some older call sites still size headings inline. */
+export const textH1 = 'clamp(3.25rem, 8.5vw, 8rem)'
+export const textH2 = 'clamp(2.5rem, 5.4vw, 4.5rem)'
+export const fontFamily = "'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif"
+
+/* ── Plates — kept for call sites that switch dark/light by prop ──────── */
 
 interface PlateTokens {
   ink: string
@@ -71,100 +65,76 @@ interface PlateTokens {
 
 export const plate: Record<'dark' | 'light', PlateTokens> = {
   dark: {
-    ink: 'text-white',
-    inkMuted: 'text-[#a6a6a6]',
-    inkSubtle: 'text-[#737373]',
-    bg: 'bg-black',
-    surface: 'bg-[#0d0d0d]',
-    border: 'border-[#262626]',
-    borderStrong: 'border-[#3d3d3d]',
-    ring: 'ring-[#262626]',
-    ringStrong: 'ring-[#3d3d3d]',
-    divide: 'divide-[#262626]',
-    bgLine: 'bg-[#262626]',
+    ink: 'text-bone',
+    inkMuted: 'text-bone/70',
+    inkSubtle: 'text-sand',
+    bg: 'bg-abyss',
+    surface: 'bg-abyss-2',
+    border: 'border-bone/12',
+    borderStrong: 'border-bone/25',
+    ring: 'ring-bone/12',
+    ringStrong: 'ring-bone/25',
+    divide: 'divide-bone/12',
+    bgLine: 'bg-bone/12',
   },
   light: {
-    ink: 'text-black',
-    inkMuted: 'text-[#5c5c5c]',
-    inkSubtle: 'text-[#8f8f8f]',
-    bg: 'bg-white',
-    surface: 'bg-[#f4f4f4]',
-    border: 'border-[#e4e4e4]',
-    borderStrong: 'border-[#c4c4c4]',
-    ring: 'ring-[#e4e4e4]',
-    ringStrong: 'ring-[#c4c4c4]',
-    divide: 'divide-[#e4e4e4]',
-    bgLine: 'bg-[#e4e4e4]',
+    ink: 'text-abyss',
+    inkMuted: 'text-abyss/70',
+    inkSubtle: 'text-abyss/55',
+    bg: 'bg-bone',
+    surface: 'bg-bone-2',
+    border: 'border-abyss/10',
+    borderStrong: 'border-abyss/25',
+    ring: 'ring-abyss/10',
+    ringStrong: 'ring-abyss/25',
+    divide: 'divide-abyss/10',
+    bgLine: 'bg-abyss/10',
   },
 }
 
-/* ============================================================
-   MOTION — complete literal strings for the two reveal patterns every
-   section used to get from `.reveal` / `.mask` in index.css. Consumers pick
-   the "shown" or "hidden" string based on the same `shown`/`entered`
-   boolean useInView already returned; nothing here is assembled at runtime.
-   ============================================================ */
+/* ── Motion — "water moves": drift and tide, never bounce ─────────────── */
 
-/** Scroll-triggered fade-up, was `.reveal` / `[data-shown='true'] .reveal`. */
+/** Scroll-triggered rise. Pair with useInView's `shown`. */
 export const revealBase =
-  'transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
-export const revealHidden = 'opacity-0 translate-y-4'
+  'transition-[opacity,transform] duration-[900ms] ease-tide motion-reduce:transition-none'
+export const revealHidden = 'opacity-0 translate-y-8 motion-reduce:opacity-100 motion-reduce:translate-y-0'
 export const revealShown = 'opacity-100 translate-y-0'
-/** Was `.reveal--delay-1` (140ms). */
-export const revealDelay1 = 'delay-[140ms]'
+export const revealDelay1 = 'delay-[120ms]'
+export const revealDelay2 = 'delay-[240ms]'
+export const revealDelay3 = 'delay-[360ms]'
 
-/** Headline wipe reveal, was `.mask` / `.mask__line`. The wrapper (`.mask`)
- *  is simple enough to write inline (`block overflow-hidden pb-[0.1em]`)
- *  wherever it's used; only the animated line needs shared constants. */
+/** Headline tide — each line rises out of a mask. */
 export const maskLineBase =
-  'block transition-transform duration-[1100ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
-export const maskLineHidden = 'translate-y-[105%]'
+  'block transition-transform duration-[1200ms] ease-tide motion-reduce:transition-none'
+export const maskLineHidden = 'translate-y-[108%] motion-reduce:translate-y-0'
 export const maskLineShown = 'translate-y-0'
 
-/** Mount-triggered hero entrance, was `.hero-reveal` (+ delay-1/2 modifiers)
- *  and `.hero-mark-fade`. Kept separate from the scroll-triggered `reveal*`
- *  exports above for the same reason the old CSS kept them as separate
- *  classes — see About.tsx-era commentary in the removed index.css: the
- *  hero's reveal is mount-triggered (first thing anyone sees), everything
- *  after it waits for actual scroll visibility. */
+/** Mount-triggered hero entrance. */
 export const heroRevealBase =
-  'transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
-export const heroRevealHidden = 'opacity-0 translate-y-4'
+  'transition-[opacity,transform] duration-[1200ms] ease-tide motion-reduce:transition-none'
+export const heroRevealHidden = 'opacity-0 translate-y-6 motion-reduce:opacity-100 motion-reduce:translate-y-0'
 export const heroRevealShown = 'opacity-100 translate-y-0'
-export const heroRevealDelay1 = 'delay-[640ms]'
-export const heroRevealDelay2 = 'delay-[780ms]'
+export const heroRevealDelay1 = 'delay-[500ms]'
+export const heroRevealDelay2 = 'delay-[700ms]'
 
 export const heroMarkFadeBase =
-  'transition-[opacity,transform,filter] duration-[1200ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none'
+  'transition-[opacity,transform,filter] duration-[1200ms] ease-tide motion-reduce:transition-none'
 export const heroMarkFadeHidden = 'opacity-0 scale-95 blur-[10px]'
 export const heroMarkFadeShown = 'opacity-100 scale-100 blur-none'
 
-/** Was `.river-glow` — a static two-tone blob for dark-plate sections that
- *  want a hint of the hero's ambience. No animation, so it converts cleanly
- *  into one arbitrary background-image utility on a plain absolutely
- *  positioned div. The section using it still needs `relative overflow-hidden`,
- *  and its content wrapper still needs `relative z-10`. */
+/** Ambient light for dark sections — teal pool + one ember ember-glow. */
 export const riverGlow =
-  'pointer-events-none absolute -inset-[20%] z-0 blur-[50px] ' +
-  '[background-image:radial-gradient(ellipse_50%_40%_at_18%_15%,rgb(45_212_191/0.12),transparent_65%),radial-gradient(ellipse_45%_40%_at_88%_85%,rgb(56_189_248/0.1),transparent_65%)]'
+  'pointer-events-none absolute -inset-[15%] z-0 blur-[60px] ' +
+  '[background-image:radial-gradient(ellipse_45%_40%_at_15%_20%,rgb(14_95_104/0.55),transparent_70%),radial-gradient(ellipse_35%_30%_at_90%_85%,rgb(242_118_28/0.16),transparent_70%)]'
 
-/* ============================================================
-   ACCENT — cyan/teal, the ONE hue the brand allows past black and white
-   (2026-09-18, brand-palette correction pass). Black/white is the base
-   everywhere; this exists so every section that wants a single deliberate
-   highlight — a live indicator, an in-view badge, one hero word, one glow —
-   reaches for the SAME hue instead of each section inventing its own
-   (earlier passes had cyan-400, sky-400, teal-300, teal-500 and Tailwind
-   `blue-500` all live at once across five files, which is what made the
-   site read as navy/cyan-led instead of black/white-led). `riverGlow` above
-   is this same hue, already baked into an ambient-blob shape — reach for
-   that when the accent is a background glow, reach for `accent.*` below
-   when it needs to sit on text, a ring, or a badge. Never a background
-   fill on its own; a colour this saturated as a fill reads as "the section
-   is cyan," not "cyan is highlighting one thing in the section." */
+/** Ember glow — ONLY behind the primary CTA and the LIVE badge (ROG 11 §4.5). */
+export const emberGlow =
+  'pointer-events-none absolute -inset-3 -z-10 rounded-full bg-ember/30 blur-2xl'
+
+/* ── Accent ─ ember is the ONE hue past the river palette ─────────────── */
 export const accent = {
-  text: 'text-cyan-300',
-  ring: 'ring-cyan-400/30',
-  border: 'border-cyan-400/30',
-  bg: 'bg-cyan-400/10',
+  text: 'text-ember',
+  ring: 'ring-ember/40',
+  border: 'border-ember/40',
+  bg: 'bg-ember/12',
 } as const

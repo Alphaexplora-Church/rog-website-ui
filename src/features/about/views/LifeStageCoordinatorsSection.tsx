@@ -1,153 +1,121 @@
 import { useState } from 'react'
-import { lifeStages } from '../../../shared/data/lifeStages'
+import { lifeStageCards, lifeStages } from '../../../shared/data/lifeStages'
 import { person } from '../../../shared/data/people'
-import { useInView } from '../../../shared/hooks/useInView'
-import { revealBase, revealDelay1, revealHidden, revealShown } from '../../../shared/styles/tokens'
+import { Reveal, RiverImage, SectionHead } from '../../../shared/components/ui/River'
+import { container } from '../../../shared/styles/tokens'
 
 /**
- * About, section 7 — Life Stage Coordinators. Carousel shape matches the
- * Figma WhoWeAre.dc.html board; the names are the real roster from
- * riverofgod.ph.
+ * About — Life Stage Coordinators. REVAMP 2026-09-25: replaces the
+ * three-at-a-time card carousel with a PHOTO-LED INDEX on abyss.
+ *
+ * Shape: seven rows — stage name huge in shout, age band, coordinator in
+ * whisper. On desktop a tall photo panel sits beside the list and swaps to
+ * the stage under the pointer (full colour — it's the featured image; the
+ * mobile thumbnails use Colour Bloom). The photo is decoration — every fact is in the row
+ * text, so nothing depends on hovering. On mobile each row carries its own
+ * small thumbnail instead (blooms as it crosses the centre of the screen).
+ *
+ * Photos: the Ministries tab's Life Seasons cards (`lifeStageCards`),
+ * matched by which stages each card covers — the same single source, not
+ * new images.
  *
  * ── SINGLE-SOURCED 2026-09-23 ────────────────────────────────────────────
- * Jude: "make sure that the data placeholders are all the same… para pag
- * inimplement tsaka inintegrate natin yung cms, we wont encounter any
- * issue."
- *
- * ⚠ THIS SECTION AND THE MINISTRIES TAB DESCRIBED THE SAME MINISTRIES
- * DIFFERENTLY. The seven stages were typed out here with their age ranges,
- * and the Ministries tab's "Life Seasons" carousel typed out six of its own
- * with different bands — River Kids 3–12 here against 4–12 there, Young
- * Adults 20–35 against 20–30, and Men and Women as two rows here against
- * one 31–50 card there. Both now read `shared/data/lifeStages.ts`, where
- * riverofgod.ph's numbers won and the Men/Women card grouping is recorded
- * explicitly. The full conflict table is in that file.
- *
- * The age line now reads "Ages 3–12" rather than "3–12 years old" — one
- * short form is stored and both pages render it, instead of each page
- * carrying its own phrasing of the same number.
+ * Stages, age ranges and coordinators come from `shared/data/lifeStages.ts`
+ * (riverofgod.ph's numbers won the conflict with the old Ministries tab;
+ * the full table is in that file) and names from `people.ts`. The age line
+ * reads "Ages 3–12" — one stored short form, rendered by both pages.
  *
  * ⚠ The Allan Santiago ↔ Seasoned / Bojie Ignacio ↔ River Men pairing is
- * still a best guess; that flag moved to `lifeStages.ts` with the data.
+ * still a best guess; that flag lives in `lifeStages.ts` with the data.
  */
-const VISIBLE = 3
-const STEP = 300
-
+const photoFor = new Map<string, string>()
+lifeStageCards.forEach((c) => c.stages.forEach((s) => photoFor.set(s, c.photo)))
 
 export function LifeStageCoordinatorsSection() {
-  const { ref, shown } = useInView<HTMLElement>()
-  const [page, setPage] = useState(0)
-  const maxPage = Math.max(0, lifeStages.length - VISIBLE)
+  const [active, setActive] = useState(0)
+  const activePhoto = photoFor.get(lifeStages[active].slug)
 
   return (
     <section
-      ref={ref}
+      id="life-stage-coordinators"
       data-plate="dark"
       aria-labelledby="life-stage-heading"
-      className="relative bg-[#161616] text-white"
+      className="relative scroll-mt-32 overflow-hidden bg-abyss py-24 text-bone sm:py-32"
     >
-      <div className="mx-auto max-w-[86rem] px-6 py-20 sm:py-24">
-        <div className="flex items-end justify-between gap-6">
-          <h2 id="life-stage-heading" className="font-heading text-2xl font-bold sm:text-3xl">
-            Life Stage Coordinators
-          </h2>
-          <div className="hidden shrink-0 gap-2 sm:flex">
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
-              aria-label="Previous"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 disabled:opacity-30"
-            >
-              {/* Was the literal character "‹" — Doc 9 bans unicode glyphs
-                  as icons; they inherit the font's metrics and sit off-centre. */}
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M15 5l-7 7 7 7" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.min(maxPage, p + 1))}
-              disabled={page === maxPage}
-              aria-label="Next"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10 disabled:opacity-30"
-            >
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      <div className={container}>
+        <SectionHead
+          id="life-stage-heading"
+          eyebrow="Every season of life"
+          title={
+            <>
+              Life Stage
+              <br />
+              Coordinators
+            </>
+          }
+        />
 
-        <div
-          className={`mt-10 overflow-hidden ${revealBase} ${revealDelay1} ${shown ? revealShown : revealHidden}`}
-        >
-          <div
-            className="flex gap-5 transition-transform duration-500 ease-out"
-            style={{ transform: `translateX(-${page * STEP}px)` }}
-          >
-            {lifeStages.map((stage) => (
-              <div
-                key={stage.slug}
-                className="w-64 shrink-0 rounded-2xl border border-white/10 bg-[#232323] p-7"
-              >
-                <p className="text-xs font-bold tracking-[0.14em] text-[#1b7a70] uppercase">
-                  {stage.name}
-                  {stage.ageRange ? ` · Ages ${stage.ageRange}` : ''}
-                </p>
-                <p className="mt-4 font-heading text-lg font-bold text-white">
-                  {person(stage.coordinator).name}
-                </p>
-                <p className="mt-1 text-sm text-[#a6a6a6]">Life Stage Coordinator</p>
-              </div>
-            ))}
+        <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+          {/* Desktop photo panel — decorative, mirrors the row in focus */}
+          <div aria-hidden="true" className="hidden lg:block">
+            <div className="sticky top-44">
+              {activePhoto && (
+                <RiverImage
+                  key={activePhoto}
+                  src={activePhoto}
+                  bloom="always"
+                  className="aspect-[4/5] w-full"
+                />
+              )}
+              <p className="mt-4 font-shout text-[5rem] font-black leading-[0.8] text-bone/10 tabular-nums">
+                {String(active + 1).padStart(2, '0')}
+                <span className="text-bone/5">/{String(lifeStages.length).padStart(2, '0')}</span>
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="mt-6 flex justify-center gap-2">
-          {Array.from({ length: maxPage + 1 }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setPage(i)}
-              aria-label={`Go to page ${i + 1}`}
-              className={`h-2 rounded-full transition-all ${
-                i === page ? 'w-[22px] bg-[#1b7a70]' : 'w-2 bg-white/30'
-              }`}
-            />
-          ))}
+          <ol className="border-t border-bone/12">
+            {lifeStages.map((stage, i) => {
+              const photo = photoFor.get(stage.slug)
+              const on = i === active
+              return (
+                <Reveal
+                  as="li"
+                  key={stage.slug}
+                  delay={i * 50}
+                  className="border-b border-bone/12"
+                >
+                  <div
+                    onMouseEnter={() => setActive(i)}
+                    className="group grid grid-cols-[5rem_1fr] items-center gap-5 py-6 sm:grid-cols-[6rem_1fr] lg:grid-cols-1 lg:py-7"
+                  >
+                    {photo && (
+                      <RiverImage src={photo} bloom="hover" className="aspect-square w-full lg:hidden" />
+                    )}
+                    <div className="flex flex-col gap-2 lg:flex-row lg:items-baseline lg:justify-between lg:gap-8">
+                      <h3
+                        className={`font-shout text-[clamp(2rem,4.6vw,4rem)] font-extrabold uppercase leading-[0.88] transition-colors duration-500 ease-current ${
+                          on ? 'lg:text-bone' : 'lg:text-bone/45'
+                        }`}
+                      >
+                        {stage.name}
+                      </h3>
+                      <div className="lg:text-right">
+                        <p className="font-whisper text-lg italic leading-tight lg:text-xl">
+                          {person(stage.coordinator).name}
+                        </p>
+                        <p className="mt-1 text-[0.72rem] font-semibold tracking-[0.2em] text-sand uppercase">
+                          {stage.ageRange ? `Ages ${stage.ageRange} · ` : ''}Life Stage Coordinator
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+              )
+            })}
+          </ol>
         </div>
       </div>
-
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1440 130"
-        preserveAspectRatio="none"
-        className="absolute bottom-0 left-0 h-[70px] w-full sm:h-[100px]"
-      >
-        <path
-          d="M0,60 C360,5 720,115 1080,50 C1260,18 1350,38 1440,55 L1440,130 L0,130 Z"
-          fill="#232323"
-        />
-      </svg>
     </section>
   )
 }

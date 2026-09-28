@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 /**
  * One IntersectionObserver per element, fires once, then disconnects.
@@ -12,6 +12,19 @@ import { useEffect, useRef, useState } from 'react'
  * So: if the observer has not reported within FAILSAFE_MS and the element is
  * anywhere near the viewport, show it anyway. The animation is the enhancement;
  * the content is the product.
+ *
+ * ── CALLBACK REF, 2026-09-24 ─────────────────────────────────────────────
+ * `ref` used to be a useRef object, read once in an effect that ran on
+ * mount. That was fine while every section rendered its content
+ * immediately. Once sections started fetching from the CMS, several render
+ * a loading state FIRST and only attach `ref` after the data arrives — by
+ * which point the effect had already run, found nothing, and never ran
+ * again. The content stayed at opacity 0 forever: the Media page hero came
+ * up as an empty black plate under the navbar (Jude's screenshot).
+ *
+ * `ref` is now a callback ref that stores the element in state, so the
+ * observer is (re)attached whenever the element actually appears. Callers
+ * are unchanged: they still write `ref={ref}`.
  */
 
 const FAILSAFE_MS = 1200
@@ -24,15 +37,19 @@ export interface UseInViewOptions {
 }
 
 export function useInView<T extends HTMLElement = HTMLDivElement>({
-  threshold = 0.15,
-  rootMargin = '0px 0px -12% 0px',
+  // Start as soon as the element's top edge is ~10% above the bottom of the
+  // screen. The old default (15% of the element visible) meant a tall section
+  // had to scroll several hundred pixels into view before it began to fade in,
+  // which read as empty space and lag while scrolling. Changed 2026-09-24.
+  threshold = 0,
+  rootMargin = '0px 0px -10% 0px',
 }: UseInViewOptions = {}) {
-  const ref = useRef<T>(null)
+  const [el, setEl] = useState<T | null>(null)
+  const ref = useCallback((node: T | null) => setEl(node), [])
   const [shown, setShown] = useState(false)
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
+    if (!el || shown) return
 
     // No observer at all (very old browser, or a prerender shell): show now.
     if (typeof IntersectionObserver === 'undefined') {
@@ -70,7 +87,7 @@ export function useInView<T extends HTMLElement = HTMLDivElement>({
       window.clearTimeout(failsafe)
       observer.disconnect()
     }
-  }, [threshold, rootMargin])
+  }, [el, shown, threshold, rootMargin])
 
   return { ref, shown }
 }

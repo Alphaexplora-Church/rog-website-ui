@@ -18,3 +18,24 @@ export function youtubeEmbedUrl(videoId: string): string {
 export function youtubeWatchUrl(videoId: string): string {
   return `https://www.youtube.com/watch?v=${videoId}`
 }
+
+/**
+ * The 11-character id out of any link an editor might paste. Same patterns
+ * rog-cms's Sermon lifecycle uses — the CMS stores the parsed id itself, so
+ * this is the fallback for an entry saved before that existed.
+ */
+export function youtubeIdFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  const patterns = [
+    /youtube\.com\/watch\?(?:.*&)?v=([A-Za-z0-9_-]{11})/,
+    /youtu\.be\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/embed\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/live\/([A-Za-z0-9_-]{11})/,
+  ]
+  for (const p of patterns) {
+    const m = url.match(p)
+    if (m) return m[1]
+  }
+  return null
+}

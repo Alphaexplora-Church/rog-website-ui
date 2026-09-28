@@ -36,6 +36,10 @@ import { useLocation, useNavigationType } from 'react-router-dom'
  * `useLayoutEffect`, not `useEffect`, so the jump happens before the browser
  * paints. With `useEffect` the new page renders at the old offset for one
  * frame and you see it lurch.
+ *
+ * `behavior: 'instant'` because <html> now smooth-scrolls in-page anchor
+ * links (index.html, 2026-09-24). Without it this reset would visibly glide
+ * up through the new page instead of starting it at the top.
  */
 export function ScrollToTop() {
   const { pathname, hash } = useLocation()
@@ -43,8 +47,27 @@ export function ScrollToTop() {
 
   useLayoutEffect(() => {
     if (navigationType === 'POP') return
-    if (hash) return
-    window.scrollTo(0, 0)
+    if (!hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      return
+    }
+    /* Hash links into another route (e.g. Home's "Five crossings" rows →
+       /discipleship#stage-equip, 2026-09-25): the target page is lazy, so
+       its element may not exist on this frame. Start at the top, then
+       retry for up to ~1s until the anchor mounts and scroll to it. */
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    let tries = 0
+    let frame = 0
+    const seek = () => {
+      const el = document.getElementById(decodeURIComponent(hash.slice(1)))
+      if (el) {
+        el.scrollIntoView({ block: 'start' })
+        return
+      }
+      if (tries++ < 60) frame = requestAnimationFrame(seek)
+    }
+    frame = requestAnimationFrame(seek)
+    return () => cancelAnimationFrame(frame)
   }, [pathname, hash, navigationType])
 
   return null
