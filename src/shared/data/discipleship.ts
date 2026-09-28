@@ -14,8 +14,13 @@
  *
  * `color` is each stage's identity colour from the source slides (gold /
  * blue / purple / green / red) — used only as a tint inside that stage's own
- * panel, never as site chrome. `image` is a text-free crop of the photo on
- * that stage's slide (public/assets/rog/stage-*.webp). CMS home when wired:
+ * panel, never as site chrome. `image` was a text-free crop of the photo on
+ * that stage's slide (public/assets/rog/stage-*.webp) — replaced
+ * 2026-09-28 (Jude: "palitan mo ang placeholder para malinaw") with free
+ * Unsplash photos, cropped 5:3 by Unsplash's CDN, because the slide crops
+ * were only ~230×138 px and read blurry. Swap in ROG's own photos when
+ * the church supplies them (Unsplash License, no attribution required).
+ * CMS home when wired:
  * a `discipleship-stage` collection with the same fields.
  */
 
@@ -44,7 +49,7 @@ export interface DiscipleshipStage {
 export const discipleshipStages: DiscipleshipStage[] = [
   {
     key: 'encounter',
-    image: '/assets/rog/stage-encounter.webp',
+    image: 'https://images.unsplash.com/photo-1740650511388-f693ce80016c?auto=format&fit=crop&crop=entropy&w=1000&h=600&q=75',
     title: 'Encounter',
     color: '#b8902f',
     scriptures: [
@@ -66,7 +71,7 @@ export const discipleshipStages: DiscipleshipStage[] = [
   },
   {
     key: 'evangelize',
-    image: '/assets/rog/stage-evangelize.webp',
+    image: 'https://images.unsplash.com/photo-1663162550932-f67b561e656f?auto=format&fit=crop&crop=entropy&w=1000&h=600&q=75',
     title: 'Evangelize',
     color: '#1f4fb0',
     scriptures: [
@@ -92,7 +97,7 @@ export const discipleshipStages: DiscipleshipStage[] = [
   },
   {
     key: 'establish',
-    image: '/assets/rog/stage-establish.webp',
+    image: 'https://images.unsplash.com/photo-1577975039920-8fbb74e58527?auto=format&fit=crop&crop=entropy&w=1000&h=600&q=75',
     title: 'Establish',
     color: '#5b2f8f',
     scriptures: [
@@ -124,7 +129,7 @@ export const discipleshipStages: DiscipleshipStage[] = [
   },
   {
     key: 'equip',
-    image: '/assets/rog/stage-equip.webp',
+    image: 'https://images.unsplash.com/photo-1729089049887-389a46c99546?auto=format&fit=crop&crop=entropy&w=1000&h=600&q=75',
     title: 'Equip',
     color: '#1f7a4d',
     scriptures: [
@@ -150,7 +155,7 @@ export const discipleshipStages: DiscipleshipStage[] = [
   },
   {
     key: 'empower',
-    image: '/assets/rog/stage-empower.webp',
+    image: 'https://images.unsplash.com/photo-1543702404-38c2035462ad?auto=format&fit=crop&crop=entropy&w=1000&h=600&q=75',
     title: 'Empower',
     color: '#a91f2c',
     scriptures: [
