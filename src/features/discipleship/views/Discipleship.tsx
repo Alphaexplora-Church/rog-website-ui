@@ -159,9 +159,27 @@ function StageChapter({ stage, index }: { stage: DiscipleshipStage; index: numbe
               <dt className="text-[0.72rem] font-semibold tracking-[0.22em] text-shallows uppercase">Goal</dt>
               <dd className="mt-1 font-whisper text-2xl italic leading-snug">{stage.goal}</dd>
             </dl>
+            {/* Placeholder stock photo per stage (see discipleship.ts), with
+                LIGHT effects: a soft colour wash, a third of the old grain and
+                a gentle fade at the foot (Jude, 2026-09-28: "wag lang oa sa
+                effects na halos di na makita yung image"). */}
             <div className="relative mt-8 aspect-[5/3] max-w-sm overflow-hidden">
-              <img src={stage.image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-              <div aria-hidden="true" className="grain absolute inset-0" />
+              <img
+                src={stage.image}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              {/* A light wash of the stage's own colour, so the stock photo
+                  sits in the chapter like ROG's tinted slide photos did —
+                  light enough that the picture stays clear. */}
+              <div aria-hidden="true" className="absolute inset-0 opacity-30 mix-blend-color" style={{ background: stage.color }} />
+              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-abyss/25 via-transparent to-transparent" />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-[url('/assets/rog/grain.png')] bg-[length:160px] opacity-[0.06] mix-blend-overlay"
+              />
             </div>
           </Reveal>
         </div>
