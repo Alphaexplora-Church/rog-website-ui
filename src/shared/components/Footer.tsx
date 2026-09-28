@@ -21,13 +21,13 @@ export function Footer() {
   const mediaAndEvents = primaryNav.find((item) => item.label === 'Media & Events')
 
   return (
-    <footer data-plate="dark" className="relative isolate overflow-hidden bg-abyss text-bone">
+    <footer data-plate="dark" className="relative isolate w-full overflow-hidden bg-abyss pb-[env(safe-area-inset-bottom)] text-bone">
       <div aria-hidden="true" className="absolute -inset-[20%] -z-10 blur-[80px] [background-image:radial-gradient(ellipse_40%_35%_at_85%_10%,color-mix(in_srgb,var(--color-river)_45%,transparent),transparent_70%)]" />
 
-      <div className={`${container} pt-24 sm:pt-32`}>
+      <div className={`${container} pt-16 sm:pt-32`}>
         {/* Closing invitation */}
-        <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
-          <p className="font-shout text-[clamp(3rem,8vw,7.5rem)] leading-[0.88] font-extrabold uppercase">
+        <div className="flex flex-col gap-8 sm:gap-10 lg:flex-row lg:items-end lg:justify-between">
+          <p className="font-shout text-[clamp(2.75rem,13vw,7.5rem)] leading-[0.88] font-extrabold uppercase">
             Come alive
             <br />
             <span className="text-shallows">in the river.</span>
@@ -42,10 +42,12 @@ export function Footer() {
           </div>
         </div>
 
-        <WaveRule className="mt-20 text-bone/15" />
+        <WaveRule className="mt-14 text-bone/15 sm:mt-20" />
 
-        <div className="grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
-          <div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-12 sm:gap-12 sm:py-16 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
+          {/* Mobile (2026-09-28): identity + Sundays span both columns, the
+              three link lists sit two-up, so the footer is ~half as tall. */}
+          <div className="col-span-2 sm:col-span-1">
             <Link to="/" className="inline-flex items-center gap-3" aria-label={`${site.name} — home`}>
               <WaveMark className="h-6 w-24 text-bone" />
             </Link>
@@ -74,7 +76,7 @@ export function Footer() {
             </div>
           </div>
 
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-shallows uppercase">Sundays</p>
             <ul className="mt-5 grid gap-2">
               {site.services.map((s) => (
@@ -109,7 +111,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-bone/12 py-8 text-sm text-bone/50 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-t border-bone/12 py-8 text-[0.8rem] text-bone/50 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
           <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
             <p>
               © {year} {site.name}. All rights reserved.
@@ -124,7 +126,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="text-bone/70 underline decoration-bone/25 underline-offset-4 transition-colors duration-[400ms] hover:text-sky hover:decoration-sky"
               >
-                Alphaexplora Information Technology Services
+                Alphaexplora Inc.
               </a>
             </p>
           </div>

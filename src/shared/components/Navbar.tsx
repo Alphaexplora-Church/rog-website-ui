@@ -135,7 +135,15 @@ export function Navbar() {
 
   return (
     <>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-5">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-50 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5 sm:pt-5">
+        {/* Mobile top fade (2026-09-28, Jude): the bar floats, so on phones
+            scrolled content showed in the strip above it, under the status
+            bar (the footer's "6:00 PM", column headings…). Fade that strip
+            into the page ground once scrolled; desktop keeps the bare float. */}
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-x-0 top-0 -bottom-6 bg-gradient-to-b transition-opacity duration-500 ease-current lg:hidden ${sheetOpenTone === 'dark' ? 'from-abyss via-abyss/85' : 'from-bone via-bone/85'} to-transparent ${scrolled && !mobileOpen ? 'opacity-100' : 'opacity-0'}`}
+        />
         <div
           ref={barRef}
           className={`pointer-events-auto relative mx-auto flex max-w-[88rem] items-center gap-3 rounded-full border py-2 pr-2 pl-5 backdrop-blur-xl backdrop-saturate-150 transition-[background-color,border-color,color,transform] duration-500 ease-current sm:pl-6 ${ink} ${glass} ${scrolled ? 'scale-[0.99]' : ''}`}
@@ -256,17 +264,20 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Mobile sheet */}
+      {/* Mobile sheet. `-bottom-32`, not `inset-0` (2026-09-28): iOS Safari's
+          floating toolbar and in-app browsers end `bottom: 0` above the
+          toolbar, so the page (the ember marquee) showed through underneath.
+          The sheet now runs past the bottom edge; the nav pads it back. */}
       <div
         id="nav-sheet"
         hidden={!mobileOpen}
-        className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-abyss text-bone lg:hidden"
+        className="fixed inset-x-0 top-0 -bottom-32 z-40 overflow-y-auto overscroll-contain bg-abyss text-bone lg:hidden"
       >
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_50%_40%_at_10%_90%,color-mix(in_srgb,var(--color-river)_60%,transparent),transparent_70%)]" />
           <WaveMark className="absolute -right-24 bottom-16 h-auto w-[140vw] text-bone/[0.05]" strokeWidth={3} />
         </div>
-        <nav aria-label="Main (mobile)" className="relative flex min-h-full flex-col gap-10 px-5 pt-28 pb-12">
+        <nav aria-label="Main (mobile)" className="relative flex min-h-full flex-col gap-10 px-5 pt-[calc(7rem+env(safe-area-inset-top))] pb-[calc(11rem+env(safe-area-inset-bottom))]">
           <ul>
             {primaryNav.map((item, i) => (
               <li
