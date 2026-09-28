@@ -105,7 +105,7 @@ function Entry({ ministry, index }: { ministry: BodyMinistry; index: number }) {
       <div
         aria-hidden="true"
         className="duotone relative aspect-[4/5] w-full self-start overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, #0e5f68, #06131b 85%)' }}
+        style={{ background: 'linear-gradient(160deg, var(--color-river), var(--color-abyss) 85%)' }}
       >
         {!failed && ministry.photo && (
           <img

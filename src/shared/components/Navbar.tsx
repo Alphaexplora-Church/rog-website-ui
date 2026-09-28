@@ -263,7 +263,7 @@ export function Navbar() {
         className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-abyss text-bone lg:hidden"
       >
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_50%_40%_at_10%_90%,rgb(14_95_104/0.6),transparent_70%)]" />
+          <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_50%_40%_at_10%_90%,color-mix(in_srgb,var(--color-river)_60%,transparent),transparent_70%)]" />
           <WaveMark className="absolute -right-24 bottom-16 h-auto w-[140vw] text-bone/[0.05]" strokeWidth={3} />
         </div>
         <nav aria-label="Main (mobile)" className="relative flex min-h-full flex-col gap-10 px-5 pt-28 pb-12">

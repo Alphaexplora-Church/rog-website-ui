@@ -119,7 +119,7 @@ function Stop({
             pathLength={1}
             strokeDasharray={1}
             strokeDashoffset={drawn ? 0 : 1}
-            stroke={sunday ? 'var(--color-ember)' : 'rgb(244 237 226 / 0.45)'}
+            stroke={sunday ? 'var(--color-ember)' : 'color-mix(in srgb, var(--color-bone) 45%, transparent)'}
             strokeWidth={sunday ? 3 : 2}
             strokeLinecap="butt"
             className="transition-[stroke-dashoffset] duration-[900ms] ease-tide motion-reduce:transition-none"
@@ -153,7 +153,7 @@ export function WeeklyGatheringsSection() {
       className="relative overflow-hidden bg-river py-24 text-bone sm:py-32"
     >
       <div aria-hidden="true" className="grain absolute inset-0" />
-      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] blur-[80px] [background-image:radial-gradient(ellipse_40%_40%_at_85%_10%,rgb(6_19_27/0.55),transparent_70%),radial-gradient(ellipse_35%_35%_at_10%_95%,rgb(127_194_184/0.25),transparent_70%)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] blur-[80px] [background-image:radial-gradient(ellipse_40%_40%_at_85%_10%,color-mix(in_srgb,var(--color-abyss)_55%,transparent),transparent_70%),radial-gradient(ellipse_35%_35%_at_10%_95%,color-mix(in_srgb,var(--color-shallows)_25%,transparent),transparent_70%)]" />
 
       <div className={`${container} relative`}>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">

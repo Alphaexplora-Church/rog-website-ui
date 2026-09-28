@@ -55,7 +55,7 @@ export default function SermonDetail() {
   return (
     <>
       <section data-plate="dark" aria-labelledby="sermon-heading" className="relative overflow-hidden bg-abyss pt-32 pb-24 text-bone sm:pt-36 sm:pb-32">
-        <div aria-hidden="true" className="pointer-events-none absolute -inset-x-[20%] -top-[10%] h-[70%] blur-[70px] [background-image:radial-gradient(ellipse_45%_50%_at_50%_30%,rgb(14_95_104/0.55),transparent_70%)]" />
+        <div aria-hidden="true" className="pointer-events-none absolute -inset-x-[20%] -top-[10%] h-[70%] blur-[70px] [background-image:radial-gradient(ellipse_45%_50%_at_50%_30%,color-mix(in_srgb,var(--color-river)_55%,transparent),transparent_70%)]" />
         <div className={`${container} relative`}>
           <BackLink to={series ? `/media/series/${series.slug}` : '/media'}>
             {series ? series.title : 'Media Library'}
@@ -122,7 +122,7 @@ export default function SermonDetail() {
                   {topics.map((t) => (
                     <li key={t.slug}>
                       <Link to={`/media/browse/topic/${t.slug}`} viewTransition className="group">
-                        <Pill className="transition-colors duration-300 group-hover:border-ember group-hover:text-bone">{t.title}</Pill>
+                        <Pill className="transition-colors duration-300 group-hover:border-sky group-hover:text-bone">{t.title}</Pill>
                       </Link>
                     </li>
                   ))}

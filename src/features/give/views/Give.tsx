@@ -63,7 +63,7 @@ export default function Give() {
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -inset-[15%] -z-10 blur-[80px] [background-image:radial-gradient(ellipse_35%_35%_at_20%_60%,rgb(242_118_28/0.12),transparent_70%),radial-gradient(ellipse_40%_40%_at_85%_30%,rgb(14_95_104/0.45),transparent_70%)]"
+          className="pointer-events-none absolute -inset-[15%] -z-10 blur-[80px] [background-image:radial-gradient(ellipse_35%_35%_at_20%_60%,color-mix(in_srgb,var(--color-ember)_12%,transparent),transparent_70%),radial-gradient(ellipse_40%_40%_at_85%_30%,color-mix(in_srgb,var(--color-river)_45%,transparent),transparent_70%)]"
         />
         <div className={`${container} flex flex-col gap-4 lg:flex-row lg:gap-5`}>
           <MethodBlock
@@ -201,7 +201,7 @@ export default function Give() {
                     href={option.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-bone/75 underline decoration-ember/70 underline-offset-4 transition-colors duration-300 hover:text-bone hover:decoration-ember"
+                    className="text-sm text-bone/75 underline decoration-ember/70 underline-offset-4 transition-colors duration-300 hover:text-bone hover:decoration-sky"
                   >
                     Can&apos;t scan the QR? Click this link
                   </a>
@@ -321,8 +321,8 @@ function MethodBlock({
         className="absolute inset-0 -z-10"
         style={{
           background: primary
-            ? 'linear-gradient(200deg, #0e5f68 0%, #0b2a33 45%, #06131b 100%)'
-            : 'linear-gradient(160deg, #0b2a33 0%, #06131b 80%)',
+            ? 'linear-gradient(200deg, var(--color-river) 0%, var(--color-deep) 45%, var(--color-abyss) 100%)'
+            : 'linear-gradient(160deg, var(--color-deep) 0%, var(--color-abyss) 80%)',
         }}
       >
         {!imageFailed && (

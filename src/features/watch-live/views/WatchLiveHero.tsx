@@ -59,7 +59,7 @@ export function WatchLiveHero() {
     >
       {/* Stage light: river pooling up from the floor, a faint ember rim. */}
       <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <div className="absolute -inset-[20%] blur-[80px] [background-image:radial-gradient(ellipse_55%_40%_at_50%_100%,rgb(14_95_104/0.85),transparent_70%),radial-gradient(ellipse_30%_35%_at_12%_20%,rgb(14_95_104/0.45),transparent_70%),radial-gradient(ellipse_25%_25%_at_90%_15%,rgb(242_118_28/0.16),transparent_70%)]" />
+        <div className="absolute -inset-[20%] blur-[80px] [background-image:radial-gradient(ellipse_55%_40%_at_50%_100%,color-mix(in_srgb,var(--color-river)_85%,transparent),transparent_70%),radial-gradient(ellipse_30%_35%_at_12%_20%,color-mix(in_srgb,var(--color-river)_45%,transparent),transparent_70%),radial-gradient(ellipse_25%_25%_at_90%_15%,color-mix(in_srgb,var(--color-ember)_16%,transparent),transparent_70%)]" />
         <WaveMark className="absolute -left-[10%] bottom-[6%] h-auto w-[120vw] max-w-none text-bone/[0.035]" strokeWidth={2.5} />
       </div>
       <div aria-hidden="true" className="pointer-events-none absolute -inset-[10%] -z-10 animate-boil bg-[url('/assets/rog/grain.png')] bg-[length:180px] opacity-[0.18] mix-blend-overlay motion-reduce:animate-none" />

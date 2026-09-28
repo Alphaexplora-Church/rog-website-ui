@@ -35,7 +35,7 @@ export function Portrait({
       aria-hidden="true"
       className={`grain relative overflow-hidden bg-deep ${className}`}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_30%_15%,rgb(14_95_104/0.85),transparent_70%)] transition-opacity duration-700 ease-current group-hover:opacity-60" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_30%_15%,color-mix(in_srgb,var(--color-river)_85%,transparent),transparent_70%)] transition-opacity duration-700 ease-current group-hover:opacity-60" />
       <svg
         viewBox="0 0 24 24"
         className="absolute bottom-0 left-1/2 h-[78%] w-auto -translate-x-1/2 translate-y-[6%] text-abyss/70 transition-transform duration-[1200ms] ease-current group-hover:scale-[1.04] motion-reduce:transition-none"

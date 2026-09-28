@@ -107,8 +107,8 @@ export const lifeStageCards: LifeStageCard[] = [
     photo:
       'https://images.unsplash.com/photo-1588075592405-d3d4f0846961?auto=format&fit=crop&w=500&q=80',
     stages: ['river-kids'],
-    card: 'bg-white text-[#0B0F14]',
-    ageColor: 'text-[#1b7a70]',
+    card: 'bg-white text-abyss',
+    ageColor: 'text-ember-ink',
     bodyColor: 'text-black/62',
   },
   {
@@ -118,8 +118,8 @@ export const lifeStageCards: LifeStageCard[] = [
     photo:
       'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=500&q=80',
     stages: ['river-youth'],
-    card: 'bg-[#0E2A3F] text-white',
-    ageColor: 'text-[#8FD4C9]',
+    card: 'bg-deep text-white',
+    ageColor: 'text-shallows',
     bodyColor: 'text-white/70',
   },
   {
@@ -129,8 +129,8 @@ export const lifeStageCards: LifeStageCard[] = [
     photo:
       'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=500&q=80',
     stages: ['young-adults'],
-    card: 'bg-white text-[#0B0F14]',
-    ageColor: 'text-[#1b7a70]',
+    card: 'bg-white text-abyss',
+    ageColor: 'text-ember-ink',
     bodyColor: 'text-black/62',
   },
   {
@@ -140,7 +140,7 @@ export const lifeStageCards: LifeStageCard[] = [
     photo:
       'https://images.unsplash.com/photo-1609234656388-0ff363383899?auto=format&fit=crop&w=500&q=80',
     stages: ['river-men', 'river-women'],
-    card: 'bg-[#1b7a70] text-white',
+    card: 'bg-river text-white',
     ageColor: 'text-white',
     bodyColor: 'text-white/82',
   },
@@ -151,8 +151,8 @@ export const lifeStageCards: LifeStageCard[] = [
     photo:
       'https://images.unsplash.com/photo-1504004030892-d06adf9ffbcf?auto=format&fit=crop&w=500&q=80',
     stages: ['seasoned'],
-    card: 'bg-white text-[#0B0F14]',
-    ageColor: 'text-[#1b7a70]',
+    card: 'bg-white text-abyss',
+    ageColor: 'text-ember-ink',
     bodyColor: 'text-black/62',
   },
   {
@@ -163,8 +163,8 @@ export const lifeStageCards: LifeStageCard[] = [
       'https://images.unsplash.com/photo-1561524891-8e08ab8569f3?auto=format&fit=crop&w=500&q=80',
     stages: ['river-families'],
     ageLabel: 'Married couples',
-    card: 'bg-white text-[#0B0F14]',
-    ageColor: 'text-[#1b7a70]',
+    card: 'bg-white text-abyss',
+    ageColor: 'text-ember-ink',
     bodyColor: 'text-black/62',
   },
 ]

@@ -230,7 +230,7 @@ function ValuePoster({
         aria-hidden="true"
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(90deg, ${value.color} 34%, ${value.color}cc 52%, ${value.color}00 82%), linear-gradient(0deg, rgb(6 19 27 / 0.45), transparent 45%)`,
+          background: `linear-gradient(90deg, ${value.color} 34%, ${value.color}cc 52%, ${value.color}00 82%), linear-gradient(0deg, color-mix(in srgb, var(--color-abyss) 45%, transparent), transparent 45%)`,
         }}
       />
 

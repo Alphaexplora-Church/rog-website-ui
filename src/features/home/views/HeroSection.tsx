@@ -15,10 +15,11 @@ import { container, heroRevealBase, heroRevealDelay1, heroRevealDelay2, heroReve
  *
  * Layers (all decorative, aria-hidden): the texture drifting slowly →
  * abyss scrims (left for the headline, bottom for the fold) → a boiling
- * grain plate that still updates at 30fps (720 discrete positions) but
- * over a 24s cycle, so the frame rate stays smooth while the drift itself
- * reads as glacial (per Jude, 2026-09-25 — supersedes the ultra-speed
- * pass). Reduced motion freezes all three.
+ * grain plate that still updates at 30fps (2,700 discrete positions) but
+ * over a 90s cycle with a much smaller ±0.6% travel, so it barely reads
+ * as movement at all — a slow-burn shimmer, not a texture that
+ * "flickers" (per Jude, 2026-09-25 — supersedes the 24s pass). Reduced
+ * motion freezes all three.
  *
  * ⚠ `hero-river.webp` is an INTERIM composite cut from the text-free
  * bands of Sample1 (ROG 11 §10 Q6). Replace with the designer's
@@ -51,6 +52,10 @@ export function HeroSection() {
           fetchPriority="high"
           className="absolute inset-0 h-full w-full animate-drift object-cover object-[60%_50%] motion-reduce:animate-none"
         />
+        {/* Twilight wash (palette revamp 2026-09-28): re-hues hero-river.webp
+            to the dusk palette — navy sky on top, cerulean, then a thin amber
+            horizon at the fold — keeping the artwork's light and texture. */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--color-deep)_0%,var(--color-river)_45%,var(--color-sky)_72%,var(--color-ember)_90%,var(--color-abyss)_100%)] mix-blend-color" />
         <div className="absolute inset-0 bg-gradient-to-r from-abyss/90 via-abyss/45 to-abyss/10" />
         <div className="absolute inset-0 bg-gradient-to-t from-abyss via-abyss/20 to-abyss/50" />
         <div className="absolute -inset-[12%] animate-boil bg-[url('/assets/rog/grain.png')] bg-[length:190px] opacity-[0.22] mix-blend-overlay motion-reduce:animate-none" />

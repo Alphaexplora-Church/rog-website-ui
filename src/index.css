@@ -20,25 +20,37 @@
  *   4. @utility    — the four textures (grain, duotone, halftone, scrim)
  *                    that need pseudo-elements or blend modes
  *
- * Contrast pairs (WCAG 2.1, measured in ROG 11 §4.1): bone/abyss 16.2,
- * bone/current 6.3, shallows/abyss 9.2, sand/abyss 9.7, ember/abyss 6.6,
- * abyss-on-ember 6.6 (button labels), ember-ink/bone 5.4. Ember is NEVER
- * text on bone or on current (2.5 / 2.6).
+ * Contrast pairs (WCAG 2.1, Twilight Horizon 2026-09-28): bone/abyss 15.8,
+ * bone/river 10.0, bone/deep 13.5, shallows/abyss 8.9, shallows/river 5.6,
+ * sand/abyss 9.1, ember/abyss 7.5, abyss-on-ember 7.5 (button labels),
+ * ember/river 4.8, sky/abyss 6.4, ember-ink/bone 4.7. Ember and sky are
+ * NEVER text on bone (2.1 / 2.6) — use ember-ink on light grounds.
  */
 @import 'tailwindcss';
 
 @theme {
-  /* ── Palette — sampled from ROG's own graphics (ROG 11 §2) ── */
-  --color-abyss: #06131b;       /* primary ground — deep water, not black */
-  --color-abyss-2: #0a1d27;     /* raised surface on abyss */
-  --color-deep: #0b2a33;        /* between abyss and current */
-  --color-river: #0e5f68;     /* secondary ground, duotone mid */
-  --color-shallows: #7fc2b8;    /* light teal — secondary text on dark */
-  --color-bone: #f4ede2;        /* primary text on dark; light ground */
-  --color-bone-2: #e9dfcf;      /* raised surface on bone */
-  --color-sand: #cdb892;        /* warm meta text on dark */
-  --color-ember: #f2761c;       /* THE signature accent */
-  --color-ember-ink: #a3420b;   /* ember as text on light grounds only */
+  /* ── Palette — "Twilight Horizon" (2026-09-28, second pass) ──
+     Sampled from Jude's reference photo: a mountain silhouette at the last
+     minute of dusk — night-black land, navy → cerulean sky, a thin amber
+     horizon. Replaces Storm Slate + Cobalt (too purely blue) and, before
+     that, teal + ember (read as a copy of WLCM). Two accents in balance:
+       ember = the horizon (amber)  → primary CTAs, LIVE, active filters
+       sky   = the upper sky (azure) → hovers, links, focus, secondary marks
+     The blue lives in the GROUNDS (deep, river); the orange only ever
+     glows — which is what keeps it from reading as WLCM's teal + orange.
+     TOKEN NAMES ARE ROLES, NOT HUES (`river` is cerulean, `ember` amber). */
+  --color-abyss: #111412;       /* primary ground — night land, warm near-black */
+  --color-abyss-2: #191d1c;     /* raised surface on abyss */
+  --color-deep: #132432;        /* upper sky — night navy */
+  --color-river: #0d3b58;       /* secondary ground — deep cerulean, duotone mid */
+  --color-shallows: #93b9cc;    /* dawn haze — secondary text on dark */
+  --color-bone: #f1ece3;        /* primary text on dark; light ground */
+  --color-bone-2: #e5ddd0;      /* raised surface on bone */
+  --color-sand: #cdb28a;        /* horizon haze — warm meta text on dark */
+  --color-ember: #f08c2e;       /* THE primary accent — horizon amber */
+  --color-ember-hi: #f7a452;    /* primary accent hover (buttons) */
+  --color-ember-ink: #a4520c;   /* amber as text on light grounds only */
+  --color-sky: #4a9fd4;         /* secondary accent — azure (hovers, links, focus) */
 
   /* ── Type — shout / whisper / body (ROG 11 §4.2) ── */
   --font-shout: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
@@ -149,7 +161,7 @@
     color: var(--color-abyss);
   }
   :focus-visible {
-    outline: 2px solid var(--color-ember);
+    outline: 2px solid var(--color-sky);
     outline-offset: 3px;
   }
   @media (prefers-reduced-motion: reduce) {

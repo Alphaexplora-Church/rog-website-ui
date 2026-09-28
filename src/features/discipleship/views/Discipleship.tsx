@@ -41,7 +41,7 @@ export default function Discipleship() {
               <li key={s.key}>
                 <a
                   href={`#stage-${s.key}`}
-                  className="group flex items-baseline gap-4 py-1 transition-colors duration-300 hover:text-ember"
+                  className="group flex items-baseline gap-4 py-1 transition-colors duration-300 hover:text-sky"
                 >
                   <span className="w-6 font-shout text-sm tabular-nums text-bone/45">{String(i + 1).padStart(2, '0')}</span>
                   <span className="font-shout text-3xl font-bold uppercase leading-none">{s.title}</span>

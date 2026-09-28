@@ -53,7 +53,7 @@ export function FoundersStorySection() {
       aria-labelledby="founders-story-heading"
       className="relative scroll-mt-32 overflow-hidden bg-abyss pt-32 pb-24 text-bone sm:pt-40 sm:pb-32"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute -top-[10%] -left-[20%] h-[70%] w-[70%] bg-[radial-gradient(ellipse_at_center,rgb(14_95_104/0.45),transparent_65%)] blur-[40px]" />
+      <div aria-hidden="true" className="pointer-events-none absolute -top-[10%] -left-[20%] h-[70%] w-[70%] bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--color-river)_45%,transparent),transparent_65%)] blur-[40px]" />
       <div className={`${container} relative grid gap-16 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20`}>
         <div className="lg:sticky lg:top-44 lg:self-start">
           <SectionHead
@@ -97,7 +97,7 @@ export function FoundersStorySection() {
                   className={`font-shout text-[clamp(4.5rem,13vw,10rem)] font-black uppercase leading-[0.8] tracking-[-0.01em] ${
                     founding
                       ? 'text-ember'
-                      : 'text-transparent [-webkit-text-stroke:1.5px_rgb(244_237_226/0.55)]'
+                      : 'text-transparent [-webkit-text-stroke:1.5px_color-mix(in_srgb,var(--color-bone)_55%,transparent)]'
                   }`}
                 >
                   {m.year}

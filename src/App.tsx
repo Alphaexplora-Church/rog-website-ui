@@ -162,7 +162,7 @@ export default function App() {
 function Stub() {
   return (
     <section data-plate="dark" className="relative isolate flex min-h-[80svh] items-end overflow-hidden bg-abyss text-bone">
-      <div aria-hidden="true" className="absolute -inset-[20%] -z-10 blur-[70px] [background-image:radial-gradient(ellipse_40%_45%_at_20%_30%,rgb(14_95_104/0.7),transparent_70%)]" />
+      <div aria-hidden="true" className="absolute -inset-[20%] -z-10 blur-[70px] [background-image:radial-gradient(ellipse_40%_45%_at_20%_30%,color-mix(in_srgb,var(--color-river)_70%,transparent),transparent_70%)]" />
       <div className={`${container} pt-40 pb-24`}>
         <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-shallows uppercase">Not built yet</p>
         <h1 className={`mt-6 ${displayL}`}>

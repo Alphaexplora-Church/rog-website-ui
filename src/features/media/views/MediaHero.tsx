@@ -174,7 +174,7 @@ function HeroWithoutMessage({ state }: { state: 'loading' | 'error' | 'empty' })
       className="relative isolate flex min-h-[88svh] items-end overflow-hidden bg-abyss text-bone max-sm:hidden"
     >
       <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_40%_45%_at_20%_30%,rgb(14_95_104/0.7),transparent_70%),radial-gradient(ellipse_30%_30%_at_85%_80%,rgb(242_118_28/0.2),transparent_70%)]" />
+        <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_40%_45%_at_20%_30%,color-mix(in_srgb,var(--color-river)_70%,transparent),transparent_70%),radial-gradient(ellipse_30%_30%_at_85%_80%,color-mix(in_srgb,var(--color-ember)_20%,transparent),transparent_70%)]" />
         <WaveMark
           draw={state === 'loading'}
           className="absolute -right-[8%] top-[14%] h-auto w-[70vw] max-w-[1100px] text-bone/[0.05]"

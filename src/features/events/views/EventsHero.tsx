@@ -24,7 +24,7 @@ export function EventsHero() {
             <a
               key={l.href}
               href={l.href}
-              className="group flex items-baseline gap-4 py-1 transition-colors duration-300 hover:text-ember"
+              className="group flex items-baseline gap-4 py-1 transition-colors duration-300 hover:text-sky"
             >
               <span className="w-6 font-shout text-sm tabular-nums text-bone/55">{l.n}</span>
               <span className="font-shout text-3xl font-bold uppercase leading-none">{l.label}</span>

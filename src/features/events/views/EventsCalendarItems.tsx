@@ -60,7 +60,7 @@ export function PosterImage({
         // Typographic stand-in: reads as a deliberate ROG poster (wave mark,
         // shout title, river light) rather than an empty tint.
         <div aria-hidden="true" className="absolute inset-0 flex flex-col justify-between p-[8%] text-bone">
-          <div className="absolute inset-0 transition-transform duration-[1200ms] ease-current [background-image:radial-gradient(ellipse_80%_60%_at_20%_15%,rgb(14_95_104/0.95),transparent_70%),radial-gradient(ellipse_60%_45%_at_90%_95%,rgb(242_118_28/0.35),transparent_70%)] group-hover:scale-[1.06] motion-reduce:transition-none" />
+          <div className="absolute inset-0 transition-transform duration-[1200ms] ease-current [background-image:radial-gradient(ellipse_80%_60%_at_20%_15%,color-mix(in_srgb,var(--color-river)_95%,transparent),transparent_70%),radial-gradient(ellipse_60%_45%_at_90%_95%,color-mix(in_srgb,var(--color-ember)_35%,transparent),transparent_70%)] group-hover:scale-[1.06] motion-reduce:transition-none" />
           <div className="relative">
             {stamp && (
               <p className="font-shout text-[clamp(1rem,1.6vw,1.3rem)] font-bold uppercase tracking-[0.18em] text-sand">

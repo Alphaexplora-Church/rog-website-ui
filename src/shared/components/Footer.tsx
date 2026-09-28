@@ -22,7 +22,7 @@ export function Footer() {
 
   return (
     <footer data-plate="dark" className="relative isolate overflow-hidden bg-abyss text-bone">
-      <div aria-hidden="true" className="absolute -inset-[20%] -z-10 blur-[80px] [background-image:radial-gradient(ellipse_40%_35%_at_85%_10%,rgb(14_95_104/0.45),transparent_70%)]" />
+      <div aria-hidden="true" className="absolute -inset-[20%] -z-10 blur-[80px] [background-image:radial-gradient(ellipse_40%_35%_at_85%_10%,color-mix(in_srgb,var(--color-river)_45%,transparent),transparent_70%)]" />
 
       <div className={`${container} pt-24 sm:pt-32`}>
         {/* Closing invitation */}
@@ -57,7 +57,7 @@ export function Footer() {
             </p>
             <a
               href={`tel:${site.phone.replace(/[^\d+]/g, '')}`}
-              className="mt-3 inline-block text-sm text-bone/60 transition-colors duration-[400ms] hover:text-ember"
+              className="mt-3 inline-block text-sm text-bone/60 transition-colors duration-[400ms] hover:text-sky"
             >
               {site.phone}
             </a>
@@ -122,7 +122,7 @@ export function Footer() {
                 href="https://alphaexplora.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-bone/70 underline decoration-bone/25 underline-offset-4 transition-colors duration-[400ms] hover:text-ember hover:decoration-ember"
+                className="text-bone/70 underline decoration-bone/25 underline-offset-4 transition-colors duration-[400ms] hover:text-sky hover:decoration-sky"
               >
                 Alphaexplora Information Technology Services
               </a>
@@ -169,7 +169,7 @@ function FooterColumn({ heading, links }: { heading: string; links: { to: string
 
 function FooterLink({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Link to={to} className="text-sm text-bone/70 transition-colors duration-[400ms] ease-current hover:text-ember">
+    <Link to={to} className="text-sm text-bone/70 transition-colors duration-[400ms] ease-current hover:text-sky">
       {children}
     </Link>
   )
@@ -182,7 +182,7 @@ function Social({ href, label, children }: { href: string; label: string; childr
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-bone/20 text-bone/70 transition-colors duration-[400ms] ease-current hover:border-ember hover:text-ember"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-bone/20 text-bone/70 transition-colors duration-[400ms] ease-current hover:border-sky hover:text-sky"
     >
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-current">
         {children}

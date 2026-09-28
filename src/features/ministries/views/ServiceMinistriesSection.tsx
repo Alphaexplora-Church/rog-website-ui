@@ -62,7 +62,7 @@ export function ServiceMinistriesSection() {
       <div aria-hidden="true" className="grain pointer-events-none absolute inset-0 -z-10" />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-[15%] -z-10 blur-[80px] [background-image:radial-gradient(ellipse_40%_35%_at_10%_90%,rgb(6_19_27/0.55),transparent_70%)]"
+        className="pointer-events-none absolute -inset-[15%] -z-10 blur-[80px] [background-image:radial-gradient(ellipse_40%_35%_at_10%_90%,color-mix(in_srgb,var(--color-abyss)_55%,transparent),transparent_70%)]"
       />
 
       <div className={container}>
@@ -157,7 +157,7 @@ function MinistryRow({
         <span
           aria-hidden="true"
           className="relative hidden h-20 w-28 flex-none overflow-hidden opacity-0 transition-[opacity,transform] duration-[600ms] ease-current group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none lg:block lg:-translate-x-3"
-          style={{ background: `linear-gradient(150deg, ${light}, ${deep} 60%, #06131b)` }}
+          style={{ background: `linear-gradient(150deg, ${light}, ${deep} 60%, var(--color-abyss))` }}
         >
           {ministry.image && <img
             src={ministry.image}
@@ -242,7 +242,7 @@ function MinistryDialog({ ministry, onClose }: { ministry: Ministry; onClose: ()
       >
         <div
           className="relative h-40 w-full overflow-hidden sm:h-48"
-          style={{ background: `linear-gradient(150deg, ${light}, ${deep} 55%, #06131b)` }}
+          style={{ background: `linear-gradient(150deg, ${light}, ${deep} 55%, var(--color-abyss))` }}
         >
           {!imgFailed && ministry.image && (
             <img

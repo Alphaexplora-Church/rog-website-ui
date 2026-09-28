@@ -73,7 +73,7 @@ export function LiveServicesSection() {
                   <span className="ml-auto hidden translate-x-4 text-sm italic text-bone/70 opacity-0 transition-[opacity,transform] duration-500 ease-current group-hover:translate-x-0 group-hover:opacity-100 md:block">
                     {p.handle}
                   </span>
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className="ml-auto h-6 w-6 flex-none transition-transform duration-500 ease-current group-hover:translate-x-1 group-hover:text-ember md:ml-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="ml-auto h-6 w-6 flex-none transition-transform duration-500 ease-current group-hover:translate-x-1 group-hover:text-sky md:ml-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                     <path d="M7 17 17 7M9 7h8v8" />
                   </svg>
                   <span className="sr-only">(opens in a new tab)</span>

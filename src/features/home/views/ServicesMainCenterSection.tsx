@@ -37,7 +37,7 @@ export function ServicesMainCenterSection() {
       aria-labelledby="the-current-heading"
       className="grain relative overflow-hidden bg-river py-24 text-bone sm:py-32"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] blur-[80px] [background-image:radial-gradient(ellipse_40%_45%_at_90%_10%,rgb(6_19_27/0.55),transparent_70%),radial-gradient(ellipse_35%_35%_at_5%_95%,rgb(242_118_28/0.18),transparent_70%)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] blur-[80px] [background-image:radial-gradient(ellipse_40%_45%_at_90%_10%,color-mix(in_srgb,var(--color-abyss)_55%,transparent),transparent_70%),radial-gradient(ellipse_35%_35%_at_5%_95%,color-mix(in_srgb,var(--color-ember)_18%,transparent),transparent_70%)]" />
 
       <div className={`${container} relative`}>
         <div className={`flex flex-wrap items-end justify-between gap-8 ${reveal}`}>

@@ -49,13 +49,13 @@ const sizes: Record<Size, string> = {
 
 const variants: Record<Tone, Record<Variant, string>> = {
   dark: {
-    ember: 'bg-ember text-abyss hover:bg-[#ff8a33]',
+    ember: 'bg-ember text-abyss hover:bg-ember-hi',
     solid: 'bg-bone text-abyss hover:bg-white',
     outline: 'border border-bone/35 text-bone hover:border-bone hover:bg-bone/5',
     ghost: 'h-auto px-0 text-bone',
   },
   light: {
-    ember: 'bg-ember text-abyss hover:bg-[#ff8a33]',
+    ember: 'bg-ember text-abyss hover:bg-ember-hi',
     solid: 'bg-abyss text-bone hover:bg-deep',
     outline: 'border border-abyss/30 text-abyss hover:border-abyss hover:bg-abyss/5',
     ghost: 'h-auto px-0 text-abyss',

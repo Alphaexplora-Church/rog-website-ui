@@ -125,7 +125,7 @@ export const heroMarkFadeShown = 'opacity-100 scale-100 blur-none'
 /** Ambient light for dark sections — teal pool + one ember ember-glow. */
 export const riverGlow =
   'pointer-events-none absolute -inset-[15%] z-0 blur-[60px] ' +
-  '[background-image:radial-gradient(ellipse_45%_40%_at_15%_20%,rgb(14_95_104/0.55),transparent_70%),radial-gradient(ellipse_35%_30%_at_90%_85%,rgb(242_118_28/0.16),transparent_70%)]'
+  '[background-image:radial-gradient(ellipse_45%_40%_at_15%_20%,color-mix(in_srgb,var(--color-river)_55%,transparent),transparent_70%),radial-gradient(ellipse_35%_30%_at_90%_85%,color-mix(in_srgb,var(--color-ember)_16%,transparent),transparent_70%)]'
 
 /** Ember glow — ONLY behind the primary CTA and the LIVE badge (ROG 11 §4.5). */
 export const emberGlow =

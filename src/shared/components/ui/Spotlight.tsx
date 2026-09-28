@@ -13,7 +13,7 @@ import { useCallback, type PointerEvent } from 'react'
  * re-renders anything. Mouse only: on touch there is no hover, and a glow
  * that jumps to wherever a finger landed reads as a glitch.
  *
- * REVAMP 2026-09-25: the glow is the `shallows` token (#7fc2b8) on the
+ * REVAMP 2026-09-25: the glow is the `shallows` token (var(--color-shallows)) on the
  * shared `ease-current` curve. Props unchanged.
  *
  * Tailwind v4's `group-hover:` only applies under `@media (hover: hover)`,

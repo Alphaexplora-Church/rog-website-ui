@@ -17,7 +17,7 @@ import { sundayServiceOptions, usePlanAVisitViewModel } from '../viewModels/useP
 const inputCls =
   'h-12 w-full rounded-sm border border-bone/20 bg-abyss/70 px-4 text-[0.95rem] text-bone placeholder:text-bone/35 ' +
   'transition-[border-color,box-shadow] duration-300 ease-current hover:border-bone/40 ' +
-  'focus:border-ember focus:outline-none focus:ring-2 focus:ring-ember/40 motion-reduce:transition-none'
+  'focus:border-sky focus:outline-none focus:ring-2 focus:ring-sky/40 motion-reduce:transition-none'
 
 const labelCls = 'text-[0.72rem] font-semibold tracking-[0.2em] text-bone/75 uppercase'
 
@@ -75,7 +75,7 @@ export default function PlanAVisit() {
       className="relative isolate overflow-hidden bg-abyss text-bone"
     >
       <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_40%_40%_at_15%_20%,rgb(14_95_104/0.6),transparent_70%),radial-gradient(ellipse_30%_30%_at_85%_85%,rgb(242_118_28/0.14),transparent_70%)]" />
+        <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_40%_40%_at_15%_20%,color-mix(in_srgb,var(--color-river)_60%,transparent),transparent_70%),radial-gradient(ellipse_30%_30%_at_85%_85%,color-mix(in_srgb,var(--color-ember)_14%,transparent),transparent_70%)]" />
         <WaveMark className="absolute -left-[12%] bottom-[6%] h-auto w-[70vw] max-w-[1000px] text-bone/[0.035]" strokeWidth={3} />
       </div>
       <div aria-hidden="true" className="pointer-events-none absolute -inset-[10%] -z-10 animate-boil bg-[url('/assets/rog/grain.png')] bg-[length:180px] opacity-[0.14] mix-blend-overlay motion-reduce:animate-none" />
@@ -146,7 +146,7 @@ export default function PlanAVisit() {
                 <p className="mt-3 text-[0.92rem] leading-relaxed text-bone/70">{site.location.area}</p>
                 <a
                   href={`tel:${site.phone.replace(/[^\d+]/g, '')}`}
-                  className="mt-3 inline-flex min-h-11 items-center text-[0.92rem] text-bone/80 underline decoration-bone/30 underline-offset-4 transition-colors duration-300 hover:text-ember hover:decoration-ember"
+                  className="mt-3 inline-flex min-h-11 items-center text-[0.92rem] text-bone/80 underline decoration-bone/30 underline-offset-4 transition-colors duration-300 hover:text-sky hover:decoration-sky"
                 >
                   {site.phone}
                 </a>

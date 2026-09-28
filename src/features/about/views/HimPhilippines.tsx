@@ -88,7 +88,7 @@ function MissionVision({ mission }: { mission: VM['mission'] }) {
       aria-labelledby="overview-heading"
       className="relative isolate scroll-mt-20 overflow-hidden bg-abyss py-24 text-bone sm:py-32"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute -inset-[15%] -z-10 blur-[60px] [background-image:radial-gradient(ellipse_40%_40%_at_10%_30%,rgb(14_95_104/0.45),transparent_70%)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-[15%] -z-10 blur-[60px] [background-image:radial-gradient(ellipse_40%_40%_at_10%_30%,color-mix(in_srgb,var(--color-river)_45%,transparent),transparent_70%)]" />
       <div className={`${container} grid gap-16 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-20`}>
         <div ref={ref}>
           <Eyebrow>Mission and vision</Eyebrow>
@@ -287,7 +287,7 @@ function CoreValues({ coreValues }: { coreValues: VM['coreValues'] }) {
     el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: reduce ? 'auto' : 'smooth' })
   }
   const arrowBtn =
-    'flex h-12 w-12 items-center justify-center rounded-full border border-bone/30 text-bone transition-colors duration-300 hover:border-bone hover:bg-bone/5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ember'
+    'flex h-12 w-12 items-center justify-center rounded-full border border-bone/30 text-bone transition-colors duration-300 hover:border-bone hover:bg-bone/5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky'
 
   return (
     <section
@@ -330,7 +330,7 @@ function CoreValues({ coreValues }: { coreValues: VM['coreValues'] }) {
           ref={rail}
           aria-label="The 12 core values"
           tabIndex={0}
-          className="no-scrollbar flex items-start snap-x snap-mandatory scroll-px-4 gap-0 overflow-x-auto px-4 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ember sm:scroll-px-8 sm:px-8 lg:scroll-px-[max(2rem,calc((100vw-88rem)/2+2rem))] lg:px-[max(2rem,calc((100vw-88rem)/2+2rem))]"
+          className="no-scrollbar flex items-start snap-x snap-mandatory scroll-px-4 gap-0 overflow-x-auto px-4 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky sm:scroll-px-8 sm:px-8 lg:scroll-px-[max(2rem,calc((100vw-88rem)/2+2rem))] lg:px-[max(2rem,calc((100vw-88rem)/2+2rem))]"
         >
           {coreValues.values.map((value, i) => (
             <li
@@ -339,7 +339,7 @@ function CoreValues({ coreValues }: { coreValues: VM['coreValues'] }) {
             >
               <span
                 aria-hidden="true"
-                className="font-shout text-[clamp(5rem,9vw,7.5rem)] leading-[0.8] font-black text-bone/10 tabular-nums transition-colors duration-500 group-hover:text-ember"
+                className="font-shout text-[clamp(5rem,9vw,7.5rem)] leading-[0.8] font-black text-bone/10 tabular-nums transition-colors duration-500 group-hover:text-sky"
               >
                 {pad(i + 1)}
               </span>
@@ -424,7 +424,7 @@ function Join({ membership }: { membership: VM['membership'] }) {
       className="relative isolate scroll-mt-20 overflow-hidden bg-river py-24 text-bone sm:py-32"
     >
       <div aria-hidden="true" className="grain absolute inset-0 -z-10" />
-      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] -z-10 blur-[70px] [background-image:radial-gradient(ellipse_35%_35%_at_85%_20%,rgb(242_118_28/0.22),transparent_70%),radial-gradient(ellipse_45%_45%_at_10%_90%,rgb(6_19_27/0.6),transparent_70%)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] -z-10 blur-[70px] [background-image:radial-gradient(ellipse_35%_35%_at_85%_20%,color-mix(in_srgb,var(--color-ember)_22%,transparent),transparent_70%),radial-gradient(ellipse_45%_45%_at_10%_90%,color-mix(in_srgb,var(--color-abyss)_60%,transparent),transparent_70%)]" />
       <div className={`${container} grid gap-16 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end lg:gap-20`}>
         <Reveal>
           <Eyebrow className="text-bone/85">Membership</Eyebrow>
@@ -457,7 +457,7 @@ function Join({ membership }: { membership: VM['membership'] }) {
               <p className="mt-1 text-[0.9rem] text-bone/80">{contact.roles[0]}</p>
               <a
                 href={`mailto:${membership.contactEmail}`}
-                className="mt-3 inline-block text-[0.95rem] font-semibold break-all text-bone underline decoration-bone/40 underline-offset-4 transition-colors hover:decoration-ember focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ember"
+                className="mt-3 inline-block text-[0.95rem] font-semibold break-all text-bone underline decoration-bone/40 underline-offset-4 transition-colors hover:decoration-sky focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky"
               >
                 {membership.contactEmail}
               </a>

@@ -35,12 +35,12 @@ import { container } from '../../../shared/styles/tokens'
    see runtime-chosen gradients). Each rests under the River duotone and
    warms on bloom, so even a panel with no photo visibly changes colour. */
 const grounds = [
-  'linear-gradient(165deg, #0e5f68 0%, #06131b 78%)',
-  'linear-gradient(200deg, #f2761c 0%, #0b2a33 55%, #06131b 100%)',
-  'linear-gradient(170deg, #7fc2b8 0%, #0e5f68 45%, #06131b 100%)',
-  'linear-gradient(190deg, #cdb892 0%, #0b2a33 60%, #06131b 100%)',
-  'linear-gradient(160deg, #0b2a33 0%, #0e5f68 50%, #06131b 100%)',
-  'linear-gradient(205deg, #a3420b 0%, #0b2a33 55%, #06131b 100%)',
+  'linear-gradient(165deg, var(--color-river) 0%, var(--color-abyss) 78%)',
+  'linear-gradient(200deg, var(--color-ember) 0%, var(--color-deep) 55%, var(--color-abyss) 100%)',
+  'linear-gradient(170deg, var(--color-shallows) 0%, var(--color-river) 45%, var(--color-abyss) 100%)',
+  'linear-gradient(190deg, var(--color-sand) 0%, var(--color-deep) 60%, var(--color-abyss) 100%)',
+  'linear-gradient(160deg, var(--color-deep) 0%, var(--color-river) 50%, var(--color-abyss) 100%)',
+  'linear-gradient(205deg, var(--color-ember-ink) 0%, var(--color-deep) 55%, var(--color-abyss) 100%)',
 ]
 
 export function LifeSeasonsSection() {
@@ -88,7 +88,7 @@ export function LifeSeasonsSection() {
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-[15%] -z-10 blur-[70px] [background-image:radial-gradient(ellipse_40%_35%_at_80%_20%,rgb(14_95_104/0.45),transparent_70%)]"
+        className="pointer-events-none absolute -inset-[15%] -z-10 blur-[70px] [background-image:radial-gradient(ellipse_40%_35%_at_80%_20%,color-mix(in_srgb,var(--color-river)_45%,transparent),transparent_70%)]"
       />
 
       <div className={`${container} flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between`}>
@@ -230,7 +230,7 @@ function RailButton({ dir, onClick }: { dir: 1 | -1; onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label={dir === 1 ? 'Next life stages' : 'Previous life stages'}
-      className="flex h-12 w-12 items-center justify-center rounded-full border border-bone/30 text-bone transition-colors duration-[400ms] ease-current hover:border-ember hover:text-ember"
+      className="flex h-12 w-12 items-center justify-center rounded-full border border-bone/30 text-bone transition-colors duration-[400ms] ease-current hover:border-sky hover:text-sky"
     >
       <svg
         aria-hidden="true"

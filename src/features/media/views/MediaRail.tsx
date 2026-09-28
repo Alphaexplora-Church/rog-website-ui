@@ -107,7 +107,7 @@ export function MediaRail({
           <Link
             to={seeAll}
             viewTransition
-            className="group/see mb-0.5 inline-flex flex-none items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] sm:mb-1 sm:gap-1.5 sm:text-[0.78rem] sm:tracking-[0.16em] text-bone/60 transition-colors duration-300 hover:text-ember focus-visible:text-ember"
+            className="group/see mb-0.5 inline-flex flex-none items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] sm:mb-1 sm:gap-1.5 sm:text-[0.78rem] sm:tracking-[0.16em] text-bone/60 transition-colors duration-300 hover:text-sky focus-visible:text-sky"
           >
             See all
             <span className="sr-only"> — {title}</span>
@@ -208,7 +208,7 @@ export function MessageCard({
             </span>
           )}
         </div>
-        <p className="mt-2 line-clamp-2 text-[0.8rem] font-semibold leading-snug transition-colors sm:mt-3 sm:font-shout sm:text-[1.35rem] sm:font-extrabold sm:uppercase sm:leading-[0.95] duration-300 group-hover:text-ember group-focus-visible:text-ember">
+        <p className="mt-2 line-clamp-2 text-[0.8rem] font-semibold leading-snug transition-colors sm:mt-3 sm:font-shout sm:text-[1.35rem] sm:font-extrabold sm:uppercase sm:leading-[0.95] duration-300 group-hover:text-sky group-focus-visible:text-sky">
           {s.title}
         </p>
         <MetaLine s={s} className="mt-0.5 truncate text-[0.66rem] text-sand sm:mt-1.5 sm:text-[0.8rem] sm:whitespace-normal" />
@@ -246,7 +246,7 @@ export function SeriesPoster({ card, className = '' }: { card: SeriesCard; class
           to={`/media/series/${card.slug}`}
           viewTransition
           onClick={(e) => markCover(e, card.slug)}
-          className="group relative block outline-none transition-transform duration-[500ms] ease-current hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2 focus-visible:ring-offset-abyss motion-reduce:transition-none"
+          className="group relative block outline-none transition-transform duration-[500ms] ease-current hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-sky focus-visible:ring-offset-2 focus-visible:ring-offset-abyss motion-reduce:transition-none"
         >
           {body}
         </Link>

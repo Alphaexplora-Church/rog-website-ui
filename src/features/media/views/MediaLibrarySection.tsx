@@ -222,7 +222,7 @@ export function MediaLibrarySection() {
           <button
             type="button"
             onClick={vm.clearAll}
-            className="ml-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-bone/60 underline-offset-4 transition-colors hover:text-ember hover:underline"
+            className="ml-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-bone/60 underline-offset-4 transition-colors hover:text-sky hover:underline"
           >
             Clear all
           </button>

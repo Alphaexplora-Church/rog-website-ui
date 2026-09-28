@@ -73,7 +73,7 @@ export function PageHero({
         </div>
       ) : (
         <div aria-hidden="true" className="absolute inset-0 -z-10">
-          <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_40%_45%_at_20%_30%,rgb(14_95_104/0.7),transparent_70%),radial-gradient(ellipse_30%_30%_at_85%_80%,rgb(242_118_28/0.2),transparent_70%)]" />
+          <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_40%_45%_at_20%_30%,color-mix(in_srgb,var(--color-river)_70%,transparent),transparent_70%),radial-gradient(ellipse_30%_30%_at_85%_80%,color-mix(in_srgb,var(--color-ember)_20%,transparent),transparent_70%)]" />
           <WaveMark className="absolute -right-[8%] top-[12%] h-auto w-[70vw] max-w-[1100px] text-bone/[0.04]" strokeWidth={3} />
         </div>
       )}

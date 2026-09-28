@@ -65,7 +65,7 @@ export function ArrowGlyph({ className = 'h-4 w-4' }: { className?: string }) {
 export function CoverArt({ title }: { title?: string }) {
   return (
     <div aria-hidden="true" className="@container absolute inset-0 overflow-hidden bg-gradient-to-br from-river via-deep to-abyss">
-      <div className="absolute inset-0 [background-image:radial-gradient(ellipse_60%_55%_at_85%_100%,rgb(242_118_28/0.28),transparent_70%),radial-gradient(ellipse_50%_60%_at_0%_0%,rgb(127_194_184/0.22),transparent_70%)]" />
+      <div className="absolute inset-0 [background-image:radial-gradient(ellipse_60%_55%_at_85%_100%,color-mix(in_srgb,var(--color-ember)_28%,transparent),transparent_70%),radial-gradient(ellipse_50%_60%_at_0%_0%,color-mix(in_srgb,var(--color-shallows)_22%,transparent),transparent_70%)]" />
       <WaveMark className="absolute top-[58%] -right-[12%] h-auto w-[85%] -translate-y-1/2 text-bone/[0.16]" strokeWidth={4} />
       {title && (
         <span className="absolute inset-x-[7%] top-[9%] line-clamp-3 font-shout text-[clamp(0.9rem,15cqw,9rem)] font-extrabold uppercase leading-[0.84] text-bone/[0.2]">

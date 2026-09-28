@@ -19,7 +19,7 @@ export function UpcomingEventsSection() {
 
   return (
     <section data-plate="dark" aria-labelledby="upcoming-events-heading" className="relative overflow-hidden bg-abyss-2 py-24 text-bone sm:py-32">
-      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] blur-[80px] [background-image:radial-gradient(ellipse_35%_40%_at_100%_0%,rgb(242_118_28/0.14),transparent_70%),radial-gradient(ellipse_40%_40%_at_0%_100%,rgb(14_95_104/0.45),transparent_70%)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-[20%] blur-[80px] [background-image:radial-gradient(ellipse_35%_40%_at_100%_0%,color-mix(in_srgb,var(--color-ember)_14%,transparent),transparent_70%),radial-gradient(ellipse_40%_40%_at_0%_100%,color-mix(in_srgb,var(--color-river)_45%,transparent),transparent_70%)]" />
       <div className={`${container} relative`}>
         <div className="flex flex-wrap items-end justify-between gap-8">
           <SectionHead

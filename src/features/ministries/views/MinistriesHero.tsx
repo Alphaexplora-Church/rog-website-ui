@@ -31,7 +31,7 @@ export function MinistriesHero() {
             <li key={item.href}>
               <a
                 href={item.href}
-                className="group flex items-baseline gap-4 py-1 transition-colors duration-300 hover:text-ember"
+                className="group flex items-baseline gap-4 py-1 transition-colors duration-300 hover:text-sky"
               >
                 <span className="w-6 font-shout text-sm tabular-nums text-bone/45">
                   {String(i + 1).padStart(2, '0')}

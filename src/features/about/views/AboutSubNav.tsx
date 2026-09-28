@@ -90,7 +90,7 @@ export function AboutSubNav() {
                   className={`shrink-0 rounded-full border px-4 py-1.5 text-[0.82rem] font-semibold whitespace-nowrap transition-colors duration-[400ms] ease-current ${
                     on
                       ? 'border-bone bg-bone text-abyss'
-                      : 'border-transparent text-bone/75 hover:border-ember/60 hover:text-bone'
+                      : 'border-transparent text-bone/75 hover:border-sky/60 hover:text-bone'
                   }`}
                 >
                   {l.label}
