@@ -20,6 +20,7 @@ const PlanAVisit = lazy(() => import('./features/plan-a-visit/views/PlanAVisit')
 const WatchLive = lazy(() => import('./features/watch-live/views/WatchLive'))
 const Give = lazy(() => import('./features/give/views/Give'))
 const Discipleship = lazy(() => import('./features/discipleship/views/Discipleship'))
+const Rbsi = lazy(() => import('./features/rbsi/views/Rbsi'))
 const Activate12 = lazy(() => import('./features/activate/views/Activate12'))
 const Activate11 = lazy(() => import('./features/activate/views/ActivatePast').then((m) => ({ default: m.Activate11 })))
 const Activate10 = lazy(() => import('./features/activate/views/ActivatePast').then((m) => ({ default: m.Activate10 })))
@@ -113,6 +114,9 @@ const Activate10 = lazy(() => import('./features/activate/views/ActivatePast').t
  * longer carries an inline font stack. `/discipleship` — already in the
  * Ministries dropdown — gets its own page (the 5-stage process Jude sent).
  *
+ * RBSI ROUTE, 2026-09-28. `/about/rbsi` — River Biblical Supernatural
+ * Institute, already in the About dropdown (features/rbsi/views/Rbsi.tsx).
+ *
  * ACTIVATE ROUTES, 2026-09-28. `/activate12` (Activate 12: Consuming
  * Fire) plus one landing page per past conference, nested under it the way
  * the old site linked them — see features/activate/views/.
@@ -143,6 +147,7 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/about/who-we-are" element={<About />} />
                 <Route path="/about/him-ph" element={<HimPhilippines />} />
+                <Route path="/about/rbsi" element={<Rbsi />} />
                 <Route path="/ministries" element={<Ministries />} />
                 <Route path="/ministries/body-of-christ" element={<Ministries />} />
                 <Route path="/media" element={<Media />} />

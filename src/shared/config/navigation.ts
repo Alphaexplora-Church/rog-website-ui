@@ -11,11 +11,11 @@
  * something that tells a first-time visitor where they are going, and it is
  * the single biggest information-scent win over the old riverofgod.ph nav.
  *
- * ⚠ BLURBS FOR H.I.M. PH, RBSI AND BODY OF CHRIST ARE PLACEHOLDER (Activate12's
- * was confirmed 2026-09-28 from ROG's own Activate pages).
+ * ⚠ BLURBS FOR H.I.M. PH AND BODY OF CHRIST ARE PLACEHOLDER (Activate12's and
+ * RBSI's were confirmed 2026-09-28 from ROG's own pages).
  * I have not confirmed what those acronyms expand to or what those ministries
  * actually do — I am not going to invent it and have it read back to ROG at
- * the pitch. Replace the three marked lines before anyone outside sees this.
+ * the pitch. Replace the two marked lines before anyone outside sees this.
  */
 
 export interface NavChild {
@@ -51,7 +51,7 @@ export const primaryNav: NavItem[] = [
       {
         to: '/about/rbsi',
         label: 'RBSI',
-        blurb: 'Training and equipping', // ⚠ PLACEHOLDER — confirm with ROG
+        blurb: 'A Bible school within reach',
       },
     ],
   },
