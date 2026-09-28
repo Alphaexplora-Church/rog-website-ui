@@ -50,7 +50,7 @@
   --ease-tide: cubic-bezier(0.7, 0, 0.2, 1);
 
   --animate-marquee: marquee 48s linear infinite;
-  --animate-boil: boil 0.9s steps(6) infinite;
+  --animate-boil: boil 90s steps(540) infinite;
   --animate-drift: drift 38s ease-in-out infinite alternate;
   --animate-wave-draw: wave-draw 1.6s var(--ease-tide) both;
   --animate-live: live 1.8s ease-out infinite;
@@ -60,19 +60,21 @@
   }
   @keyframes boil {
     0% { transform: translate(0, 0); }
-    20% { transform: translate(-3%, 2%); }
-    40% { transform: translate(2%, -3%); }
-    60% { transform: translate(-2%, -1%); }
-    80% { transform: translate(3%, 3%); }
+    20% { transform: translate(-0.6%, 0.4%); }
+    40% { transform: translate(0.4%, -0.6%); }
+    60% { transform: translate(-0.4%, -0.2%); }
+    80% { transform: translate(0.6%, 0.6%); }
     100% { transform: translate(0, 0); }
   }
   @keyframes drift {
     from { transform: scale(1.08) translate3d(-1.5%, 0, 0); }
     to { transform: scale(1.14) translate3d(1.5%, -2%, 0); }
   }
+  /* WaveMark is the logo artwork now (a mask, not SVG strokes), so it
+     "draws" by wiping in left → right. */
   @keyframes wave-draw {
-    from { stroke-dashoffset: 1; }
-    to { stroke-dashoffset: 0; }
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0 0 0); }
   }
   @keyframes live {
     0% { transform: scale(1); opacity: 0.7; }

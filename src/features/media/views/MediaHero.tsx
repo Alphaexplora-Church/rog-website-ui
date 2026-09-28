@@ -10,6 +10,14 @@ import { Cover, PlayGlyph } from './MediaParts'
 /**
  * Media, section 1 — the FEATURED latest message owns the first screen.
  *
+ * PHONES: hidden (max-sm) — the Netflix-app layout puts the category chips
+ * first and the billboard as a card under them (MediaLibrarySection's
+ * MobileBillboard). 2026-09-27.
+ *
+ * NETFLIX BILLBOARD, 2026-09-27: the bottom padding is deliberately deep —
+ * the library's first row rides up over this hero's fade (MediaLibrary-
+ * Section's negative margin), the way Netflix's rows overlap its billboard.
+ *
  * REVAMP 2026-09-25 (ROG 11 §6): full-bleed, full colour, a slow drift on
  * the thumbnail under a River scrim + boiling grain, the title as a giant
  * shout, and a big round play affordance. Built like PageHero but around the
@@ -61,7 +69,7 @@ export function MediaHero() {
       data-plate="dark"
       aria-labelledby="media-hero-heading"
       onClickCapture={namePosterMorph}
-      className="relative isolate flex min-h-[92svh] items-end overflow-hidden bg-abyss text-bone"
+      className="relative isolate flex min-h-[88svh] items-end overflow-hidden bg-abyss text-bone max-sm:hidden"
     >
       <Cover
         src={sermonThumbnail(sermon)}
@@ -73,7 +81,7 @@ export function MediaHero() {
       />
       <div aria-hidden="true" className="pointer-events-none absolute -inset-[10%] -z-10 animate-boil bg-[url('/assets/rog/grain.png')] bg-[length:180px] opacity-[0.14] mix-blend-overlay motion-reduce:animate-none" />
 
-      <div className={`${container} relative pt-36 pb-14 sm:pb-20`}>
+      <div className={`${container} relative pt-36 pb-48 sm:pb-60`}>
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
             <div className={rise()}>
@@ -163,7 +171,7 @@ function HeroWithoutMessage({ state }: { state: 'loading' | 'error' | 'empty' })
       data-plate="dark"
       aria-labelledby="media-hero-heading"
       aria-busy={state === 'loading'}
-      className="relative isolate flex min-h-[92svh] items-end overflow-hidden bg-abyss text-bone"
+      className="relative isolate flex min-h-[88svh] items-end overflow-hidden bg-abyss text-bone max-sm:hidden"
     >
       <div aria-hidden="true" className="absolute inset-0 -z-10">
         <div className="absolute -inset-[20%] blur-[70px] [background-image:radial-gradient(ellipse_40%_45%_at_20%_30%,rgb(14_95_104/0.7),transparent_70%),radial-gradient(ellipse_30%_30%_at_85%_80%,rgb(242_118_28/0.2),transparent_70%)]" />
@@ -173,7 +181,7 @@ function HeroWithoutMessage({ state }: { state: 'loading' | 'error' | 'empty' })
           strokeWidth={3}
         />
       </div>
-      <div className={`${container} pt-36 pb-16 sm:pb-24`}>
+      <div className={`${container} pt-36 pb-48 sm:pb-60`}>
         <Eyebrow>Media</Eyebrow>
         <h1
           id="media-hero-heading"

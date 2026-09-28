@@ -111,8 +111,18 @@ function collectTerms(refs: (StrapiRef | null | undefined)[]): { slug: string; t
  *  uses this key, so the Media page, Home and Watch Live share one request. */
 export const MEDIA_LIBRARY_QUERY_KEY = ['media-library'] as const
 
+/* Optional DUMMY library (mediaDummy.ts — hundreds of fake uploads, for
+   seeing the Media page at scale). Loaded through import.meta.glob so that
+   deleting mediaDummy.ts is all it takes to remove it: the glob then matches
+   nothing and this falls through to the CMS. Only bundled when present. */
+const dummyModule = import.meta.glob<{ dummyLibrary: MediaLibrary }>('./mediaDummy.ts')
+
 export async function fetchMediaLibrary(): Promise<MediaLibrary> {
   if (import.meta.env.VITE_USE_MOCKS === 'true') return sampleLibrary
+  if (import.meta.env.VITE_USE_DUMMY_MEDIA === 'true') {
+    const load = dummyModule['./mediaDummy.ts']
+    if (load) return (await load()).dummyLibrary
+  }
 
   const [rawSermons, rawSeries] = await Promise.all([
     strapiGetAll<StrapiSermon>('sermons', sermonQuery()),

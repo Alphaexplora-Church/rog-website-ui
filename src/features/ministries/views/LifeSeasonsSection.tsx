@@ -1,5 +1,6 @@
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { cardAgeLabel, lifeStageCards, type LifeStageCard } from '../../../shared/data/lifeStages'
+import type { AgeMinistry } from '../../../shared/models/types/ministry'
+import { useMinistriesViewModel } from '../viewModels/useMinistriesViewModel'
 import { SectionHead, WaveMark } from '../../../shared/components/ui/River'
 import { useCenterBloom } from '../../../shared/hooks/useCenterBloom'
 import { container } from '../../../shared/styles/tokens'
@@ -16,7 +17,9 @@ import { container } from '../../../shared/styles/tokens'
  * prev/next buttons — so it replaces the old page/STEP transform carousel
  * without hiding anything behind pagination.
  *
- * DATA is single-sourced in `shared/data/lifeStages.ts` (2026-09-23): six
+ * DATA (2026-09-28): from rog-cms (Manage Contents → Ministries, type
+ * "Ages of the River") through useMinistriesViewModel, bundled copy as the
+ * fallback. Before that it was single-sourced in `shared/data/lifeStages.ts`: six
  * cards over seven canonical stages, and `cardAgeLabel` derives each age
  * line from the stages a card covers (riverofgod.ph's bands win over the
  * Figma board's — see that file). The cards' old `card` / `ageColor` /
@@ -41,6 +44,7 @@ const grounds = [
 ]
 
 export function LifeSeasonsSection() {
+  const { ages } = useMinistriesViewModel()
   const rail = useRef<HTMLUListElement>(null)
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null)
 
@@ -124,7 +128,7 @@ export function LifeSeasonsSection() {
         }}
         className="no-scrollbar mt-14 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 select-none focus-visible:outline-offset-[-2px] sm:scroll-px-8 sm:px-8 lg:cursor-grab lg:active:cursor-grabbing min-[88rem]:scroll-px-[calc((100vw_-_88rem)/2_+_2rem)] min-[88rem]:px-[calc((100vw_-_88rem)/2_+_2rem)]"
       >
-        {lifeStageCards.map((card, i) => (
+        {ages.map((card, i) => (
           <li key={card.slug} className="flex-none snap-start">
             <AgePanel card={card} index={i} />
           </li>
@@ -136,7 +140,7 @@ export function LifeSeasonsSection() {
       <div className={`${container} mt-8 flex items-center justify-between gap-6`}>
         <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-bone/50 uppercase">
           <span className="lg:hidden">Swipe</span>
-          <span className="hidden lg:inline">Drag or scroll</span> · {lifeStageCards.length} stages
+          <span className="hidden lg:inline">Drag or scroll</span> · {ages.length} {ages.length === 1 ? 'stage' : 'stages'}
         </p>
         <div className="flex gap-3 lg:hidden">
           <RailButton dir={-1} onClick={() => step(-1)} />
@@ -147,10 +151,10 @@ export function LifeSeasonsSection() {
   )
 }
 
-function AgePanel({ card, index }: { card: LifeStageCard; index: number }) {
+function AgePanel({ card, index }: { card: AgeMinistry; index: number }) {
   const bloom = useCenterBloom<HTMLDivElement>()
   const [failed, setFailed] = useState(false)
-  const label = cardAgeLabel(card)
+  const label = card.ageLabel
   const isAges = label.startsWith('Ages ')
   const numeral = isAges ? label.slice(5) : label
 
@@ -166,7 +170,7 @@ function AgePanel({ card, index }: { card: LifeStageCard; index: number }) {
         className="duotone absolute inset-0 -z-10 overflow-hidden"
         style={{ background: grounds[index % grounds.length] }}
       >
-        {!failed && (
+        {!failed && card.photo && (
           <img
             src={card.photo}
             alt=""

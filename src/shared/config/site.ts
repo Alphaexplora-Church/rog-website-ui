@@ -69,6 +69,18 @@ export const site = {
      * `.nav-mark__img` in index.css. No mix-blend-mode trick needed here.
      */
     mark: '/assets/logo2.webp',
+
+    /**
+     * NAVBAR LOCKUP (2026-09-28, Jude: "yung logo sa navbar tanggalin mo na
+     * tas palitan mo neto … logo_tbg.png"). A trimmed, alpha-only copy of
+     * public/assets/logo_tbg.png (229 KB of mostly empty canvas → 9 KB; the
+     * original is untouched). Drawn as a mask in the bar's own ink colour.
+     * `mark` above is no longer used by the Navbar or Footer.
+     */
+    nav: '/assets/logo_tbg-nav.webp',
+
+    /** The three-wave mark used site-wide by <WaveMark> (from logo1.png). */
+    wave: '/assets/logo1-mark.webp',
   },
 
   /** The line under the logo in the hero. Their own, not ours. */

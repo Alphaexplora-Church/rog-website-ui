@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Reveal, SectionHead, WaveMark } from '../../../shared/components/ui/River'
 import { container } from '../../../shared/styles/tokens'
+import type { BodyMinistry } from '../../../shared/models/types/ministry'
+import { useMinistriesViewModel } from '../viewModels/useMinistriesViewModel'
 
 /**
  * Ministries, section 4 — "Body of Christ Ministries". REVAMP 2026-09-25.
@@ -10,6 +12,12 @@ import { container } from '../../../shared/styles/tokens'
  * Worship Mentoring, Activate, Women Arise) — copy verbatim from the Figma
  * source. Not the #SavedToServe serving teams above (those recruit
  * volunteers inside ROG).
+ *
+ * DATA (2026-09-28): from rog-cms (Manage Contents → Ministries, type
+ * "Body of Christ Ministries": Title → title, Subtitle → teaser,
+ * Description → body, Cover Photo → photo) through useMinistriesViewModel;
+ * the bundled list moved to shared/data/bodyOfChristMinistries.ts and is
+ * the fallback.
  *
  * `navigation.ts` lists `/ministries/body-of-christ` as its own nav child;
  * that route renders the Ministries page and scrolls to the `id` below
@@ -24,60 +32,8 @@ import { container } from '../../../shared/styles/tokens'
  * dead and has been swapped. Every thumbnail has a textured ground, so a
  * failed load never shows an empty frame.
  */
-interface BodyMinistry {
-  title: string
-  teaser: string
-  body: string
-  photo: string
-}
-
-const ministries: BodyMinistry[] = [
-  {
-    title: 'PCEC Transformation & Revival',
-    teaser: 'Events, activities & testimonies',
-    body: 'Links out to a Facebook page for events, activities, and testimonies from the Commission.',
-    // Was photo-1760367121593-97b9a02bbd65 — that URL returns nothing.
-    photo:
-      'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Supernatural Ministry / Prophetic Workshops',
-    teaser: 'Founded 2005 by Pastor Rachel Sanchez',
-    body: 'Has its own Vision and Mission statement, with a supporting scripture: Ephesians 2:19–20.',
-    photo:
-      'https://images.unsplash.com/photo-1604882737206-8a000c03d8fe?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Soaking in the River',
-    teaser: 'Monthly gathering for the Body of Christ',
-    body: 'Focused on prayer for the nation and encountering the Holy Spirit.',
-    photo:
-      'https://images.unsplash.com/photo-1622598453695-4fbaf151aadc?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Worship Mentoring',
-    teaser: 'Running since 2014',
-    body: 'Equips worship teams — prophetic worship, worship leading, skills training, and song-writing.',
-    photo:
-      'https://images.unsplash.com/photo-1740650511388-f693ce80016c?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Activate',
-    teaser: 'Annual conference — parent brand of Activate12',
-    body: 'Four stated goals around the Holy Spirit, the supernatural, and revival. This year’s conference lives at Activate12.',
-    photo:
-      'https://images.unsplash.com/photo-1600019246742-3b66977db044?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    title: 'Women Arise',
-    teaser: 'Gathering & empowering women',
-    body: 'Has its own Vision and Mission statement, focused on gathering and empowering women.',
-    photo:
-      'https://images.unsplash.com/photo-1609234656388-0ff363383899?auto=format&fit=crop&w=600&q=80',
-  },
-]
-
 export function BodyOfChristMinistriesSection() {
+  const { body: ministries } = useMinistriesViewModel()
   return (
     <section
       id="body-of-christ"
@@ -108,7 +64,7 @@ export function BodyOfChristMinistriesSection() {
           {ministries.map((m, i) => (
             <Reveal
               as="li"
-              key={m.title}
+              key={m.slug}
               delay={(i % 2) * 90}
               className="border-b border-abyss/15"
             >
@@ -151,7 +107,7 @@ function Entry({ ministry, index }: { ministry: BodyMinistry; index: number }) {
         className="duotone relative aspect-[4/5] w-full self-start overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #0e5f68, #06131b 85%)' }}
       >
-        {!failed && (
+        {!failed && ministry.photo && (
           <img
             src={ministry.photo}
             alt=""

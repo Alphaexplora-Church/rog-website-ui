@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ministries, type Ministry } from '../../../shared/data/ministries'
-import { person } from '../../../shared/data/people'
+import type { ServiceMinistry as Ministry } from '../../../shared/models/types/ministry'
+import { useMinistriesViewModel } from '../viewModels/useMinistriesViewModel'
 import { Reveal, SectionHead } from '../../../shared/components/ui/River'
 import { container } from '../../../shared/styles/tokens'
 
@@ -11,9 +11,10 @@ import { container } from '../../../shared/styles/tokens'
  *
  * Real copy Jude pasted from riverofgod.ph's recruitment page — internal
  * serving teams, each with a named contact and phone number. Distinct from
- * Body of Christ Ministries below (cross-church programmes). Data is
- * single-sourced in `shared/data/ministries.ts`; the contact is a slug into
- * `people.ts` (2026-09-23). Every description, tagline, hashtag, contact
+ * Body of Christ Ministries below (cross-church programmes). Data comes
+ * from rog-cms (Manage Contents → Ministries, type "Service Ministries",
+ * 2026-09-28) through useMinistriesViewModel, with the bundled copy
+ * (`shared/data/ministries.ts` + `people.ts`) as the fallback. Every description, tagline, hashtag, contact
  * and number is unchanged.
  *
  * Shape: an EDITORIAL INDEX on the river band, not a card grid. Each
@@ -31,6 +32,7 @@ import { container } from '../../../shared/styles/tokens'
  * empty box.
  */
 export function ServiceMinistriesSection() {
+  const { service: ministries } = useMinistriesViewModel()
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const open = openIndex === null ? null : ministries[openIndex]
   const returnFocus = useRef<HTMLElement | null>(null)
@@ -75,7 +77,7 @@ export function ServiceMinistriesSection() {
                 ministries
               </>
             }
-            lead="Eight teams, always in need of committed volunteers."
+            lead={`${teamCount(ministries.length)}, always in need of committed volunteers.`}
           />
           <p className="max-w-[34ch] border-l-2 border-bone/40 pl-5 text-[0.95rem] leading-relaxed text-bone/85">
             Being under discipleship at ROG is a requirement to join any of them.
@@ -103,6 +105,14 @@ export function ServiceMinistriesSection() {
       {open && createPortal(<MinistryDialog ministry={open} onClose={() => setOpenIndex(null)} />, document.body)}
     </section>
   )
+}
+
+const NUMBER_WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve']
+
+/** "Eight teams" — the count now follows the CMS instead of being typed in. */
+function teamCount(n: number): string {
+  const word = NUMBER_WORDS[n] ?? String(n)
+  return `${word} ${n === 1 ? 'team' : 'teams'}`
 }
 
 function MinistryRow({
@@ -149,7 +159,7 @@ function MinistryRow({
           className="relative hidden h-20 w-28 flex-none overflow-hidden opacity-0 transition-[opacity,transform] duration-[600ms] ease-current group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none lg:block lg:-translate-x-3"
           style={{ background: `linear-gradient(150deg, ${light}, ${deep} 60%, #06131b)` }}
         >
-          <img
+          {ministry.image && <img
             src={ministry.image}
             alt=""
             loading="lazy"
@@ -157,7 +167,7 @@ function MinistryRow({
               e.currentTarget.style.display = 'none'
             }}
             className="absolute inset-0 h-full w-full object-cover"
-          />
+          />}
           <span className="grain absolute inset-0" />
         </span>
         <span className="font-whisper text-[1.2rem] italic leading-snug text-bone/90">{ministry.blurb}</span>
@@ -200,7 +210,6 @@ function MinistryDialog({ ministry, onClose }: { ministry: Ministry; onClose: ()
   const [imgFailed, setImgFailed] = useState(false)
   const closeRef = useRef<HTMLButtonElement>(null)
   const [deep, light] = ministry.tint
-  const contact = person(ministry.contact)
 
   useEffect(() => {
     closeRef.current?.focus()
@@ -235,7 +244,7 @@ function MinistryDialog({ ministry, onClose }: { ministry: Ministry; onClose: ()
           className="relative h-40 w-full overflow-hidden sm:h-48"
           style={{ background: `linear-gradient(150deg, ${light}, ${deep} 55%, #06131b)` }}
         >
-          {!imgFailed && (
+          {!imgFailed && ministry.image && (
             <img
               src={ministry.image}
               alt=""
@@ -268,16 +277,16 @@ function MinistryDialog({ ministry, onClose }: { ministry: Ministry; onClose: ()
 
           <div className="mt-8 border-t border-bone/12 pt-6">
             <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-shallows uppercase">To join, contact</p>
-            <p className="mt-2 font-shout text-2xl font-bold uppercase">{contact.name}</p>
-            {contact.phone && (
+            <p className="mt-2 font-shout text-2xl font-bold uppercase">{ministry.contactName}</p>
+            {ministry.contactPhone && (
               <a
-                href={`tel:${contact.phone}`}
+                href={`tel:${ministry.contactPhone.replace(/[^\d+]/g, '')}`}
                 className="mt-2 inline-flex min-h-11 items-center gap-2 text-[0.95rem] font-semibold text-ember underline-offset-4 hover:underline"
               >
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 5c0 8.284 6.716 15 15 15a2 2 0 002-2v-2a1 1 0 00-.76-.97l-3.6-.9a1 1 0 00-1 .27l-1.1 1.1a12 12 0 01-5.44-5.44l1.1-1.1a1 1 0 00.27-1l-.9-3.6A1 1 0 007.6 3H5.6A2 2 0 003 5z" />
                 </svg>
-                {contact.phone}
+                {ministry.contactPhone}
               </a>
             )}
           </div>

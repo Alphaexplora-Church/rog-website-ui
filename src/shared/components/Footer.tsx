@@ -47,7 +47,7 @@ export function Footer() {
         <div className="grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
           <div>
             <Link to="/" className="inline-flex items-center gap-3" aria-label={`${site.name} — home`}>
-              <img src={site.logo.mark} alt="" className="h-6 w-auto invert" />
+              <WaveMark className="h-6 w-24 text-bone" />
             </Link>
             <p className="mt-5 max-w-[30ch] font-whisper text-lg italic text-bone/80">{site.motto}</p>
             <p className="mt-6 max-w-[34ch] text-sm leading-relaxed text-bone/60">
@@ -66,7 +66,7 @@ export function Footer() {
                 <path d="M13.5 21v-7.6h2.55l.38-2.96h-2.93v-1.9c0-.86.24-1.44 1.47-1.44h1.57V4.86c-.27-.04-1.2-.12-2.28-.12-2.26 0-3.8 1.38-3.8 3.9v2.18H7.9v2.96h2.56V21h3.04Z" />
               </Social>
               <Social href={site.social.instagram} label="River of God on Instagram">
-                <path d="M12 7.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4Zm0 7.7a3 3 0 1 1 0-6 3 3 0 0 1 0 6Zm6-7.9a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0ZM21 8.1c-.1-1.5-.4-2.8-1.5-3.9S17.1 2.8 15.6 2.7C14.1 2.6 9.9 2.6 8.4 2.7c-1.5.1-2.8.4-3.9 1.5S3.1 6.6 3 8.1c-.1 1.5-.1 5.7 0 7.2.1 1.5.4 2.8 1.5 3.9s2.4 1.4 3.9 1.5c1.5.1 5.7.1 7.2 0 1.5-.1 2.8-.4 3.9-1.5s1.4-2.4 1.5-3.9c.1-1.5.1-5.7 0-7.2Z" />
+                <path fillRule="evenodd" d="M7.5 2.5h9a5 5 0 0 1 5 5v9a5 5 0 0 1-5 5h-9a5 5 0 0 1-5-5v-9a5 5 0 0 1 5-5Zm0 1.8a3.2 3.2 0 0 0-3.2 3.2v9a3.2 3.2 0 0 0 3.2 3.2h9a3.2 3.2 0 0 0 3.2-3.2v-9a3.2 3.2 0 0 0-3.2-3.2h-9ZM12 7.4a4.6 4.6 0 1 1 0 9.2 4.6 4.6 0 0 1 0-9.2Zm0 1.8a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Zm5.3-3.6a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z" />
               </Social>
               <Social href={site.social.youtube} label="River of God on YouTube">
                 <path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8ZM10 15V9l5.2 3L10 15Z" />
@@ -110,9 +110,24 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col gap-4 border-t border-bone/12 py-8 text-sm text-bone/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {year} {site.name}. All rights reserved.
-          </p>
+          <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
+            <p>
+              © {year} {site.name}. All rights reserved.
+            </p>
+            <span aria-hidden="true" className="hidden h-3 w-px bg-bone/20 sm:block" />
+            {/* Site credit (2026-09-28, Jude). */}
+            <p>
+              Powered by{' '}
+              <a
+                href="https://alphaexplora.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-bone/70 underline decoration-bone/25 underline-offset-4 transition-colors duration-[400ms] hover:text-ember hover:decoration-ember"
+              >
+                Alphaexplora Information Technology Services
+              </a>
+            </p>
+          </div>
           <div className="flex gap-6">
             <a href="https://www.riverofgod.ph/rogprivacycctvnotice" target="_blank" rel="noreferrer" className="transition-colors duration-[400ms] hover:text-bone">
               Privacy Policy
@@ -125,7 +140,9 @@ export function Footer() {
       </div>
 
       {/* Sign-off wordmark, cropped by the page edge */}
-      <div aria-hidden="true" className="relative select-none">
+      {/* pointer-events-none: the glyphs overflow their 0.8 line box upward and
+          were sitting on top of the copyright row, swallowing its clicks. */}
+      <div aria-hidden="true" className="pointer-events-none relative select-none">
         <WaveMark className="absolute left-1/2 top-0 h-auto w-24 -translate-x-1/2 -translate-y-1/2 text-ember" strokeWidth={6} />
         <p className="-mb-[0.22em] whitespace-nowrap text-center font-shout text-[21.5vw] leading-[0.8] font-black uppercase text-bone/[0.07]">
           River of God

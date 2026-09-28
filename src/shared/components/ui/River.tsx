@@ -8,7 +8,7 @@ import { eyebrow, revealBase, revealHidden, revealShown } from '../../styles/tok
  * from (ROG 11 §4–5). Kept in one file because they're tiny and always
  * travel together.
  *
- *  WaveMark     the three flowing strokes from ROG's logo; can draw itself in
+ *  WaveMark     ROG's three-wave logo artwork (logo1), in currentColor; can wipe in
  *  WaveRule     one full-width wave hairline — the section divider
  *  Pill         outlined, italic, lowercase label — ROG's own label style
  *  Eyebrow      wave glyph + small uppercase label
@@ -19,36 +19,33 @@ import { eyebrow, revealBase, revealHidden, revealShown } from '../../styles/tok
 
 /* ── WaveMark ─────────────────────────────────────────────────────────── */
 
+/**
+ * ROG's own three-wave mark (2026-09-28, Jude: "palitan mo lahat ng
+ * wavemark to … logo1.png"). Was a hand-drawn SVG approximation; now the
+ * real artwork, `public/assets/logo1-mark.webp` — a trimmed, alpha-only copy
+ * of `public/assets/logo1.png` (373 KB → 14 KB; the original is untouched).
+ *
+ * Used as a CSS MASK filled with `currentColor`, not as an <img>, so every
+ * existing call keeps its colour (ember in the hero, faint bone behind
+ * sections, abyss on light plates) from its `text-*` class. The file's shape
+ * is 4:1; `aspect-[4/1]` lets `h-auto w-[…]` callers size by width alone,
+ * and `mask-size: contain` keeps it undistorted when both are set.
+ * `draw` wipes it in left → right. `strokeWidth` is accepted and ignored
+ * (it belonged to the SVG), so no caller had to change.
+ */
 export function WaveMark({
   className = 'h-6 w-16',
   draw = false,
-  strokeWidth = 5,
 }: {
   className?: string
   draw?: boolean
   strokeWidth?: number
 }) {
-  const paths = [
-    'M4 14 C 20 4, 36 4, 52 14 S 84 24, 100 14 S 124 4, 136 10',
-    'M4 26 C 20 16, 36 16, 52 26 S 84 36, 100 26 S 124 16, 136 22',
-    'M4 38 C 20 28, 36 28, 52 38 S 84 48, 100 38 S 124 28, 136 34',
-  ]
   return (
-    <svg aria-hidden="true" viewBox="0 0 140 48" className={className} fill="none">
-      {paths.map((d, i) => (
-        <path
-          key={d}
-          d={d}
-          pathLength={1}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={draw ? 1 : undefined}
-          className={draw ? 'animate-wave-draw' : undefined}
-          style={draw ? { animationDelay: `${i * 140}ms` } : undefined}
-        />
-      ))}
-    </svg>
+    <span
+      aria-hidden="true"
+      className={`block aspect-[4/1] flex-none bg-current [-webkit-mask:url('/assets/logo1-mark.webp')_center/contain_no-repeat] [mask:url('/assets/logo1-mark.webp')_center/contain_no-repeat] ${draw ? 'animate-wave-draw' : ''} ${className}`}
+    />
   )
 }
 

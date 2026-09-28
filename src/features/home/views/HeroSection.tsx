@@ -15,7 +15,10 @@ import { container, heroRevealBase, heroRevealDelay1, heroRevealDelay2, heroReve
  *
  * Layers (all decorative, aria-hidden): the texture drifting slowly →
  * abyss scrims (left for the headline, bottom for the fold) → a boiling
- * grain plate at ~8fps. Reduced motion freezes all three.
+ * grain plate that still updates at 30fps (720 discrete positions) but
+ * over a 24s cycle, so the frame rate stays smooth while the drift itself
+ * reads as glacial (per Jude, 2026-09-25 — supersedes the ultra-speed
+ * pass). Reduced motion freezes all three.
  *
  * ⚠ `hero-river.webp` is an INTERIM composite cut from the text-free
  * bands of Sample1 (ROG 11 §10 Q6). Replace with the designer's

@@ -149,16 +149,19 @@ export function Navbar() {
             }
           }}
         >
-          <Link to="/" className="group flex h-7 shrink-0 items-center gap-3" aria-label={`${site.name} — home`}>
-            <img
-              src={site.logo.mark}
-              alt=""
-              className="h-full w-auto transition-opacity duration-[400ms] ease-current group-hover:opacity-70"
-              style={{ filter: sheetOpenTone === 'dark' ? 'invert(1)' : 'none' }}
+          {/* ROG's stacked "RIVER OF GOD" lockup (2026-09-28, Jude — replaces
+              the wave mark + typed name). A mask in currentColor, so it is
+              bone on dark plates and abyss on light ones with the rest of the
+              bar's ink; see site.logo.nav. */}
+          <Link to="/" className="group flex h-9 shrink-0 items-center sm:h-10" aria-label={`${site.name} — home`}>
+            <span
+              aria-hidden="true"
+              className="block aspect-[439/240] h-full bg-current transition-opacity duration-[400ms] ease-current group-hover:opacity-70"
+              style={{
+                WebkitMask: `url('${site.logo.nav}') center / contain no-repeat`,
+                mask: `url('${site.logo.nav}') center / contain no-repeat`,
+              }}
             />
-            <span className="hidden font-shout text-lg font-bold uppercase tracking-[0.06em] sm:block">
-              River of God
-            </span>
           </Link>
 
           <nav aria-label="Main" className="ml-auto hidden lg:block">
