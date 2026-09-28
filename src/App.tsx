@@ -20,6 +20,9 @@ const PlanAVisit = lazy(() => import('./features/plan-a-visit/views/PlanAVisit')
 const WatchLive = lazy(() => import('./features/watch-live/views/WatchLive'))
 const Give = lazy(() => import('./features/give/views/Give'))
 const Discipleship = lazy(() => import('./features/discipleship/views/Discipleship'))
+const Activate12 = lazy(() => import('./features/activate/views/Activate12'))
+const Activate11 = lazy(() => import('./features/activate/views/ActivatePast').then((m) => ({ default: m.Activate11 })))
+const Activate10 = lazy(() => import('./features/activate/views/ActivatePast').then((m) => ({ default: m.Activate10 })))
 
 /**
  * Minimal shell for the restart — Navbar plus the home route.
@@ -110,6 +113,10 @@ const Discipleship = lazy(() => import('./features/discipleship/views/Disciplesh
  * longer carries an inline font stack. `/discipleship` — already in the
  * Ministries dropdown — gets its own page (the 5-stage process Jude sent).
  *
+ * ACTIVATE ROUTES, 2026-09-28. `/activate12` (Activate 12: Consuming
+ * Fire) plus one landing page per past conference, nested under it the way
+ * the old site linked them — see features/activate/views/.
+ *
  * PAGE TRANSITIONS, 2026-09-24. `<PageTransition>` fades each new page in
  * over the root's black background instead of hard-cutting between routes;
  * see the component's own comment. The root is `bg-black` so that fade never
@@ -147,6 +154,9 @@ export default function App() {
                 <Route path="/watch-live" element={<WatchLive />} />
                 <Route path="/give" element={<Give />} />
                 <Route path="/discipleship" element={<Discipleship />} />
+                <Route path="/activate12" element={<Activate12 />} />
+                <Route path="/activate12/activate-11" element={<Activate11 />} />
+                <Route path="/activate12/activate-10" element={<Activate10 />} />
                 <Route path="*" element={<Stub />} />
               </Routes>
             </PageTransition>
