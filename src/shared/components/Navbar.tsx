@@ -164,7 +164,7 @@ export function Navbar() {
           <Link to="/" className="group flex h-9 shrink-0 items-center sm:h-10" aria-label={`${site.name} — home`}>
             <span
               aria-hidden="true"
-              className="block aspect-[439/240] h-full bg-current transition-opacity duration-[400ms] ease-current group-hover:opacity-70"
+              className="block aspect-[2039/779] h-full bg-current transition-opacity duration-[400ms] ease-current group-hover:opacity-70"
               style={{
                 WebkitMask: `url('${site.logo.nav}') center / contain no-repeat`,
                 mask: `url('${site.logo.nav}') center / contain no-repeat`,

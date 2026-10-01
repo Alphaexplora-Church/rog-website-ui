@@ -49,7 +49,7 @@ export const site = {
    * here — nothing else has to change.
    */
   logo: {
-    src: '/assets/logo_tbg.webp',
+    src: '/assets/1.png',
     /** The mark reads "River of God Ortigas", so the alt text says so. */
     alt: 'River of God Ortigas',
 
@@ -77,7 +77,8 @@ export const site = {
      * original is untouched). Drawn as a mask in the bar's own ink colour.
      * `mark` above is no longer used by the Navbar or Footer.
      */
-    nav: '/assets/logo_tbg-nav.webp',
+    nav: '/assets/rog/1-nav.webp',
+    /** Navbar lockup swapped to public/assets/rog/1.png (2026-10-01, Jude); trimmed alpha-only copy, 2039:779. */
 
     /** The three-wave mark used site-wide by <WaveMark> (from logo1.png). */
     wave: '/assets/logo1-mark.webp',
