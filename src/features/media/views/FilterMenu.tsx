@@ -54,6 +54,21 @@ export function FilterMenu({
     }
   }, [open])
 
+  /* Phones: freeze the page behind the sheet so a drag on the list (or the
+     scrim) can never scroll or tap the main page underneath. */
+  useEffect(() => {
+    if (!open || !window.matchMedia('(max-width: 639px)').matches) return
+    const html = document.documentElement
+    const prevBody = document.body.style.overflow
+    const prevHtml = html.style.overflow
+    document.body.style.overflow = 'hidden'
+    html.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevBody
+      html.style.overflow = prevHtml
+    }
+  }, [open])
+
   /* Focus the chosen option (or the first) when the menu opens. */
   useEffect(() => {
     if (!open) return
@@ -68,6 +83,10 @@ export function FilterMenu({
     const onDown = (e: PointerEvent) => {
       const t = e.target as Node
       if (menu.current?.contains(t) || btn.current?.contains(t)) return
+      /* The phone scrim closes on its own click (below). Closing here, on
+         pointerdown, unmounted the sheet mid-tap and the finishing click
+         landed on the page underneath. */
+      if ((t as HTMLElement).closest?.('[data-filter-scrim]')) return
       setOpen(false)
     }
     document.addEventListener('pointerdown', onDown)
@@ -151,7 +170,12 @@ export function FilterMenu({
         createPortal(
           <>
             {/* Phone scrim behind the sheet */}
-            <div aria-hidden="true" className="fixed inset-0 z-[70] bg-abyss/60 sm:hidden" />
+            <div
+              aria-hidden="true"
+              data-filter-scrim
+              onClick={() => close(false)}
+              className="fixed inset-0 z-[70] touch-none bg-abyss/60 sm:hidden"
+            />
             <div
               ref={menu}
               id={menuId}
@@ -159,7 +183,7 @@ export function FilterMenu({
               aria-label={`Filter by ${label.toLowerCase()}`}
               onKeyDown={onMenuKey}
               style={pos ? ({ '--menu-top': `${pos.top}px`, '--menu-left': `${pos.left}px` } as React.CSSProperties) : undefined}
-              className="grain fixed inset-x-3 bottom-3 z-[71] max-h-[70svh] overflow-y-auto overscroll-contain border border-bone/15 bg-abyss-2/95 p-2 text-bone shadow-[0_24px_60px_-20px_rgb(0_0_0/0.8)] backdrop-blur-xl sm:inset-x-auto sm:bottom-auto sm:top-[var(--menu-top)] sm:left-[var(--menu-left)] sm:max-h-[min(60vh,28rem)] sm:w-72"
+              className="grain fixed inset-x-3 bottom-3 z-[71] max-h-[70svh] touch-pan-y overflow-y-auto overscroll-contain border border-bone/15 bg-abyss-2/95 p-2 text-bone shadow-[0_24px_60px_-20px_rgb(0_0_0/0.8)] backdrop-blur-xl sm:inset-x-auto sm:bottom-auto sm:top-[var(--menu-top)] sm:left-[var(--menu-left)] sm:max-h-[min(60vh,28rem)] sm:w-72"
             >
               <p className="px-3 pt-2 pb-2 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-shallows">
                 {plural}
@@ -197,7 +221,7 @@ function MenuOption({
       role="menuitemradio"
       aria-checked={checked}
       onClick={onClick}
-      className={`flex w-full items-center justify-between gap-4 px-3 py-2.5 text-left text-[0.95rem] outline-none transition-colors duration-200 hover:bg-bone/[0.07] focus-visible:bg-bone/[0.1] ${
+      className={`flex min-h-12 w-full touch-manipulation items-center justify-between gap-4 px-3 py-2.5 text-left text-[0.95rem] outline-none [-webkit-tap-highlight-color:transparent] transition-colors duration-200 hover:bg-bone/[0.07] focus-visible:bg-bone/[0.1] ${
         checked ? 'text-ember' : 'text-bone/85'
       }`}
     >

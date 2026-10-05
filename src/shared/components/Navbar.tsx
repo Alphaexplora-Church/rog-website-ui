@@ -126,27 +126,21 @@ export function Navbar() {
 
   const sheetOpenTone = mobileOpen ? 'dark' : tone
   const ink = sheetOpenTone === 'dark' ? 'text-bone' : 'text-abyss'
+  // Glassmorphism (2026-10-01, Jude): frosted pane — translucent tint + heavy blur
+  // + saturation, bright hairline, no shadow and no fade strip above the bar.
   const glass =
     sheetOpenTone === 'dark'
       ? scrolled || mobileOpen
-        ? 'bg-abyss/80 border-bone/15'
-        : 'bg-abyss/35 border-bone/12'
-      : 'bg-bone/85 border-abyss/10'
+        ? 'bg-abyss/55 border-white/20'
+        : 'bg-white/[0.08] border-white/20'
+      : 'bg-white/50 border-white/70'
 
   return (
     <>
       <header className="pointer-events-none fixed inset-x-0 top-0 z-50 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5 sm:pt-5">
-        {/* Mobile top fade (2026-09-28, Jude): the bar floats, so on phones
-            scrolled content showed in the strip above it, under the status
-            bar (the footer's "6:00 PM", column headings…). Fade that strip
-            into the page ground once scrolled; desktop keeps the bare float. */}
-        <div
-          aria-hidden="true"
-          className={`pointer-events-none absolute inset-x-0 top-0 -bottom-6 bg-gradient-to-b transition-opacity duration-500 ease-current lg:hidden ${sheetOpenTone === 'dark' ? 'from-abyss via-abyss/85' : 'from-bone via-bone/85'} to-transparent ${scrolled && !mobileOpen ? 'opacity-100' : 'opacity-0'}`}
-        />
         <div
           ref={barRef}
-          className={`pointer-events-auto relative mx-auto flex max-w-[88rem] items-center gap-3 rounded-full border py-2 pr-2 pl-5 backdrop-blur-xl backdrop-saturate-150 transition-[background-color,border-color,color,transform] duration-500 ease-current sm:pl-6 ${ink} ${glass} ${scrolled ? 'scale-[0.99]' : ''}`}
+          className={`pointer-events-auto relative mx-auto flex max-w-[88rem] items-center gap-3 rounded-full border py-2 pr-2 pl-5 backdrop-blur-2xl backdrop-saturate-[1.8] transition-[background-color,border-color,color,transform] duration-500 ease-current sm:pl-6 ${ink} ${glass} ${scrolled ? 'scale-[0.99]' : ''}`}
           onMouseLeave={() => {
             if (finePointer()) scheduleClose()
           }}
