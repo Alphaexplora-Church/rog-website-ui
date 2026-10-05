@@ -2,38 +2,48 @@ import { useEffect, useState } from 'react'
 import { site } from '../../../shared/config/site'
 
 /**
- * Watch Live (`/watch-live`) — view model for the countdown to the next
- * service.
+ * Watch Live (`/watch-live`) — view model: which service is live right now,
+ * or, if none, which one is next and how long until it starts.
  *
- * LOGIC PORTED FROM JUDE'S REFERENCE, 2026-09-22 ("tapos yung watch live,
- * gayahin mo nalang tong logic na to ... pero same concept design nung
- * website natin"). He pasted a full component from a different church-site
- * build (its own "midnight-teal"/"harvest-orange" palette, framer-motion,
- * a fake two-language sermon archive) and asked for the LOGIC — the
- * next-service countdown — re-skinned to this site's
- * own dark/teal design system and real data. Framer-motion is NOT used here:
- * it's an unused dependency elsewhere in this codebase, which already has
- * its own CSS-transition reveal system (`useInView` + `revealBase/Shown` in
- * tokens.ts) — that's the "same concept design" this keeps.
+ * REWORKED 2026-10-05 (Jude: "kapag 10AM na, 1PM, 4PM ng Sunday, 6PM ng
+ * Wednesday, automatic lalabas yung link nung live"). The earlier version
+ * only counted down to Sunday services and called it "live" the instant the
+ * countdown hit zero — it never ended, skipped Wednesday, and a visitor who
+ * arrived mid-service saw a countdown to the NEXT one. Now:
  *
- * SUNDAYS ONLY, from `site.services` (the one already-confirmed source of
- * truth for service times — see ServiceTimesSection.tsx), not the
- * reference's hardcoded 10AM/2PM pair. ROG actually runs three Sunday
- * services (10AM/1PM Taglish, 4PM English), so the countdown advances
- * through all three in order before rolling to next Sunday's first service.
+ *  - Every service in `site.services` (Sunday x3 + Wednesday) is considered.
+ *  - A service is LIVE from `LIVE_OPENS_BEFORE_MIN` before its start until
+ *    its own window closes (Sunday 2h30m, midweek 2h after start).
+ *  - State is recomputed every second from the clock, so it flips to live
+ *    and back to "next service" by itself with no refresh.
+ *  - All times are Philippine time (Asia/Manila, UTC+8, no DST) no matter
+ *    where the visitor's device is.
  *
- * NOTIFY-ME REMOVED 2026-09-23 on Jude's call — the hero now ends on the
- * single Watch Live action, so the email state, its `FormEvent` import and
- * `submitNotify` came out with it rather than sitting here unused. If an
- * email capture returns it belongs on the `signup` Strapi type (Doc 2
- * §4.8), not in local component state. Still no `isLive` toggle wired from
- * Strapi's `watch-live` single type — Doc 2 confirms that's a manual
- * toggle, a Phase 3 nicety for auto-detection.
+ * Still no Strapi `watch-live` toggle — this is purely schedule-based, so if
+ * a service runs long or is cancelled, the window won't know.
  */
 
-interface NextService {
+/** Live opens this many minutes before the listed start time. */
+const LIVE_OPENS_BEFORE_MIN = 10
+/** Minutes after the start time that the live window stays open. */
+const WINDOW_AFTER_MIN: Record<string, number> = { Sunday: 150, Wednesday: 120 }
+const DEFAULT_WINDOW_AFTER_MIN = 120
+
+const DAY_INDEX: Record<string, number> = {
+  Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6,
+}
+const MANILA_OFFSET_H = 8
+const MIN = 60_000
+
+export interface ServiceSlot {
+  day: string
+  /** "10:00 AM — Taglish", or "6:00 PM — Prayer & Fasting". */
   label: string
-  target: Date
+  /** Listed start time. */
+  start: Date
+  /** When the live window opens / closes. */
+  opens: Date
+  closes: Date
 }
 
 function parseTime12h(time: string): { hours: number; minutes: number } {
@@ -43,58 +53,74 @@ function parseTime12h(time: string): { hours: number; minutes: number } {
   return { hours, minutes: Number(m ?? 0) }
 }
 
-const sundayServices = site.services.filter((s) => s.day === 'Sunday')
-
-/** Walks forward from "now" through this Sunday's services in order, then
- *  next Sunday's first service, returning whichever hasn't started yet. */
-function getNextService(): NextService {
-  const now = new Date()
-  const dayOfWeek = now.getDay() // 0 = Sunday
-  const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek
-  const thisSunday = new Date(now)
-  thisSunday.setDate(now.getDate() + daysUntilSunday)
-  thisSunday.setHours(0, 0, 0, 0)
-
-  for (const svc of sundayServices) {
-    const { hours, minutes } = parseTime12h(svc.time)
-    const target = new Date(thisSunday)
-    target.setHours(hours, minutes, 0, 0)
-    if (now < target) {
-      return { label: `${svc.time} — ${svc.language}`, target }
-    }
-  }
-
-  // Every service today (or this coming Sunday) has already started — roll
-  // to next Sunday's first service.
-  const nextSunday = new Date(thisSunday)
-  nextSunday.setDate(thisSunday.getDate() + 7)
-  const first = sundayServices[0]
-  const { hours, minutes } = parseTime12h(first?.time ?? '10:00 AM')
-  nextSunday.setHours(hours, minutes, 0, 0)
-  return { label: `${first?.time ?? '10:00 AM'} — ${first?.language ?? 'Taglish'}`, target: nextSunday }
+function serviceLabel(svc: (typeof site.services)[number]): string {
+  return `${svc.time} — ${svc.label ?? svc.language}`
 }
 
-function useCountdown(target: Date) {
-  const [diff, setDiff] = useState(() => target.getTime() - Date.now())
+/** Every occurrence of every service from yesterday (Manila) to 8 days out,
+ *  sorted by start time. Wide enough that "now" always has a service that is
+ *  live or upcoming. */
+function buildSlots(nowMs: number): ServiceSlot[] {
+  // Manila wall-clock date, read through UTC getters on a shifted instant.
+  const manila = new Date(nowMs + MANILA_OFFSET_H * 60 * MIN)
+  const y = manila.getUTCFullYear()
+  const mo = manila.getUTCMonth()
+  const d = manila.getUTCDate()
 
-  useEffect(() => {
-    setDiff(target.getTime() - Date.now())
-    const id = window.setInterval(() => setDiff(target.getTime() - Date.now()), 1000)
-    return () => window.clearInterval(id)
-  }, [target])
+  const slots: ServiceSlot[] = []
+  for (let offset = -1; offset <= 8; offset++) {
+    const day = new Date(Date.UTC(y, mo, d + offset))
+    const dow = day.getUTCDay()
+    for (const svc of site.services) {
+      if (DAY_INDEX[svc.day] !== dow) continue
+      const { hours, minutes } = parseTime12h(svc.time)
+      const startMs =
+        Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), hours - MANILA_OFFSET_H, minutes)
+      const after = WINDOW_AFTER_MIN[svc.day] ?? DEFAULT_WINDOW_AFTER_MIN
+      slots.push({
+        day: svc.day,
+        label: serviceLabel(svc),
+        start: new Date(startMs),
+        opens: new Date(startMs - LIVE_OPENS_BEFORE_MIN * MIN),
+        closes: new Date(startMs + after * MIN),
+      })
+    }
+  }
+  return slots.sort((a, b) => a.start.getTime() - b.start.getTime())
+}
 
-  const total = Math.max(0, diff)
+export interface WatchLiveState {
+  isLive: boolean
+  /** The service that is live now, or the next one to start. */
+  current: ServiceSlot
+  /** Time until `current` starts (all zero once live). */
+  countdown: { days: number; hours: number; minutes: number; seconds: number }
+}
+
+export function getWatchLiveState(nowMs: number): WatchLiveState {
+  const slots = buildSlots(nowMs)
+  const live = slots.find((s) => nowMs >= s.opens.getTime() && nowMs < s.closes.getTime())
+  const current = live ?? slots.find((s) => s.start.getTime() > nowMs) ?? slots[slots.length - 1]!
+  const total = live ? 0 : Math.max(0, current.start.getTime() - nowMs)
   return {
-    days: Math.floor(total / 86_400_000),
-    hours: Math.floor((total % 86_400_000) / 3_600_000),
-    minutes: Math.floor((total % 3_600_000) / 60_000),
-    seconds: Math.floor((total % 60_000) / 1_000),
+    isLive: Boolean(live),
+    current,
+    countdown: {
+      days: Math.floor(total / 86_400_000),
+      hours: Math.floor((total % 86_400_000) / 3_600_000),
+      minutes: Math.floor((total % 3_600_000) / 60_000),
+      seconds: Math.floor((total % 60_000) / 1_000),
+    },
   }
 }
 
 export function useWatchLiveViewModel() {
-  const [next] = useState(getNextService)
-  const countdown = useCountdown(next.target)
+  const [state, setState] = useState(() => getWatchLiveState(Date.now()))
 
-  return { next, countdown }
+  useEffect(() => {
+    const id = window.setInterval(() => setState(getWatchLiveState(Date.now())), 1000)
+    return () => window.clearInterval(id)
+  }, [])
+
+  return state
 }

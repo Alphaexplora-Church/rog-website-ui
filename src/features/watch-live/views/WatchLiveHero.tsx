@@ -40,15 +40,14 @@ const countdownUnits = [
  * (first screen), staggered, and off under reduced motion.
  */
 export function WatchLiveHero() {
-  const { next, countdown } = useWatchLiveViewModel()
+  const { isLive, current: next, countdown } = useWatchLiveViewModel()
   const [on, setOn] = useState(false)
   useEffect(() => {
     const t = requestAnimationFrame(() => setOn(true))
     return () => cancelAnimationFrame(t)
   }, [])
 
-  const sundayServices = site.services.filter((s) => s.day === 'Sunday')
-  const isLive = countdown.days + countdown.hours + countdown.minutes + countdown.seconds === 0
+  const scheduled = site.services
   const rise = (delay = '') => `${heroRevealBase} ${delay} ${on ? heroRevealShown : heroRevealHidden}`
 
   return (
@@ -97,7 +96,7 @@ export function WatchLiveHero() {
         {/* The countdown — the centrepiece */}
         <div className={`mt-12 sm:mt-16 ${rise(heroRevealDelay1)}`}>
           <p className="font-whisper text-[clamp(1.3rem,2.2vw,2rem)] italic text-sand">
-            {isLive ? 'Streaming now — ' : 'Sunday, '}
+            {isLive ? 'Streaming now — ' : `${next.day}, `}
             {next.label}
           </p>
           <p className="sr-only">
@@ -105,6 +104,17 @@ export function WatchLiveHero() {
               ? 'The service is starting now.'
               : `Starts in ${countdown.days} days, ${countdown.hours} hours and ${countdown.minutes} minutes.`}
           </p>
+          {isLive && site.youtubeChannelId ? (
+            <div className="mt-4 aspect-video w-full overflow-hidden border-y border-bone/15 bg-black/30">
+              <iframe
+                className="h-full w-full"
+                src={`https://www.youtube.com/embed/live_stream?channel=${site.youtubeChannelId}&autoplay=0`}
+                title="River of God live stream"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
           <div aria-hidden="true" className="mt-4 grid grid-cols-4 gap-2 border-y border-bone/15 py-6 sm:gap-6 sm:py-8">
             {countdownUnits.map(({ key, label }, i) => (
               <div key={key} className={`relative ${i > 0 ? 'border-l border-bone/10 pl-3 sm:pl-6' : ''}`}>
@@ -122,6 +132,7 @@ export function WatchLiveHero() {
               </div>
             ))}
           </div>
+          )}
         </div>
 
         {/* Lead + action | schedule */}
@@ -131,17 +142,23 @@ export function WatchLiveHero() {
               Can&apos;t make it in person? Join us live every Sunday — wherever you are, no seat needed.
             </p>
             <div className="mt-8">
-              <Button href={site.liveStreamUrl} variant="ember" size="lg" live>
-                Watch Live
-              </Button>
+              {isLive ? (
+                <Button href={site.liveStreamUrl} variant="ember" size="lg" live>
+                  Watch Live
+                </Button>
+              ) : (
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-bone/60">
+                  The stream opens 10 minutes before each service
+                </p>
+              )}
             </div>
           </div>
 
           <div>
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-shallows">Sundays</p>
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-shallows">Services</p>
             <ul className="mt-3 border-t border-bone/15">
-              {sundayServices.map((svc) => {
-                const isNext = next.label === `${svc.time} — ${svc.language}`
+              {scheduled.map((svc) => {
+                const isNext = next.day === svc.day && next.label === `${svc.time} — ${svc.label ?? svc.language}`
                 return (
                   <li
                     key={`${svc.time}-${svc.language}`}
@@ -150,10 +167,11 @@ export function WatchLiveHero() {
                     <span className={`flex items-center gap-3 font-shout text-2xl font-bold uppercase tabular-nums ${isNext ? 'text-bone' : 'text-bone/60'}`}>
                       <span aria-hidden="true" className={`h-2 w-2 rounded-full ${isNext ? 'bg-ember' : 'bg-bone/25'}`} />
                       {svc.time}
+                      <span className="text-[0.7rem] font-semibold tracking-[0.18em] text-bone/45">{svc.day.slice(0, 3)}</span>
                     </span>
                     <span className={`text-[0.9rem] italic ${isNext ? 'text-bone' : 'text-bone/60'}`}>
-                      {svc.language.toLowerCase()}
-                      {isNext ? <span className="ml-2 not-italic text-[0.65rem] font-bold uppercase tracking-[0.18em] text-ember">next</span> : null}
+                      {(svc.label ?? svc.language).toLowerCase()}
+                      {isNext ? <span className="ml-2 not-italic text-[0.65rem] font-bold uppercase tracking-[0.18em] text-ember">{isLive ? 'live' : 'next'}</span> : null}
                     </span>
                   </li>
                 )

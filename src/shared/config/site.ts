@@ -155,4 +155,11 @@ export const site = {
 
   /** Drives the pulsing dot on the Watch Live button. See the ⚠ above. */
   liveStreamUrl: 'https://www.facebook.com/riverofgodph',
+  /**
+   * YouTube channel ID (starts with "UC", NOT the @handle) used by the Watch
+   * Live embed (`youtube.com/embed/live_stream?channel=<id>`). Leave empty
+   * and /watch-live falls back to the Watch Live button instead of an embed.
+   * Find it in YouTube Studio → Settings → Channel → Advanced settings.
+   */
+  youtubeChannelId: 'UChQlOwL5h8OX1vlMjHjN68w' as string,
 } as const
