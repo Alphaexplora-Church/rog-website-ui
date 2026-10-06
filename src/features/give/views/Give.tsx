@@ -245,7 +245,7 @@ function QrPanel({ src, title }: { src: string; title: string }) {
   if (failed) {
     return (
       <div className="relative mx-auto mt-8 flex h-52 w-52 flex-col items-center justify-center gap-4 border border-dashed border-bone/25 p-6 text-center sm:h-56 sm:w-56">
-        <WaveMark className="h-4 w-12 text-shallows" strokeWidth={7} />
+        <WaveMark className="h-4 w-12 text-bone" strokeWidth={7} />
         <p className="text-sm text-bone/65">QR code not available yet — use the link below.</p>
       </div>
     )
@@ -339,7 +339,7 @@ function MethodBlock({
       </div>
       <WaveMark
         className={`pointer-events-none absolute -right-[20%] top-[8%] -z-10 h-auto w-[110%] transition-transform duration-[1600ms] ease-current group-hover:-translate-x-8 motion-reduce:transition-none ${
-          primary ? 'text-ember/[0.12]' : 'text-bone/[0.06]'
+          primary ? 'text-bone/[0.12]' : 'text-bone/[0.06]'
         }`}
         strokeWidth={3}
       />

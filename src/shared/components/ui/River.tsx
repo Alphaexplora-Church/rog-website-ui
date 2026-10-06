@@ -108,7 +108,7 @@ export function Eyebrow({
 }) {
   return (
     <p className={`flex items-center gap-3 ${eyebrow} ${className}`}>
-      <WaveMark className="h-3 w-8 flex-none" strokeWidth={7} />
+      <WaveMark className={`h-3 w-8 flex-none ${/text-abyss/.test(className) ? 'text-abyss' : 'text-bone'}`} strokeWidth={7} />
       <span>{children}</span>
     </p>
   )

@@ -161,7 +161,7 @@ export default function PlanAVisit() {
             <span aria-hidden="true" className="absolute top-0 left-0 h-[3px] w-full bg-ember" />
             {submitted ? (
               <div className="px-6 py-14 text-center sm:px-10 sm:py-16" role="status" aria-live="polite">
-                <WaveMark draw className="mx-auto h-auto w-32 text-ember" strokeWidth={5} />
+                <WaveMark draw className="mx-auto h-auto w-32 text-bone" strokeWidth={5} />
                 <p className="mt-8 text-[0.72rem] font-semibold tracking-[0.22em] text-shallows uppercase">
                   Seat saved
                 </p>

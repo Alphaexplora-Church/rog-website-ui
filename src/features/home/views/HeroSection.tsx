@@ -64,7 +64,7 @@ export function HeroSection() {
       <div className={`${container} pb-14 pt-36 sm:pb-20`}>
         <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
-            <div className={`text-ember ${heroRevealBase} ${on ? heroRevealShown : heroRevealHidden}`}>
+            <div className={`text-bone ${heroRevealBase} ${on ? heroRevealShown : heroRevealHidden}`}>
               <WaveMark draw className="h-7 w-20" strokeWidth={6} />
             </div>
             <h1

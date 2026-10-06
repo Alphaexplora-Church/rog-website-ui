@@ -145,7 +145,7 @@ export function Footer() {
       {/* pointer-events-none: the glyphs overflow their 0.8 line box upward and
           were sitting on top of the copyright row, swallowing its clicks. */}
       <div aria-hidden="true" className="pointer-events-none relative select-none">
-        <WaveMark className="absolute left-1/2 top-0 h-auto w-24 -translate-x-1/2 -translate-y-1/2 text-ember" strokeWidth={6} />
+        <WaveMark className="absolute left-1/2 top-0 h-auto w-24 -translate-x-1/2 -translate-y-1/2 text-bone" strokeWidth={6} />
         <p className="-mb-[0.22em] whitespace-nowrap text-center font-shout text-[21.5vw] leading-[0.8] font-black uppercase text-bone/[0.07]">
           River of God
         </p>
